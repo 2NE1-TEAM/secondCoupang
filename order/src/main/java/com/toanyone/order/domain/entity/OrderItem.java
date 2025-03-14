@@ -29,7 +29,7 @@ public class OrderItem extends BaseEntity {
     @Column(nullable = false)
     private int price;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, updatable = false)
     private Order order;
 
