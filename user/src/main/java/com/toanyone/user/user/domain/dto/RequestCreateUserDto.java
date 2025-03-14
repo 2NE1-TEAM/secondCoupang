@@ -1,6 +1,8 @@
 package com.toanyone.user.user.domain.dto;
 
 import com.toanyone.user.user.domain.UserRole;
+import jakarta.persistence.Entity;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -26,7 +28,7 @@ public class RequestCreateUserDto {
     )
     private String password;
 
-    @NotNull
+    @NotNull @Email
     private String slackId;
     @NotNull
     private UserRole role;
