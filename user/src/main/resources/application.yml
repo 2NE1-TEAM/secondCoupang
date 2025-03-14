@@ -5,9 +5,9 @@ spring:
 
   # ????? (MySQL) ??
   datasource:
-    url: jdbc:mysql://mysql_db:3306/user?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: 1234
+    url: jdbc:mysql://${DB_HOST}:3306/user?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA / Hibernate ??
