@@ -1,5 +1,6 @@
-package com.toanyone.user.user.domain;
+package com.toanyone.user.user.domain.entity;
 
+import com.toanyone.user.user.domain.UserRole;
 import jakarta.persistence.*;
 
 @Entity
