@@ -1,48 +1,57 @@
 package com.toanyone.delivery.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "p_delivery")
-public class Delivery extends TimeStamp {
+public class Delivery extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
-    @Column(name = "delivery_id")
+    @Column(name = "delivery_id", nullable = false)
     private Long id;
-    @Column(name = "order_id")
+
+    @Column(nullable = false)
     private Long orderId;
-    @Column(name = "delivery_status")
-    @NotNull
+
+    @Column(nullable = false)
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private List<DeliveryRoad> deliveryRoads = new ArrayList<DeliveryRoad>();
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;
-    @Column(name = "departure_hub_id")
-    @NotNull
+
+    @Column(nullable = false)
     private Long departureHubId;
-    @Column(name = "arrival_hub_id")
-    @NotNull
+
+    @Column(nullable = false)
     private Long arrivalHubId;
-    @Column(name = "delivery_address")
-    @NotNull
+
+    @Column(nullable = false)
     private String deliveryAddress;
-    @NotNull
+
+    @Column(nullable = false)
     private String recipient;
-    @Column(name = "recipient_slack_id")
-    @NotNull
+
+    @Column(nullable = false)
     private Long recipientSlackId;
-    @Column(name = "store_delivery_manager_id")
-    @NotNull
+
+    @Column(nullable = false)
     private Long storeDeliveryManagerId;
 
-    public static Delivery createDelivery(Long orderId, Long departureHubId, Long arrivalHubId, String deliveryAddress, final String recipient, Long recipientSlackId, Long storeDeliveryManagerId) {
+    public static Delivery createDelivery(Long orderId, List<DeliveryRoad> deliveryRoads, Long departureHubId, Long arrivalHubId, String deliveryAddress, final String recipient, Long recipientSlackId, Long storeDeliveryManagerId) {
         Delivery delivery = new Delivery();
         delivery.orderId = orderId;
+        delivery.deliveryRoads = deliveryRoads;
         delivery.departureHubId = departureHubId;
         delivery.arrivalHubId = arrivalHubId;
         delivery.deliveryAddress = deliveryAddress;
@@ -50,17 +59,34 @@ public class Delivery extends TimeStamp {
         delivery.recipient = recipient;
         delivery.recipientSlackId = recipientSlackId;
         delivery.storeDeliveryManagerId = storeDeliveryManagerId;
+        delivery.getDeliveryRoads()
+                .forEach(deliveryRoad -> deliveryRoad.addDelivery(delivery));
         return delivery;
     }
 
+    public void updateDeliveryStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
+    }
+
+    public void deliverDelivery(Long deletedBy) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
+    @Getter
     public enum DeliveryStatus {
-        HUB_WAITING,
-        HUB_MOVING,
-        DESTINATION_HUB_ARRIVED,
-        DELIVERING,
-        STORE_MOVING,
-        DELIVERY_COMPLETED,
-        ;
+        HUB_WAITING("허브 이동 대기중"),
+        HUB_MOVING("허브 이동중"),
+        DESTINATION_HUB_ARRIVED("목적지 허브 도착"),
+        DELIVERING("배송중"),
+        STORE_MOVING("업체로 이동중"),
+        DELIVERY_COMPLETED("배송완료");
+
+        private final String value;
+
+        DeliveryStatus(String value) {
+            this.value = value;
+        }
     }
 
 
