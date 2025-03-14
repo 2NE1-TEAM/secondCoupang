@@ -1,5 +1,6 @@
 package com.toanyone.delivery.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -14,21 +15,23 @@ import java.time.LocalDateTime;
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class TimeStamp {
+public abstract class BaseEntity {
 
     @CreatedDate
+    @Column(updatable = false)
     protected LocalDateTime createdAt;
 
     @CreatedBy
-    protected Integer createdBy;
+    @Column(updatable = false)
+    protected Long createdBy;
 
     @LastModifiedDate
     protected LocalDateTime updatedAt;
 
     @LastModifiedBy
-    protected Integer updatedBy;
+    protected Long updatedBy;
 
     protected LocalDateTime deletedAt;
 
-    protected Integer deletedBy;
+    protected Long deletedBy;
 }
