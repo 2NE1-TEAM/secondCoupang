@@ -36,7 +36,7 @@ public class Order extends BaseEntity {
     @Column(name = "order_status")
     private OrderStatus status;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "order_id")
     private List<OrderItem> items;
 
