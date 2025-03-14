@@ -1,4 +1,4 @@
-package com.toanyone.user.user.application;
+package com.toanyone.user.user.application.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +21,7 @@ public class AuthConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // /auth/signIn 경로에 대한 접근을 허용합니다. 이 경로는 인증 없이 접근할 수 있습니다.
                         .requestMatchers("/users/sign-in").permitAll()
+                        .requestMatchers("/users/sign-up").permitAll()
                         // 그 외의 모든 요청은 인증이 필요합니다.
                         .anyRequest().authenticated()
                 )
