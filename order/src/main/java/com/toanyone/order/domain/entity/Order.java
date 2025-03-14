@@ -10,8 +10,8 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "p_order")
 @Getter
+@Table(name = "p_order")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseEntity {
 
@@ -36,9 +36,8 @@ public class Order extends BaseEntity {
     @Column(name = "order_status")
     private OrderStatus status;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "p_order_item",
-            joinColumns = @JoinColumn(name = "order_id"))
+    @OneToMany
+    @JoinColumn(name = "order_id")
     private List<OrderItem> items;
 
     private enum OrderStatus {
