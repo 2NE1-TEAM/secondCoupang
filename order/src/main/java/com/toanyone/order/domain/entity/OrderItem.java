@@ -30,7 +30,7 @@ public class OrderItem extends BaseEntity {
     private int price;
 
     @ManyToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false, updatable = false)
     private Order order;
 
 }
