@@ -2,6 +2,7 @@ package com.toanyone.order.application;
 
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
 import com.toanyone.order.application.dto.ItemValidationResponseDto;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 public class ItemServiceImplTemp implements ItemService{
 
     @Override
-    public ItemValidationResponseDto validateItems(ItemValidationRequestDto request) {
+    public ItemValidationResponseDto validateItems(@Valid ItemValidationRequestDto request) {
 
         List<ItemValidationResponseDto.ItemResponseDto> validateItems = request.getItems().stream()
                 .map(item -> new ItemValidationResponseDto.ItemResponseDto(item.getItemId(), "itemName", 10000, item.getQuantity()))

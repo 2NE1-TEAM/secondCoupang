@@ -3,6 +3,7 @@ package com.toanyone.order.infrastructure.client;
 import com.toanyone.order.application.ItemService;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
 import com.toanyone.order.application.dto.ItemValidationResponseDto;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -10,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ItemClient extends ItemService {
 
     @PostMapping("/items/validate")
-    ItemValidationResponseDto validateItems(@RequestBody ItemValidationRequestDto request);
+    ItemValidationResponseDto validateItems(@RequestBody @Valid ItemValidationRequestDto request);
 
 }
