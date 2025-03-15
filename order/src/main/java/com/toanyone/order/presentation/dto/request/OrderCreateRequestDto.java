@@ -33,6 +33,12 @@ public class OrderCreateRequestDto {
         private Long itemId;
 
         @NotNull
+        private String itemName;
+
+        @NotNull
+        private int price;
+
+        @NotNull
         private int quantity;
 
     }

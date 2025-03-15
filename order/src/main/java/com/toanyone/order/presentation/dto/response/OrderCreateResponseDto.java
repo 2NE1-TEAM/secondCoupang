@@ -29,6 +29,8 @@ public class OrderCreateResponseDto {
     @NotNull
     private List<Long> orderItemIds;
 
+    private int totalPrice;
+
     public static OrderCreateResponseDto fromOrder(Order order) {
         OrderCreateResponseDto responseDto = new OrderCreateResponseDto();
         responseDto.orderId = order.getId();
@@ -37,6 +39,7 @@ public class OrderCreateResponseDto {
         responseDto.receiveStoreId = order.getReceiveStoreId();
         responseDto.orderItemIds = order.getItems().stream()
                 .map(OrderItem::getId).collect(Collectors.toList());
+        responseDto.totalPrice = order.getTotalPrice();
         return responseDto;
     }
 

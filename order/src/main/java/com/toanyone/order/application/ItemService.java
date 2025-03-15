@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface ItemService {
-    ItemValidationResponseDto validateItems(ItemValidationRequestDto request);
+    boolean validateItems(ItemValidationRequestDto request);
 
 }

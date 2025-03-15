@@ -44,9 +44,9 @@ class OrderServiceTest {
         order = Order.create(1L, 1L, 2L);
 
         //주문 생성 요청
-        OrderCreateRequestDto.ItemRequestDto itemRequestDto1 = new OrderCreateRequestDto.ItemRequestDto(1L, 10);
-        OrderCreateRequestDto.ItemRequestDto itemRequestDto2 = new OrderCreateRequestDto.ItemRequestDto(2L, 20);
-        OrderCreateRequestDto.ItemRequestDto itemRequestDto3 = new OrderCreateRequestDto.ItemRequestDto(3L, 30);
+        OrderCreateRequestDto.ItemRequestDto itemRequestDto1 = new OrderCreateRequestDto.ItemRequestDto(1L, "itemName", 10000, 10);
+        OrderCreateRequestDto.ItemRequestDto itemRequestDto2 = new OrderCreateRequestDto.ItemRequestDto(2L, "itemName", 20000, 20);
+        OrderCreateRequestDto.ItemRequestDto itemRequestDto3 = new OrderCreateRequestDto.ItemRequestDto(3L, "itemName", 30000, 30);
         List<OrderCreateRequestDto.ItemRequestDto> items = new ArrayList<>();
         items.add(itemRequestDto1);
         items.add(itemRequestDto2);
@@ -66,17 +66,6 @@ class OrderServiceTest {
 
         itemValidationRequestDto = new ItemValidationRequestDto(validItems);
 
-        //검증된 상품 응답
-        ItemValidationResponseDto.ItemResponseDto itemValidationResponseDto1 = new ItemValidationResponseDto.ItemResponseDto(1L, "one", 1000, 10);
-        ItemValidationResponseDto.ItemResponseDto itemValidationResponseDto2 = new ItemValidationResponseDto.ItemResponseDto(2L, "two", 2000, 20);
-        ItemValidationResponseDto.ItemResponseDto itemValidationResponseDto3 = new ItemValidationResponseDto.ItemResponseDto(3L, "three", 3000, 30);
-        List<ItemValidationResponseDto.ItemResponseDto> validResponseItems = new ArrayList<>();
-        validResponseItems.add(itemValidationResponseDto1);
-        validResponseItems.add(itemValidationResponseDto2);
-        validResponseItems.add(itemValidationResponseDto3);
-
-        itemResponseDto = new ItemValidationResponseDto(validResponseItems);
-
     }
 
     @Test
@@ -85,14 +74,17 @@ class OrderServiceTest {
 
         //given
         when(orderRepository.save(any(Order.class))).thenReturn(order);
-        when(itemService.validateItems(any(ItemValidationRequestDto.class))).thenReturn(itemResponseDto);
+        when(itemService.validateItems(any(ItemValidationRequestDto.class))).thenReturn(true);
+        int totalPrice = orderRequestDto.getItems().stream().mapToInt( item -> item.getQuantity() * item.getPrice()).sum();
+
 
         //when
         OrderCreateResponseDto responseDto = orderService.createOrder(orderRequestDto);
-
         int itemCount = responseDto.getOrderItemIds().size();
+        int responseTotalPrice = responseDto.getTotalPrice();
 
         Assertions.assertEquals(3, itemCount);
+        Assertions.assertEquals(totalPrice, responseTotalPrice);
 
     }
 

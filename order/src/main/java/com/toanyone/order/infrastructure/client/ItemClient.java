@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ItemClient extends ItemService {
 
     @PostMapping("/items/validate")
-    ItemValidationResponseDto validateItems(@RequestBody @Valid ItemValidationRequestDto request);
+    boolean validateItems(@RequestBody @Valid ItemValidationRequestDto request);
 
 }

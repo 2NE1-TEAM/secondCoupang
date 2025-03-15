@@ -32,16 +32,19 @@ public class OrderService {
 
         //Item 검증
         ItemValidationRequestDto validItemRequestDto = convertToItemValidationRequestDto(request.getItems());
-        ItemValidationResponseDto validItems = itemService.validateItems(validItemRequestDto);
+        boolean isValid = itemService.validateItems(validItemRequestDto);
 
-        validItems.getItems().stream().map(validRequest ->
-                        OrderItem.create(validRequest.getItemId(), validRequest.getItemName(), validRequest.getOrderedQuantity(), validRequest.getOrderedPrice()))
+        if (!isValid) {
+            //Todo: throw Exception
+        }
+
+        request.getItems().stream().map(validRequest ->
+                        OrderItem.create(validRequest.getItemId(), validRequest.getItemName(), validRequest.getQuantity(), validRequest.getPrice()))
                 .forEach(order::addOrderItem);
-
 
         order.calculateTotalPrice();
 
-        log.debug("order - id: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
+        log.debug("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
         orderRepository.save(order);
 

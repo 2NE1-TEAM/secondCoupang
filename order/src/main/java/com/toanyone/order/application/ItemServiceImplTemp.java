@@ -13,12 +13,8 @@ import java.util.stream.Collectors;
 public class ItemServiceImplTemp implements ItemService{
 
     @Override
-    public ItemValidationResponseDto validateItems(@Valid ItemValidationRequestDto request) {
+    public boolean validateItems(@Valid ItemValidationRequestDto request) {
 
-        List<ItemValidationResponseDto.ItemResponseDto> validateItems = request.getItems().stream()
-                .map(item -> new ItemValidationResponseDto.ItemResponseDto(item.getItemId(), "itemName", 10000, item.getQuantity()))
-                .collect(Collectors.toList());
-
-        return new ItemValidationResponseDto(validateItems);
+        return true;
     }
 }
