@@ -54,6 +54,10 @@ public class Order extends BaseEntity {
         items.add(item);
     }
 
+    public void calculateTotalPrice() {
+        this.totalPrice = items.stream().mapToInt(OrderItem::getTotalPrice).sum();
+    }
+
 
     private enum OrderStatus {
 
