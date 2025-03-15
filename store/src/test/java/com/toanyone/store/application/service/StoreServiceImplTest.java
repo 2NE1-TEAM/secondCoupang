@@ -38,10 +38,10 @@ class StoreServiceImplTest {
     @Autowired
     StoreRepository storeRepository;
 
-    @Autowired  // ✅ 변경: @InjectMocks → @Autowired
+    @Autowired  // @InjectMocks → @Autowired
     private StoreService storeService;
 
-    @MockBean  // ✅ 변경: @Mock 대신 @MockBean 사용
+    @MockBean  // @Mock 대신 @MockBean 사용
     private HubClient hubClient;
 
 
