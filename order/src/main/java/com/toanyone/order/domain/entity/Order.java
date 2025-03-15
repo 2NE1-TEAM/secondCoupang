@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -38,7 +39,21 @@ public class Order extends BaseEntity {
     private OrderStatus status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, orphanRemoval = true)
-    private List<OrderItem> items  = new ArrayList<>();
+    private List<OrderItem> items = new ArrayList<>();
+
+    public static Order create(Long userId, Long supplyStoreId, Long receiveStoreId) {
+        Order order = new Order();
+        order.userId = userId;
+        order.supplyStoreId = supplyStoreId;
+        order.receiveStoreId = receiveStoreId;
+        return order;
+    }
+
+    public void addOrderItem(OrderItem item) {
+        item.assignOrder(this);
+        items.add(item);
+    }
+
 
     private enum OrderStatus {
 

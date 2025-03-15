@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Table(name = "p_order_item")
@@ -33,4 +35,16 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false, updatable = false)
     private Order order;
 
+    public static OrderItem create(Long itemId, String itemName, int quantity, int price) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.itemId = itemId;
+        orderItem.itemName = itemName;
+        orderItem.quantity = quantity;
+        orderItem.price = price;
+        return orderItem;
+    }
+
+    public void assignOrder(Order order) {
+        this.order = order;
+    }
 }
