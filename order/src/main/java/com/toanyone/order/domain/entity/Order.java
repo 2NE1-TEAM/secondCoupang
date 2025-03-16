@@ -1,8 +1,10 @@
 package com.toanyone.order.domain.entity;
 
 import com.toanyone.order.common.BaseEntity;
+import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,7 +37,7 @@ public class Order extends BaseEntity {
     private int totalPrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
+    @Column(name = "order_status", nullable = false)
     private OrderStatus status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, orphanRemoval = true)
@@ -46,6 +48,7 @@ public class Order extends BaseEntity {
         order.userId = userId;
         order.supplyStoreId = supplyStoreId;
         order.receiveStoreId = receiveStoreId;
+        order.status = OrderStatus.PREPARING;
         return order;
     }
 
@@ -59,12 +62,17 @@ public class Order extends BaseEntity {
     }
 
 
+
+    @Getter
+    @AllArgsConstructor
     private enum OrderStatus {
 
-        PREPARING,
-        DELIVERING,
-        DELIVERY_COMPLETED,
-        CANCELED;
+        PREPARING("배송 준비 중"),
+        DELIVERING("배송 중"),
+        DELIVERY_COMPLETED("배송 완료"),
+        CANCELED("주문 취소");
+
+        private final String description;
 
     }
 
