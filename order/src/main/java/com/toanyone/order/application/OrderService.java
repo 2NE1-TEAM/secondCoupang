@@ -1,7 +1,7 @@
 package com.toanyone.order.application;
 
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
-import com.toanyone.order.application.dto.ItemValidationResponseDto;
+import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
 import com.toanyone.order.domain.repository.OrderRepository;
@@ -35,7 +35,7 @@ public class OrderService {
         boolean isValid = itemService.validateItems(validItemRequestDto);
 
         if (!isValid) {
-            //Todo: throw Exception
+            throw new OrderException.InsufficientStockException();
         }
 
         request.getItems().stream().map(validRequest ->

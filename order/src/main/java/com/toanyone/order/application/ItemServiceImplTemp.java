@@ -14,7 +14,10 @@ public class ItemServiceImplTemp implements ItemService{
 
     @Override
     public boolean validateItems(@Valid ItemValidationRequestDto request) {
-
-        return true;
+        if (request.getItems().size() % 2 == 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
