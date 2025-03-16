@@ -1,9 +1,12 @@
 package com.toanyone.delivery.application;
 
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
+import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
 import com.toanyone.delivery.domain.repository.DeliveryManagerRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -12,8 +15,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +37,8 @@ class DeliveryServiceTest {
     private DeliveryService deliveryService;
     @Mock
     private DeliveryManagerRepository deliveryManagerRepository;
+    @Mock
+    private CustomDeliveryMangerRepository customDeliveryMangerRepository;
 
     @Test
     @DisplayName("배송담닫자 생성 테스트")
@@ -68,6 +81,104 @@ class DeliveryServiceTest {
 
         // when - then
         Assertions.assertThatThrownBy(() -> deliveryService.createDeliveryManager(request))
+                .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);
+
+    }
+
+    @Test
+    @DisplayName("배송담당자 단건 조회 테스트")
+    public void findDeliveryManagerTest() {
+
+        // given
+        Long deliveryManagerId = 1L;
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(deliveryManagerId, DeliveryManagerType.HUB_DELIVERY_MANAGER, 1L, 1L);
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+
+        // when
+        when(deliveryManagerRepository.findById(deliveryManagerId)).thenReturn(Optional.of(deliveryManager));
+//        doReturn(Optional.of(deliveryManager))
+//                .when(deliveryManagerRepository.findById(deliveryManagerId));
+
+        // then
+        GetDeliveryManagerResponseDto response = deliveryService.getDeliveryManager(deliveryManagerId);
+        assertNotNull(response);
+        assertEquals(deliveryManagerId, response.getDeliveryManagerId());
+    }
+
+    @Test
+    @DisplayName("배송담당자 단건 조회 실패 테스트")
+    public void findDeliveryManagerFailedTest() {
+
+        // given
+        Long notExistsDeliveryManagerId = 2L;
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.HUB_DELIVERY_MANAGER, 1L, 1L);
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+
+        // when
+        when(deliveryManagerRepository.findById(notExistsDeliveryManagerId))
+                .thenReturn(Optional.empty());
+
+        // then
+        Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManager(notExistsDeliveryManagerId))
+                .isInstanceOf(DeliveryManagerException.NotFoundManagerException.class);
+
+    }
+
+    @Test
+    @DisplayName("배송담당자 다건 조회 테스트")
+    public void getDeliveryManagersTest() {
+
+        // given
+        GetDeliveryManagerSearchConditionRequestDto request = GetDeliveryManagerSearchConditionRequestDto.builder()
+                .deliveryManagerType("허브 배송 담당자")
+                .deliveryManagerId(1L)
+                .build();
+
+        DeliveryManager deliveryManager1 = DeliveryManager.createDeliveryManager(2L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 2L);
+        DeliveryManager deliveryManager2 = DeliveryManager.createDeliveryManager(3L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 3L);
+
+        ReflectionTestUtils.setField(deliveryManager1, "id", 2L);
+        ReflectionTestUtils.setField(deliveryManager2, "id", 3L);
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        List<GetDeliveryManagerResponseDto> responseDtos = List.of(GetDeliveryManagerResponseDto.from(deliveryManager1), GetDeliveryManagerResponseDto.from(deliveryManager2));
+        Page<GetDeliveryManagerResponseDto> responsePage = new PageImpl<>(responseDtos, pageable, responseDtos.size());
+
+
+        // when
+        when(customDeliveryMangerRepository
+                .getDeliveryManagers(pageable, request.getDeliveryManagerId(),
+                        DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get()))
+                .thenReturn(responsePage);
+
+        // then
+        Page<GetDeliveryManagerResponseDto> deliveryManagers =
+                deliveryService.getDeliveryManagers(pageable.getPageNumber(), pageable.getPageSize(), request);
+
+        assertNotNull(deliveryManagers);
+        assertEquals(2, responsePage.getTotalElements());
+        assertThat(responsePage.stream().map(GetDeliveryManagerResponseDto::getDeliveryManagerId)
+                .anyMatch(id -> id.equals(2L))).isTrue();
+        assertThat(responsePage.stream().map(GetDeliveryManagerResponseDto::getDeliveryManagerId)
+                .anyMatch(id -> id.equals(3L))).isTrue();
+
+    }
+
+    @Test
+    @DisplayName("배송 담당자 다건 조회 실패 테스트")
+    public void getDeliveryManagersFailedTest() {
+
+        // given
+        GetDeliveryManagerSearchConditionRequestDto request = GetDeliveryManagerSearchConditionRequestDto.builder()
+                .deliveryManagerType("가짜 배송 담당자")
+                .deliveryManagerId(1L)
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when - then
+        Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManagers(pageable.getPageNumber(), pageable.getPageSize(), request))
                 .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);
 
     }

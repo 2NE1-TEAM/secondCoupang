@@ -1,6 +1,6 @@
 package com.toanyone.delivery.application.exception;
 
-import com.toanyone.delivery.common.CustomException;
+import com.toanyone.delivery.common.exception.CustomException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -14,6 +14,12 @@ public class DeliveryManagerException extends CustomException {
     public static class AlreadyExistsUserException extends DeliveryManagerException {
         public AlreadyExistsUserException() {
             super("해당 회원은 이미 배송담당자로 등록되어있습니다.", HttpStatus.CONFLICT);
+        }
+    }
+
+    public static class NotFoundManagerException extends DeliveryManagerException {
+        public NotFoundManagerException() {
+            super("존재하지 않는 배송담당자입니다.", HttpStatus.NOT_FOUND);
         }
     }
 
