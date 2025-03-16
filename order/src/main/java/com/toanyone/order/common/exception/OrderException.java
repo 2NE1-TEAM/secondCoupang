@@ -22,5 +22,28 @@ public class OrderException extends CustomException {
 
     }
 
+    public static class OrderStatusIllegalException extends OrderException {
+        public OrderStatusIllegalException() { super("ORDER_ERROR_3", "적절하지 않는 주문 상태 변경입니다.", HttpStatus.CONFLICT); }
+    }
+
+    public static class OrderNotFoundException extends OrderException {
+        public OrderNotFoundException() { super("ORDER_ERROR_4", "주문이 존재하지 않습니다.", HttpStatus.NOT_FOUND); }
+
+    }
+
+    public static class OrderAlreadyExistsException extends OrderException {
+        public OrderAlreadyExistsException() { super("ORDER_ERROR_5", "주문이 이미 존재합니다.", HttpStatus.CONFLICT); }
+
+    }
+
+    public static class RestoreInventoryFailedException extends OrderException {
+        public RestoreInventoryFailedException() { super("ORDER_ERROR_6", "재고 복구가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
+
+    }
+
+    public static class OrderCancelFailedException extends OrderException {
+        public OrderCancelFailedException() { super("ORDER_ERROR_7", "주문 취소가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
+
+    }
 
 }

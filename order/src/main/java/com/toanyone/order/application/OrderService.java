@@ -65,9 +65,9 @@ public class OrderService {
 
 
     @Transactional
-    public OrderCancelResponseDto cancelOrder(OrderCancelRequestDto request) {
+    public OrderCancelResponseDto cancelOrder(Long orderId, OrderCancelRequestDto request) {
 
-        Order order = validateOrderExists(request.getOrderId());
+        Order order = validateOrderExists(orderId);
 
         try {
             order.cancel();

@@ -61,11 +61,32 @@ public class Order extends BaseEntity {
         this.totalPrice = items.stream().mapToInt(OrderItem::getTotalPrice).sum();
     }
 
+    public void startDelivery() {
+        if (this.status != OrderStatus.PREPARING) {
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.DELIVERING;
+    }
+
+    public void completedDelivery() {
+        if (this.status != OrderStatus.DELIVERING) {
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.DELIVERY_COMPLETED;
+    }
+
+    public void cancel() {
+        if (this.status != OrderStatus.PREPARING) {
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.CANCELED;
+    }
+
 
 
     @Getter
     @AllArgsConstructor
-    private enum OrderStatus {
+    public enum OrderStatus {
 
         PREPARING("배송 준비 중"),
         DELIVERING("배송 중"),

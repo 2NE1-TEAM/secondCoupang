@@ -11,9 +11,6 @@ import lombok.NoArgsConstructor;
 public class OrderCancelRequestDto {
 
     @NotNull
-    private Long orderId;
-
-    @NotNull
     private Long deliveryId;
 
 }
