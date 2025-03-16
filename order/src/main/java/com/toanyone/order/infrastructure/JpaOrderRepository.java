@@ -5,5 +5,5 @@ import com.toanyone.order.domain.repository.OrderRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaOrderRepository extends JpaRepository<Order, Long> , OrderRepository {
-    Order save(Order order);
+
 }

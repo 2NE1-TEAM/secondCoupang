@@ -28,7 +28,7 @@ public class OrderService {
 
         //Todo: Store 검증 관련 작업 추가
 
-        Order order = Order.create(request.getUserId(), request.getSupplyStoreId(), request.getSupplyStoreId());
+        Order order = Order.create(request.getUserId(), request.getSupplyStoreId(), request.getReceiveStoreId());
 
         //Item 검증
         ItemValidationRequestDto validItemRequestDto = convertToItemValidationRequestDto(request.getItems());
