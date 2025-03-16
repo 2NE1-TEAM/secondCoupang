@@ -1,5 +1,6 @@
 package com.toanyone.store.domain.model;
 
+import com.toanyone.store.domain.exception.StoreException;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -34,7 +35,11 @@ public abstract class BaseEntity {
     private Long deletedBy; // 삭제자ID
 
     /**
-     * 엔티티 삭제 처리 로직 구현 해야 함.
+     * 엔티티 삭제할 경우 호출하기
      */
-
+    public void delete(Long id) {
+        if (this.deletedAt != null) throw new StoreException.StoreAlreadyDeletedException("이미 삭제된 엔티티입니다.");
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = id;
+    }
 }
