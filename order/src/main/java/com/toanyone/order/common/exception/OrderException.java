@@ -46,4 +46,10 @@ public class OrderException extends CustomException {
 
     }
 
+    public static class OrderAlreadyDeletedException extends OrderException {
+        public OrderAlreadyDeletedException() { super("ORDER_ERROR_8", "이미 삭제된 주문입니다.", HttpStatus.CONFLICT); }
+
+    }
+
+
 }

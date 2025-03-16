@@ -1,6 +1,7 @@
 package com.toanyone.order.common;
 
 
+import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -34,5 +35,11 @@ public abstract class BaseEntity {
 
     protected LocalDateTime deletedAt;
     protected Long deletedBy;
+
+    public void delete(Long userId) {
+        if (this.deletedAt != null) throw new OrderException.OrderAlreadyDeletedException();
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
+    }
 
 }

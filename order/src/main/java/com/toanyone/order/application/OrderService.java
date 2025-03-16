@@ -90,6 +90,16 @@ public class OrderService {
 
     }
 
+
+    @Transactional
+    public void deleteOrder(Long orderId, Long userId) {
+
+        Order order = validateOrderExists(orderId);
+
+        order.delete(userId);
+
+    }
+
     private Order validateOrderExists(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(OrderException.OrderNotFoundException::new);
     }

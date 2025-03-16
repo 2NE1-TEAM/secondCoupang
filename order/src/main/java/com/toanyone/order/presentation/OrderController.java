@@ -32,4 +32,15 @@ public class OrderController {
         return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(orderId, request)));
     }
 
+    //Todo: 임시로 header에서 userId 받음
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity deleteOrder(@PathVariable Long orderId,
+                                      @RequestHeader(value = "userId", required = true) Long userId) {
+
+        orderService.deleteOrder(orderId, userId);
+
+        return ResponseEntity.noContent().build();
+
+    }
+
 }
