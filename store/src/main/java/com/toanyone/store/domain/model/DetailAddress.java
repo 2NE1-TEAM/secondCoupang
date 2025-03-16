@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
-public class Address {
+public class DetailAddress {
 
     @Column(nullable = false)
     private String detailAddress; // 상세 주소
