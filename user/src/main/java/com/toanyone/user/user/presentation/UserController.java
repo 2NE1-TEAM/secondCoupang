@@ -38,6 +38,13 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+
+
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/test")
     public String test(HttpServletRequest request) {
         String userId = request.getHeader("X-User-Id");

@@ -32,3 +32,4 @@ eureka:
 service:
   jwt:
     secret-key: ${JWT_KEY}
+    refresh: refresh_token

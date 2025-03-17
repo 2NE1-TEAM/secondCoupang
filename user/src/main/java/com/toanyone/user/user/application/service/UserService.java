@@ -9,6 +9,7 @@ import com.toanyone.user.user.domain.UserRepository;
 import com.toanyone.user.user.infrastructure.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final String HEADER_STRING = "Authorization";
+    @Value("${service.jwt.refresh}")
+    private String refresh;
 
 
     public ResponseUserDto signUp(RequestCreateUserDto requestCreateUserDto) {
@@ -57,7 +60,7 @@ public class UserService {
         response.setHeader(HEADER_STRING, token);
 
         String refreshToken = jwtUtil.generateRefreshToken(user.getId());
-        redisTemplate.opsForValue().set("refresh_token:"+user.getId(), refreshToken, 7, TimeUnit.DAYS);
+        redisTemplate.opsForValue().set(refresh+":"+user.getId(), refreshToken, 7, TimeUnit.DAYS);
     }
 
 
