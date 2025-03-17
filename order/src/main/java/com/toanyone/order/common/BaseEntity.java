@@ -37,7 +37,6 @@ public abstract class BaseEntity {
     protected Long deletedBy;
 
     public void delete(Long userId) {
-        if (this.deletedAt != null) throw new OrderException.OrderAlreadyDeletedException();
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = userId;
     }

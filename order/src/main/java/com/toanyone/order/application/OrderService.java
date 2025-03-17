@@ -95,7 +95,6 @@ public class OrderService {
     public void deleteOrder(Long orderId, Long userId) {
 
         Order order = validateOrderExists(orderId);
-
         order.delete(userId);
 
     }

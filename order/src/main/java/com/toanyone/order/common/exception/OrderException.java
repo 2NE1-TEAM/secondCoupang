@@ -51,5 +51,10 @@ public class OrderException extends CustomException {
 
     }
 
+    public static class OrderItemCancelFailedException extends OrderException {
+        public OrderItemCancelFailedException() { super("ORDER_ERROR_9", "주문상품 취소가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
+
+    }
+
 
 }
