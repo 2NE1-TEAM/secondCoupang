@@ -18,6 +18,9 @@ public class JwtUtil {
     @Value("${service.jwt.secret-key}")
     private String secretKey;
 
+    @Value("${service.jwt.issuer}")
+    private String issuer;
+
     public String extractToken(ServerWebExchange exchange) {
 
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
@@ -35,6 +38,10 @@ public class JwtUtil {
                     .build().parseSignedClaims(token);
 //            log.info("#####payload :: " + claimsJws.getPayload().toString());
 
+            // issuer 검증로직
+            if(!issuer.equals(claimsJws.getBody().getIssuer())){
+                return false;
+            }
             return true;
         } catch (SignatureException e) {
             // 서명이 유효하지 않음

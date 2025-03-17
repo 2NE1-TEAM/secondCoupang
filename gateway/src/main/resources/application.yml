@@ -27,3 +27,4 @@ server:
 service:
   jwt:
     secret-key: ${JWT_KEY}
+    issuer: user-service

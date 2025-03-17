@@ -40,14 +40,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private ServerWebExchange modifiedExchange(Claims claims, ServerWebExchange exchange) {
-        log.info("1");
-
 
         String userId = String.valueOf(claims.get("userId", Long.class));
         String userRole = claims.get("userRole", String.class);
         String slackId = claims.get("slackId", String.class);
-
-        log.info("2");
 
         return exchange.mutate()
                 .request(request -> request
