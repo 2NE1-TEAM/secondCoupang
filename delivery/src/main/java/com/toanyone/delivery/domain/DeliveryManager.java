@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -53,6 +54,15 @@ public class DeliveryManager extends BaseEntity {
 
         DeliveryManagerType(String value) {
             this.value = value;
+        }
+
+        public static Optional<DeliveryManagerType> fromValue(String value) {
+            for (DeliveryManagerType type : values()) {
+                if (type.value.equals(value)) {
+                    return Optional.of(type);
+                }
+            }
+            return Optional.empty();
         }
     }
 
