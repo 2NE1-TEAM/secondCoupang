@@ -4,15 +4,13 @@ import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerReque
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
+import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
 import com.toanyone.delivery.domain.repository.DeliveryManagerRepository;
 import com.toanyone.delivery.domain.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,17 +42,25 @@ public class DeliveryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetDeliveryManagerResponseDto> getDeliveryManagers(int page, int pageSize, GetDeliveryManagerSearchConditionRequestDto request) {
-        Pageable pageable = PageRequest.of(page, pageSize);
+    public CursorPage<GetDeliveryManagerResponseDto> getDeliveryManagers(GetDeliveryManagerSearchConditionRequestDto request) {
         if (request.getDeliveryManagerType() != null) {
             DeliveryManagerType deliveryManagerType = DeliveryManagerType.fromValue(request.getDeliveryManagerType())
                     .orElseThrow(DeliveryManagerException.InvalidDeliveryManagerTypeException::new);
-            Page<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(pageable, request.getDeliveryManagerId(), deliveryManagerType);
+            CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(), deliveryManagerType, request.getLimit());
             return responseDtos;
         }
-        Page<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(pageable, request.getDeliveryManagerId(), null);
+        CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(), null, request.getLimit());
         return responseDtos;
     }
+
+//    public Long deleteDeliveryManager(Long deliveryManagerId) {
+//
+//        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+//                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+//
+//        deliveryManager.deleteDeliveryManager(UserContext.getUserContext().getUserId());
+//        return deliveryManagerId;
+//    }
 
 
 }

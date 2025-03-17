@@ -4,6 +4,8 @@ import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerReque
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
+import com.toanyone.delivery.common.utils.MultiResponse.CursorInfo;
+import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
@@ -15,10 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -96,8 +94,6 @@ class DeliveryServiceTest {
 
         // when
         when(deliveryManagerRepository.findById(deliveryManagerId)).thenReturn(Optional.of(deliveryManager));
-//        doReturn(Optional.of(deliveryManager))
-//                .when(deliveryManagerRepository.findById(deliveryManagerId));
 
         // then
         GetDeliveryManagerResponseDto response = deliveryService.getDeliveryManager(deliveryManagerId);
@@ -131,7 +127,9 @@ class DeliveryServiceTest {
         // given
         GetDeliveryManagerSearchConditionRequestDto request = GetDeliveryManagerSearchConditionRequestDto.builder()
                 .deliveryManagerType("허브 배송 담당자")
+                .sortBy("오름차순")
                 .deliveryManagerId(1L)
+                .limit(10)
                 .build();
 
         DeliveryManager deliveryManager1 = DeliveryManager.createDeliveryManager(2L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 2L);
@@ -140,27 +138,27 @@ class DeliveryServiceTest {
         ReflectionTestUtils.setField(deliveryManager1, "id", 2L);
         ReflectionTestUtils.setField(deliveryManager2, "id", 3L);
 
-        Pageable pageable = PageRequest.of(0, 10);
 
         List<GetDeliveryManagerResponseDto> responseDtos = List.of(GetDeliveryManagerResponseDto.from(deliveryManager1), GetDeliveryManagerResponseDto.from(deliveryManager2));
-        Page<GetDeliveryManagerResponseDto> responsePage = new PageImpl<>(responseDtos, pageable, responseDtos.size());
-
+        CursorPage<GetDeliveryManagerResponseDto> cursorPage = new CursorPage<>(responseDtos,
+                new CursorInfo(responseDtos.get(responseDtos.size() - 1).getDeliveryManagerId()),
+                true);
 
         // when
         when(customDeliveryMangerRepository
-                .getDeliveryManagers(pageable, request.getDeliveryManagerId(),
-                        DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get()))
-                .thenReturn(responsePage);
+                .getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(),
+                        DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get(), request.getLimit()))
+                .thenReturn(cursorPage);
 
         // then
-        Page<GetDeliveryManagerResponseDto> deliveryManagers =
-                deliveryService.getDeliveryManagers(pageable.getPageNumber(), pageable.getPageSize(), request);
+
+        CursorPage<GetDeliveryManagerResponseDto> deliveryManagers = deliveryService.getDeliveryManagers(request);
 
         assertNotNull(deliveryManagers);
-        assertEquals(2, responsePage.getTotalElements());
-        assertThat(responsePage.stream().map(GetDeliveryManagerResponseDto::getDeliveryManagerId)
+        assertEquals(2, deliveryManagers.getContent().size());
+        assertThat(deliveryManagers.getContent().stream().map(GetDeliveryManagerResponseDto::getDeliveryManagerId)
                 .anyMatch(id -> id.equals(2L))).isTrue();
-        assertThat(responsePage.stream().map(GetDeliveryManagerResponseDto::getDeliveryManagerId)
+        assertThat(deliveryManagers.getContent().stream().map(GetDeliveryManagerResponseDto::getDeliveryManagerId)
                 .anyMatch(id -> id.equals(3L))).isTrue();
 
     }
@@ -173,12 +171,12 @@ class DeliveryServiceTest {
         GetDeliveryManagerSearchConditionRequestDto request = GetDeliveryManagerSearchConditionRequestDto.builder()
                 .deliveryManagerType("가짜 배송 담당자")
                 .deliveryManagerId(1L)
+                .sortBy("내림차순")
+                .limit(10)
                 .build();
-
-        Pageable pageable = PageRequest.of(0, 10);
-
+        
         // when - then
-        Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManagers(pageable.getPageNumber(), pageable.getPageSize(), request))
+        Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManagers(request))
                 .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);
 
     }

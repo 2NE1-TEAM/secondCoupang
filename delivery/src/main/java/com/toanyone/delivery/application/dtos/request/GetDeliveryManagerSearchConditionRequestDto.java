@@ -15,4 +15,7 @@ public class GetDeliveryManagerSearchConditionRequestDto {
     private Long deliveryManagerId;
     @JsonProperty("delivery_manager_type")
     private String deliveryManagerType;
+    @JsonProperty("sort_by")
+    private String sortBy;
+    private int limit;
 }

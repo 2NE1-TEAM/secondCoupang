@@ -9,7 +9,6 @@ import com.toanyone.delivery.common.utils.MultiResponse;
 import com.toanyone.delivery.common.utils.SingleResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,11 +33,16 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery-manager")
-    public ResponseEntity<?> getDeliveryManagers(@RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
-                                                 @RequestParam(value = "page", defaultValue = "0", required = false) int page,
-                                                 @RequestBody @Valid GetDeliveryManagerSearchConditionRequestDto request) {
-        Page<GetDeliveryManagerResponseDto> responseDtos = deliveryService.getDeliveryManagers(page, pageSize, request);
+    public ResponseEntity<?> getDeliveryManagers(@RequestBody @Valid GetDeliveryManagerSearchConditionRequestDto request) {
+        MultiResponse.CursorPage<GetDeliveryManagerResponseDto> responseDtos = deliveryService.getDeliveryManagers(request);
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
     }
+
+//    @DeleteMapping("/delivery-manager/{deliveryMangerId}")
+//    public ResponseEntity<?> deleteDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {
+//        Long userId = UserContext.getUserContext().getUserId();
+//        Long deletedManagerId = deliveryService.deleteDeliveryManager(userId);
+//        return ResponseEntity.ok(SingleResponse.success(deletedManagerId));
+//    }
 
 }
