@@ -56,7 +56,7 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-/// ✅ QueryDSL 빌드 경로 설정 추가 (QClass 파일을 build/generated에 생성)
+// QueryDSL 빌드 경로 설정 추가 (QClass 파일을 build/generated에 생성)
 def generated = layout.buildDirectory.dir("generated")
 
 sourceSets {
