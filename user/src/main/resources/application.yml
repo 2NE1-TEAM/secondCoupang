@@ -18,7 +18,7 @@ spring:
 
   data:
     redis:
-      host: redis_cache
+      host: localhost
       port: 6379
 
 server:
@@ -32,3 +32,4 @@ eureka:
 service:
   jwt:
     secret-key: ${JWT_KEY}
+    refresh: refresh_token
