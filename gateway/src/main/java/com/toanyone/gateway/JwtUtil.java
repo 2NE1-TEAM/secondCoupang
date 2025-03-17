@@ -36,7 +36,7 @@ public class JwtUtil {
             Jws<Claims> claimsJws = Jwts.parser()
                     .verifyWith(key)
                     .build().parseSignedClaims(token);
-//            log.info("#####payload :: " + claimsJws.getPayload().toString());
+            log.info("#####payload :: " + claimsJws.getPayload().toString());
 
             // issuer 검증로직
             if(!issuer.equals(claimsJws.getBody().getIssuer())){

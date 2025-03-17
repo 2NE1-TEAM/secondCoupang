@@ -44,12 +44,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String userId = String.valueOf(claims.get("userId", Long.class));
         String userRole = claims.get("userRole", String.class);
         String slackId = claims.get("slackId", String.class);
+        String nickName = claims.get("nickName", String.class);
+        String hubId = String.valueOf(claims.get("hubId", Long.class));
 
         return exchange.mutate()
                 .request(request -> request
                         .header("X-User-Id", userId)
                         .header("X-User-Roles", userRole)
-                        .header("X-Slack-Id", slackId))
+                        .header("X-Slack-Id", slackId)
+                        .header("X-Hub-Id", hubId)
+                        .header("X-Nick-Name", nickName))
                 .build();
     }
 

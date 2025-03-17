@@ -29,12 +29,16 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    public static User createUser(String nickName, String password, String slackId, UserRole role) {
+    @Column(nullable = false)
+    private Long hubId;
+
+    public static User createUser(String nickName, String password, String slackId, UserRole role, Long hubId) {
         User user = new User();
         user.nickName = nickName;
         user.password = password;
         user.slackId = slackId;
         user.role = role;
+        user.hubId = hubId;
         return user;
 
     }

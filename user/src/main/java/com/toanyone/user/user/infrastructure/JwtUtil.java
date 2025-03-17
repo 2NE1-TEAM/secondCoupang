@@ -22,12 +22,14 @@ public class JwtUtil {
 
 
 
-    public String generateToken(Long userId, UserRole userRole, String slackId) {
+    public String generateToken(Long userId, UserRole userRole, String slackId, Long hubId, String nickName) {
 
         return   TOKEN_PREFIX+ Jwts.builder()
                 .claim("userId", userId)
                 .claim("userRole", userRole)
                 .claim("slackId", slackId)
+                .claim("hubId", hubId)
+                .claim("nickName", nickName)
                 .issuer(issuer)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+EXPIRE_TIME))
