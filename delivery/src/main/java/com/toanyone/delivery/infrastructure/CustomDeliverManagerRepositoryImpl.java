@@ -61,8 +61,12 @@ public class CustomDeliverManagerRepositoryImpl implements CustomDeliveryMangerR
                 .map(GetDeliveryManagerResponseDto::from)
                 .toList();
 
+        long cursorId = responseDtos.stream()
+                .mapToLong(GetDeliveryManagerResponseDto::getDeliveryManagerId)
+                .max().getAsLong();
+
         return new CursorPage<>(responseDtos,
-                new CursorInfo(responseDtos.get(responseDtos.size() - 1).getDeliveryManagerId()),
+                new CursorInfo(cursorId),
                 hasNext);
     }
 }
