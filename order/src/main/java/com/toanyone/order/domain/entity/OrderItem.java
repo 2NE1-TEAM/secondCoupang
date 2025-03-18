@@ -66,12 +66,6 @@ public class OrderItem extends BaseEntity {
         this.status = OrderItemStatus.CANCELED;
     }
 
-    @Override
-    public void delete(Long userId) {
-        super.delete(userId);
-        this.status = OrderItemStatus.CANCELED;
-    }
-
     @Getter
     @AllArgsConstructor
     public enum OrderItemStatus {

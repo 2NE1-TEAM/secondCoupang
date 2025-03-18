@@ -6,6 +6,7 @@ import com.toanyone.order.common.MultiResponse;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
+import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final ItemService itemService;
     private final ItemRequestMapper itemRequestMapper;
 
@@ -54,7 +57,7 @@ public class OrderService {
                                 validRequest.getItemName(),
                                 validRequest.getQuantity(),
                                 validRequest.getPrice()))
-                                .forEach(order::addOrderItem);
+                .forEach(order::addOrderItem);
 
         order.calculateTotalPrice();
 
@@ -73,20 +76,24 @@ public class OrderService {
     @Transactional
     public OrderCancelResponseDto cancelOrder(Long orderId, OrderCancelRequestDto request) {
 
-        Order order = validateOrderExists(orderId);
+        Order order = validateOrderWithItemsExists(orderId);
 
         try {
-            order.cancel();
 
             //ItemClient에 재고 restore
             boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
-
             if (!restoreSuccess) {
                 throw new OrderException.RestoreInventoryFailedException();
             }
 
             //Todo: 결제 취소
             //Todo: 배송 취소 메시지
+
+            validateOrderItemsStatus(order.getItems());
+
+            orderItemRepository.bulkUpdateOrderItemsStatus(order.getId(), OrderItem.OrderItemStatus.CANCELED);
+
+            order.cancel();
 
             return OrderCancelResponseDto.fromOrder(order);
 
@@ -96,18 +103,29 @@ public class OrderService {
 
     }
 
-
     @Transactional
     public void deleteOrder(Long orderId, Long userId) {
-
         Order order = validateOrderExists(orderId);
+        orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now()); //상태 상관 없이 관리자가 삭제 강제
         order.delete(userId);
-
     }
 
     private Order validateOrderExists(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(OrderException.OrderNotFoundException::new);
     }
+
+    private Order validateOrderWithItemsExists(Long orderId) {
+        return orderRepository.findByIdWithItems(orderId).orElseThrow(OrderException.OrderNotFoundException::new);
+    }
+
+    private void validateOrderItemsStatus(List<OrderItem> items) {
+        items.forEach(orderItem -> {
+            if (orderItem.getStatus() != OrderItem.OrderItemStatus.PREPARING) {
+                throw new OrderException.OrderItemCancelFailedException();
+            }
+        });
+    }
+
 
     private void validateOrderAlreadyExists(Long orderId) {
         orderRepository.findById(orderId).ifPresent( order -> {
@@ -133,3 +151,4 @@ public class OrderService {
     }
 
 }
+

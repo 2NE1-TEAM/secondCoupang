@@ -51,9 +51,6 @@ public class OrderCreateRequestDto {
     public static class DeliveryRequestDto {
 
         @NotBlank
-        private String deliveryAddress;
-
-        @NotBlank
         private String recipient;
 
     }

@@ -13,5 +13,7 @@ public interface OrderRepository extends OrderQueryDslRepository {
 
     Optional<Order> findById(Long id);
 
+    Optional<Order> findByIdWithItems(Long id);
+
     CursorPage<Order> search(OrderSearchRequestDto requestDto, int size);
 }

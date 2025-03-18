@@ -21,6 +21,6 @@ public class ItemServiceImplTemp implements ItemService {
 
     @Override
     public boolean restoreInventory(ItemRestoreRequestDto request) {
-        return false;
+        return true;
     }
 }

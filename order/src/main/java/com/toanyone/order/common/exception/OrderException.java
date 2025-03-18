@@ -56,5 +56,11 @@ public class OrderException extends CustomException {
 
     }
 
+    public static class AuthenticationFailedException extends OrderException {
+        public AuthenticationFailedException() { super("ORDER_ERROR_10", "인증 정보가 없습니다.", HttpStatus.UNAUTHORIZED); }
+
+    }
+
 
 }
+

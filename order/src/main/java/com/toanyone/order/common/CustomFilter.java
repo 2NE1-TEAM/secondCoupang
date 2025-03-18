@@ -1,5 +1,7 @@
 package com.toanyone.order.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toanyone.order.common.exception.OrderException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,21 +26,40 @@ public class CustomFilter extends OncePerRequestFilter {
         String userRoleHeader = servletRequest.getHeader("User-Role");
         String slackIdHeader = servletRequest.getHeader("Slack-Id");
 
-        UserContext context = UserContext.builder()
-                .userId(Long.parseLong(userIdHeader))
-                .role(userRoleHeader)
-                .slackId(Long.parseLong(slackIdHeader))
-                .build();
-
-        UserContext.setUserContext(context);
-
         try {
-            filterChain.doFilter(servletRequest, servletResponse);
-        } finally {
 
+            if (userIdHeader == null || userRoleHeader == null || slackIdHeader == null ||
+                    userIdHeader.isEmpty() || userRoleHeader.isEmpty() || slackIdHeader.isEmpty()) {
+                throw new OrderException.AuthenticationFailedException();
+            }
+
+            UserContext context = UserContext.builder()
+                    .userId(Long.parseLong(userIdHeader))
+                    .role(userRoleHeader)
+                    .slackId(Long.parseLong(slackIdHeader))
+                    .build();
+
+            UserContext.setUserContext(context);
+
+
+            filterChain.doFilter(servletRequest, servletResponse);
+        } catch (OrderException.AuthenticationFailedException e) {
+            handleException(servletResponse, e);
+        } finally {
             log.info("clear ThreadLocal");
             UserContext.clear();
         }
 
     }
+
+    private void handleException(HttpServletResponse response, OrderException.AuthenticationFailedException e) throws IOException {
+        log.error("Authentication Error: {}", e.getMessage());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        SingleResponse errorResponse = SingleResponse.error(e.getMessage(), e.getErrorCode());
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+    }
+
 }

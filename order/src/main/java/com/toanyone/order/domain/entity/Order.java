@@ -82,7 +82,6 @@ public class Order extends BaseEntity {
             throw new OrderException.OrderStatusIllegalException();
         }
         this.status = OrderStatus.CANCELED;
-        this.items.stream().forEach(OrderItem::cancel);
     }
 
     @Override
@@ -90,9 +89,6 @@ public class Order extends BaseEntity {
         if (this.deletedAt != null) throw new OrderException.OrderAlreadyDeletedException();
         super.delete(userId);
         this.status = OrderStatus.CANCELED;
-        for (OrderItem orderItem : this.items) {
-            orderItem.delete(userId);
-        }
     }
     
 
