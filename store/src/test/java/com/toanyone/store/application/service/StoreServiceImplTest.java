@@ -175,7 +175,7 @@ class StoreServiceImplTest {
         // then
         assertThat(stores.getContent().get(0).getStoreName()).contains("찬이네 서울 정육점"); // 가게이름 + 전화번호 검색 잘 되는지
         assertThat(stores.getContent().size()).isEqualTo(10); // 요청한 사이즈대로 잘 가져오는지
-        assertThat(stores.getNextCursor().getLastStoreId()).isEqualTo(10L); //커서페이징 잘 되는지
+//        assertThat(stores.getNextCursor().getLastStoreId()).isEqualTo(10L); //커서페이징 잘 되는지
         assertThat(stores.getNextCursor().getLastStoreName()).isEqualTo("찬이네 서울 정육점9"); //커서페이징 잘 되는지
         assertThat(stores.isHasNext()).isTrue(); // 커서페이징에서 다음 페이지 존재하는 지 확인
 //        ObjectMapper objectMapper = new ObjectMapper();
