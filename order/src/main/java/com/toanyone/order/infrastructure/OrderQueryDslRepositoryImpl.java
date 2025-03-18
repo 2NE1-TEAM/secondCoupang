@@ -6,6 +6,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.toanyone.order.common.CursorInfo;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.domain.entity.Order;
+import com.toanyone.order.presentation.dto.SortType;
+import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,7 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public CursorPage<Order> search(OrderSearchRequestDto requestDto, int size) {
+    public CursorPage<Order> search(OrderSearchRequestDto requestDto) {
 
         log.info("search");
         log.info("getCursorId : {}", requestDto.getCursorId());
@@ -35,14 +37,41 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
                 .where(
                         isUserEqualTo(requestDto.getUserId()),
                         containsKeyword(requestDto.getKeyword()),
-                        cursorId(requestDto.getCursorId())
-//                        cursorIdAndTimestamp(requestDto.getCursorId(), requestDto.getTimestamp(), requestDto.getSortType())
+                        cursorId(requestDto.getCursorId()),
+                        cursorIdAndTimestamp(requestDto.getCursorId(), requestDto.getTimestamp(), requestDto.getSortType())
                 )
                 .orderBy(createOrderSpecifier(requestDto.getSortType()))
-                .limit(size + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
+                .limit(requestDto.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
                 .fetch();
 
-        boolean hasNext = results.size() > size;
+        boolean hasNext = results.size() > requestDto.getSize();
+
+        Order lastOrder = hasNext ? results.remove(results.size() - 1) : null; //마지막 값은 nextCursorInfo
+
+        CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, requestDto.getSortType());
+
+        return new CursorPage<>(results, nextCursorInfo, hasNext);
+
+    }
+
+    @Override
+    public CursorPage<Order> findAll(Long userId, OrderFindAllRequestDto requestDto) {
+
+        log.info("search");
+
+        List<Order> results = queryFactory
+                .selectFrom(order)
+                .leftJoin(order.items, orderItem).fetchJoin()
+                .where(
+                        isUserEqualTo(userId),
+                        cursorId(requestDto.getCursorId()),
+                        cursorIdAndTimestamp(requestDto.getCursorId(), requestDto.getTimestamp(), requestDto.getSortType())
+                )
+                .orderBy(createOrderSpecifier(requestDto.getSortType()))
+                .limit(requestDto.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
+                .fetch();
+
+        boolean hasNext = results.size() > requestDto.getSize();
 
         Order lastOrder = hasNext ? results.remove(results.size() - 1) : null; //마지막 값은 nextCursorInfo
 
@@ -64,7 +93,7 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
         return StringUtils.hasText(keyword) ? orderItem.itemName.containsIgnoreCase(keyword) : null;
     }
 
-    private BooleanExpression cursorIdAndTimestamp(Long cursorId, LocalDateTime timestamp, OrderSearchRequestDto.SortType sortType) {
+    private BooleanExpression cursorIdAndTimestamp(Long cursorId, LocalDateTime timestamp, SortType sortType) {
         if (cursorId == null || timestamp == null) {
             return null;
         } else {
@@ -81,7 +110,7 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
         }
     }
 
-    private OrderSpecifier createOrderSpecifier(OrderSearchRequestDto.SortType sortType) {
+    private OrderSpecifier createOrderSpecifier(SortType sortType) {
         return switch (sortType) {
             case CREATED_AT_DESC -> order.createdAt.desc();
             case UPDATED_AT_DESC -> order.updatedAt.desc();
@@ -89,7 +118,7 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
         };
     }
 
-    private CursorInfo createNextCursorInfo(Order lastOrder, OrderSearchRequestDto.SortType sortType) {
+    private CursorInfo createNextCursorInfo(Order lastOrder, SortType sortType) {
 
         if (lastOrder == null) {
             return null;

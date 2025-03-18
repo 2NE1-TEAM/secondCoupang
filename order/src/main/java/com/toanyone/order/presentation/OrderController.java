@@ -4,13 +4,12 @@ import com.toanyone.order.application.OrderService;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.common.MultiResponse;
 import com.toanyone.order.common.SingleResponse;
+import com.toanyone.order.common.UserContext;
 import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
+import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
-import com.toanyone.order.presentation.dto.response.OrderCancelResponseDto;
-import com.toanyone.order.presentation.dto.response.OrderCreateResponseDto;
-import com.toanyone.order.presentation.dto.response.OrderFindResponseDto;
-import com.toanyone.order.presentation.dto.response.OrderSearchResponseDto;
+import com.toanyone.order.presentation.dto.response.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,16 +53,27 @@ public class OrderController {
         return ResponseEntity.ok().body(SingleResponse.success(orderService.findOrder(orderId)));
     }
 
+    @GetMapping
+    public ResponseEntity<MultiResponse<OrderFindAllResponseDto>> findOrders(
+            @ModelAttribute OrderFindAllRequestDto request
+    ) {
+        log.info("findOrders");
+        UserContext userContext = UserContext.getUserContext();
+
+        CursorPage<OrderFindAllResponseDto> response = orderService.findOrders(userContext.getUserId(), request);
+
+        return ResponseEntity.ok().body(MultiResponse.success(response));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<MultiResponse<OrderSearchResponseDto>> searchOrders(
-            @ModelAttribute OrderSearchRequestDto request,
-            @RequestParam(defaultValue = "10") int size) {
+            @ModelAttribute OrderSearchRequestDto request) {
 
         log.info("searchOrders: keyword={}, userId={}, hubId={}, cursorId={}, timestamp={}, sortType={}, size={}",
                 request.getKeyword(), request.getUserId(), request.getHubId(), request.getCursorId(),
-                request.getTimestamp(), request.getSortType(), size);
+                request.getTimestamp(), request.getSortType(), request.getSize());
 
-        CursorPage<OrderSearchResponseDto> response = orderService.searchOrders(request, size);
+        CursorPage<OrderSearchResponseDto> response = orderService.searchOrders(request);
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
     }

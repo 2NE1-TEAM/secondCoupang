@@ -10,11 +10,9 @@ import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
+import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
-import com.toanyone.order.presentation.dto.response.OrderCancelResponseDto;
-import com.toanyone.order.presentation.dto.response.OrderCreateResponseDto;
-import com.toanyone.order.presentation.dto.response.OrderFindResponseDto;
-import com.toanyone.order.presentation.dto.response.OrderSearchResponseDto;
+import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -139,11 +137,21 @@ public class OrderService {
         return OrderFindResponseDto.fromOrder(order);
     }
 
+
     @Transactional(readOnly = true)
-    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchRequestDto request, int size) {
+    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllRequestDto request) {
+        CursorPage<Order> orders = orderRepository.findAll(userId, request);
+
+        List<OrderFindAllResponseDto> responseDtos = orders.getContent().stream().map(OrderFindAllResponseDto::fromOrder).collect(Collectors.toList());
+
+        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchRequestDto request) {
 
         log.info("searchOrders");
-        CursorPage<Order> orders = orderRepository.search(request, size);
+        CursorPage<Order> orders = orderRepository.search(request);
 
         List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
 

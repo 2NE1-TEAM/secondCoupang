@@ -3,9 +3,7 @@ package com.toanyone.order.presentation.dto.response;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,8 +24,11 @@ public class OrderFindResponseDto {
     @NotNull
     private Long receiveStoreId;
 
+//    @NotNull
+//    private List<Long> orderItemIds;
+
     @NotNull
-    private List<Long> orderItemIds;
+    private List<OrderItemResponseDto> items;
 
     @NotNull
     private int totalPrice;
@@ -38,10 +39,32 @@ public class OrderFindResponseDto {
         responseDto.userId = order.getUserId();
         responseDto.supplyStoreId = order.getSupplyStoreId();
         responseDto.receiveStoreId = order.getReceiveStoreId();
-        responseDto.orderItemIds = order.getItems().stream()
-                .map(OrderItem::getId).collect(Collectors.toList());
+        responseDto.items = order.getItems().stream()
+                .map(item -> OrderFindResponseDto.OrderItemResponseDto.builder()
+                        .itemId(item.getId())
+                        .itemId(item.getItemId())
+                        .itemName(item.getItemName())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .build())
+                .collect(Collectors.toList());
         responseDto.totalPrice = order.getTotalPrice();
         return responseDto;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class OrderItemResponseDto {
+        private Long itemId;
+
+        private String itemName;
+
+        private int quantity;
+
+        private int price;
+
     }
 
 }
