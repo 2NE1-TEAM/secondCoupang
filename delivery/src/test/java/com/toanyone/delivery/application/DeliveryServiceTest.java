@@ -39,20 +39,20 @@ class DeliveryServiceTest {
     private CustomDeliveryMangerRepository customDeliveryMangerRepository;
 
     @Test
-    @DisplayName("배송담닫자 생성 테스트")
+    @DisplayName("배송담당자 생성 테스트")
     public void createDeliveryManagerTest() {
 
         // given
         CreateDeliveryManagerRequestDto request = CreateDeliveryManagerRequestDto.builder()
                 .deliveryManagerType("허브 배송 담당자")
-                .deliveryOrder(1L)
                 .hubId(1L)
                 .userId(1L)
+                .name("익명")
                 .build();
 
         DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(request.getUserId(),
                 DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get(),
-                request.getHubId(), request.getDeliveryOrder());
+                request.getHubId(), 1L, request.getName());
         ReflectionTestUtils.setField(deliveryManager, "id", 1L);
         when(deliveryManagerRepository.save(any(DeliveryManager.class))).thenReturn(deliveryManager);
 
@@ -72,7 +72,6 @@ class DeliveryServiceTest {
         // given
         CreateDeliveryManagerRequestDto request = CreateDeliveryManagerRequestDto.builder()
                 .deliveryManagerType("가짜 배송 담당자")
-                .deliveryOrder(1L)
                 .hubId(1L)
                 .userId(1L)
                 .build();
@@ -89,7 +88,7 @@ class DeliveryServiceTest {
 
         // given
         Long deliveryManagerId = 1L;
-        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(deliveryManagerId, DeliveryManagerType.HUB_DELIVERY_MANAGER, 1L, 1L);
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(deliveryManagerId, DeliveryManagerType.HUB_DELIVERY_MANAGER, 1L, 1L, "사용자1");
         ReflectionTestUtils.setField(deliveryManager, "id", 1L);
 
         // when
@@ -107,7 +106,7 @@ class DeliveryServiceTest {
 
         // given
         Long notExistsDeliveryManagerId = 2L;
-        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.HUB_DELIVERY_MANAGER, 1L, 1L);
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.HUB_DELIVERY_MANAGER, 1L, 1L, "사용자1");
         ReflectionTestUtils.setField(deliveryManager, "id", 1L);
 
         // when
@@ -129,11 +128,13 @@ class DeliveryServiceTest {
                 .deliveryManagerType("허브 배송 담당자")
                 .sortBy("오름차순")
                 .deliveryManagerId(1L)
+                .userId(1L)
+                .name("익명")
                 .limit(10)
                 .build();
 
-        DeliveryManager deliveryManager1 = DeliveryManager.createDeliveryManager(2L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 2L);
-        DeliveryManager deliveryManager2 = DeliveryManager.createDeliveryManager(3L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 3L);
+        DeliveryManager deliveryManager1 = DeliveryManager.createDeliveryManager(2L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 2L, "사원1");
+        DeliveryManager deliveryManager2 = DeliveryManager.createDeliveryManager(3L, DeliveryManagerType.fromValue("허브 배송 담당자").get(), 1L, 3L, "사원2");
 
         ReflectionTestUtils.setField(deliveryManager1, "id", 2L);
         ReflectionTestUtils.setField(deliveryManager2, "id", 3L);
@@ -147,7 +148,7 @@ class DeliveryServiceTest {
         // when
         when(customDeliveryMangerRepository
                 .getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(),
-                        DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get(), request.getLimit()))
+                        DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get(), request.getUserId(), request.getName(), request.getLimit()))
                 .thenReturn(cursorPage);
 
         // then
@@ -174,7 +175,7 @@ class DeliveryServiceTest {
                 .sortBy("내림차순")
                 .limit(10)
                 .build();
-        
+
         // when - then
         Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManagers(request))
                 .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);

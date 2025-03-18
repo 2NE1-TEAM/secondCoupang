@@ -33,11 +33,11 @@ public class DeliveryController {
     }
 
     @GetMapping("/delivery-manager")
-    public ResponseEntity<?> getDeliveryManagers(@ModelAttribute("request") GetDeliveryManagerSearchConditionRequestDto request) {
+    public ResponseEntity<?> getDeliveryManagers(@ModelAttribute GetDeliveryManagerSearchConditionRequestDto request) {
         MultiResponse.CursorPage<GetDeliveryManagerResponseDto> responseDtos = deliveryService.getDeliveryManagers(request);
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
     }
-    
+
 
 //    @DeleteMapping("/delivery-manager/{deliveryMangerId}")
 //    public ResponseEntity<?> deleteDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {

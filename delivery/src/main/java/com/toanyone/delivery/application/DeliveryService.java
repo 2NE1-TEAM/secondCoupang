@@ -29,8 +29,9 @@ public class DeliveryService {
         DeliveryManagerType deliveryManagerType = DeliveryManagerType
                 .fromValue(request.getDeliveryManagerType())
                 .orElseThrow(DeliveryManagerException.InvalidDeliveryManagerTypeException::new);
+        Long nextDeliveryOrder = customDeliveryMangerRepository.nextDeliveryOrder(request.getUserId());
         DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(request.getUserId(), deliveryManagerType,
-                request.getHubId(), request.getDeliveryOrder());
+                request.getHubId(), nextDeliveryOrder, request.getName());
         return deliveryManagerRepository.save(deliveryManager).getId();
     }
 
@@ -46,10 +47,11 @@ public class DeliveryService {
         if (request.getDeliveryManagerType() != null) {
             DeliveryManagerType deliveryManagerType = DeliveryManagerType.fromValue(request.getDeliveryManagerType())
                     .orElseThrow(DeliveryManagerException.InvalidDeliveryManagerTypeException::new);
-            CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(), deliveryManagerType, request.getLimit());
+            CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(),
+                    deliveryManagerType, request.getUserId(), request.getName(), request.getLimit());
             return responseDtos;
         }
-        CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(), null, request.getLimit());
+        CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(), null, request.getUserId(), request.getName(), request.getLimit());
         return responseDtos;
     }
 
