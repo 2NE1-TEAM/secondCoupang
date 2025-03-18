@@ -1,4 +1,4 @@
-package com.toanyone.delivery.common;
+package com.toanyone.delivery.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

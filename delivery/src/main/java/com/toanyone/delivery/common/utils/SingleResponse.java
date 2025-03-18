@@ -1,4 +1,4 @@
-package com.toanyone.delivery.common;
+package com.toanyone.delivery.common.utils;
 
 import lombok.Getter;
 
