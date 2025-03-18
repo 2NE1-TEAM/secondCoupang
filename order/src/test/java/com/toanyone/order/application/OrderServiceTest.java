@@ -3,6 +3,8 @@ package com.toanyone.order.application;
 import com.toanyone.order.application.dto.ItemRestoreRequestDto;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
 import com.toanyone.order.application.dto.ItemValidationResponseDto;
+import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
+import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
@@ -42,11 +44,10 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private OrderCreateRequestDto orderRequestDto;
+    private OrderCreateServiceDto orderRequestDto;
     private ItemValidationRequestDto itemValidationRequestDto;
-    private ItemValidationResponseDto itemResponseDto;
     private ItemRestoreRequestDto itemRestoreRequestDto;
-    private OrderCancelRequestDto cancelRequestDto;
+    private OrderCancelServiceDto cancelRequestDto;
     private Order order;
 
     @BeforeEach
@@ -55,16 +56,39 @@ class OrderServiceTest {
         order = Order.create(1L, 1L, 2L);
 
         //주문 생성 요청
-        OrderCreateRequestDto.ItemRequestDto itemRequestDto1 = new OrderCreateRequestDto.ItemRequestDto(1L, "itemName", 10000, 10);
-        OrderCreateRequestDto.ItemRequestDto itemRequestDto2 = new OrderCreateRequestDto.ItemRequestDto(2L, "itemName", 20000, 20);
-        OrderCreateRequestDto.ItemRequestDto itemRequestDto3 = new OrderCreateRequestDto.ItemRequestDto(3L, "itemName", 30000, 30);
-        List<OrderCreateRequestDto.ItemRequestDto> items = new ArrayList<>();
-        items.add(itemRequestDto1);
-        items.add(itemRequestDto2);
-        items.add(itemRequestDto3);
-        OrderCreateRequestDto.DeliveryRequestDto deliveryRequestDto = new OrderCreateRequestDto.DeliveryRequestDto("deliveryAddress", "recipient");
+        OrderCreateServiceDto.ItemRequestDto itemRequestDto1 = OrderCreateServiceDto.ItemRequestDto.builder()
+                .itemId(1L)
+                .itemName("item1")
+                .price(1000)
+                .quantity(10)
+                .build();
+        OrderCreateServiceDto.ItemRequestDto itemRequestDto2 = OrderCreateServiceDto.ItemRequestDto.builder()
+                .itemId(2L)
+                .itemName("item2")
+                .price(2000)
+                .quantity(20)
+                .build();
+        OrderCreateServiceDto.ItemRequestDto itemRequestDto3 = OrderCreateServiceDto.ItemRequestDto.builder()
+                .itemId(3L)
+                .itemName("item3")
+                .price(3000)
+                .quantity(30)
+                .build();
+        OrderCreateServiceDto.DeliveryRequestDto deliveryRequestDto = OrderCreateServiceDto.DeliveryRequestDto.builder()
+                .recipient("recipient")
+                .build();
+        List<OrderCreateServiceDto.ItemRequestDto> itemRequests = new ArrayList<>();
+        itemRequests.add(itemRequestDto1);
+        itemRequests.add(itemRequestDto2);
+        itemRequests.add(itemRequestDto3);
 
-        orderRequestDto = new OrderCreateRequestDto(1L, 2L, 3L, items, deliveryRequestDto);
+        orderRequestDto = OrderCreateServiceDto.builder()
+                .userId(1L)
+                .supplyStoreId(2L)
+                .receiveStoreId(3L)
+                .deliveryInfo(deliveryRequestDto)
+                .items(itemRequests)
+                .build();
 
         //상품 검증 요청
         ItemValidationRequestDto.ItemRequestDto itemValidationRequestDto1 = new ItemValidationRequestDto.ItemRequestDto(1L, 10);
@@ -90,7 +114,7 @@ class OrderServiceTest {
         itemRestoreRequestDto = new ItemRestoreRequestDto(restoreItems);
 
         //주문 취소 요청
-        cancelRequestDto = new OrderCancelRequestDto(2L);
+        cancelRequestDto = OrderCancelServiceDto.builder().orderId(1L).deliveryId(2L).build();
 
     }
 
@@ -102,7 +126,7 @@ class OrderServiceTest {
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(itemRequestMapper.toItemValidationRequestDto(orderRequestDto)).thenReturn(itemValidationRequestDto);
         when(itemService.validateItems(any(ItemValidationRequestDto.class))).thenReturn(true);
-        int totalPrice = orderRequestDto.getItems().stream().mapToInt( item -> item.getQuantity() * item.getPrice()).sum();
+        int totalPrice = orderRequestDto.getItems().stream().mapToInt(item -> item.getQuantity() * item.getPrice()).sum();
 
 
         //when
@@ -120,13 +144,13 @@ class OrderServiceTest {
     void cancelOrderFail() {
 
         //given
-        when(orderRepository.findById(1L)).thenReturn(Optional.ofNullable(order));
+        when(orderRepository.findByIdWithItems(1L)).thenReturn(Optional.ofNullable(order));
         when(itemRequestMapper.toItemRestoreDto(order)).thenReturn(itemRestoreRequestDto);
         when(itemService.restoreInventory(any(ItemRestoreRequestDto.class))).thenReturn(false);
 
         //when&then
         Assertions.assertThrows(OrderException.OrderCancelFailedException.class, () -> {
-           orderService.cancelOrder(1L,cancelRequestDto);
+            orderService.cancelOrder(cancelRequestDto);
         });
 
     }

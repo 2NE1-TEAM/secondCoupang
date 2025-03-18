@@ -1,8 +1,11 @@
 package com.toanyone.order.application;
 
+import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
+import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
+import com.toanyone.order.application.dto.request.OrderFindAllCondition;
+import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.common.CursorPage;
-import com.toanyone.order.common.MultiResponse;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
@@ -10,8 +13,6 @@ import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
-import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
-import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
 import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ public class OrderService {
     private final ItemRequestMapper itemRequestMapper;
 
     @Transactional
-    public OrderCreateResponseDto createOrder(OrderCreateRequestDto request) {
+    public OrderCreateResponseDto createOrder(OrderCreateServiceDto request) {
 
         //Todo: Store 검증 관련 작업 추가
 
@@ -72,9 +73,9 @@ public class OrderService {
 
 
     @Transactional
-    public OrderCancelResponseDto cancelOrder(Long orderId, OrderCancelRequestDto request) {
+    public OrderCancelResponseDto cancelOrder(OrderCancelServiceDto request) {
 
-        Order order = validateOrderWithItemsExists(orderId);
+        Order order = validateOrderWithItemsExists(request.getOrderId());
 
         try {
 
@@ -139,7 +140,7 @@ public class OrderService {
 
 
     @Transactional(readOnly = true)
-    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllRequestDto request) {
+    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllCondition request) {
         CursorPage<Order> orders = orderRepository.findAll(userId, request);
 
         List<OrderFindAllResponseDto> responseDtos = orders.getContent().stream().map(OrderFindAllResponseDto::fromOrder).collect(Collectors.toList());
@@ -148,13 +149,10 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchRequestDto request) {
-
+    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchCondition request) {
         log.info("searchOrders");
         CursorPage<Order> orders = orderRepository.search(request);
-
         List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
-
         return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
     }
 

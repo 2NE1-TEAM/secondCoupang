@@ -1,6 +1,10 @@
 package com.toanyone.order.presentation;
 
 import com.toanyone.order.application.OrderService;
+import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
+import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
+import com.toanyone.order.application.dto.request.OrderFindAllCondition;
+import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.common.MultiResponse;
 import com.toanyone.order.common.SingleResponse;
@@ -10,6 +14,7 @@ import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
 import com.toanyone.order.presentation.dto.response.*;
+import com.toanyone.order.presentation.mapper.OrderMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,17 +29,20 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderMapper orderMapper;
 
     @PostMapping
     public ResponseEntity<SingleResponse<OrderCreateResponseDto>> createOrder(@RequestBody @Valid OrderCreateRequestDto request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(request)));
+        OrderCreateServiceDto serviceDto = orderMapper.toOrderCreateServiceDto(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(serviceDto)));
     }
 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
             @PathVariable Long orderId,
             @RequestBody @Valid OrderCancelRequestDto request) {
-        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(orderId, request)));
+        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
+        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(serviceDto)));
     }
 
     //Todo: 임시로 header에서 userId 받음
@@ -59,21 +67,22 @@ public class OrderController {
     ) {
         log.info("findOrders");
         UserContext userContext = UserContext.getUserContext();
-
-        CursorPage<OrderFindAllResponseDto> response = orderService.findOrders(userContext.getUserId(), request);
+        OrderFindAllCondition condition = orderMapper.toOrderFindAllCondition(request);
+        CursorPage<OrderFindAllResponseDto> response = orderService.findOrders(userContext.getUserId(), condition);
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
     }
 
     @GetMapping("/search")
     public ResponseEntity<MultiResponse<OrderSearchResponseDto>> searchOrders(
-            @ModelAttribute OrderSearchRequestDto request) {
+            @ModelAttribute OrderSearchRequestDto request
+    ) {
 
         log.info("searchOrders: keyword={}, userId={}, hubId={}, cursorId={}, timestamp={}, sortType={}, size={}",
                 request.getKeyword(), request.getUserId(), request.getHubId(), request.getCursorId(),
                 request.getTimestamp(), request.getSortType(), request.getSize());
-
-        CursorPage<OrderSearchResponseDto> response = orderService.searchOrders(request);
+        OrderSearchCondition condition = orderMapper.toOrderSearchCondition(request);
+        CursorPage<OrderSearchResponseDto> response = orderService.searchOrders(condition);
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
     }

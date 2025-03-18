@@ -1,8 +1,6 @@
 package com.toanyone.order.presentation.dto.request;
 
-import com.toanyone.order.presentation.dto.SortType;
-import com.toanyone.order.presentation.dto.response.OrderFindAllResponseDto;
-import lombok.AllArgsConstructor;
+import com.toanyone.order.common.SortType;
 import lombok.Builder;
 import lombok.Getter;
 

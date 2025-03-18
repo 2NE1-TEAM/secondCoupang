@@ -3,12 +3,12 @@ package com.toanyone.order.infrastructure;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.toanyone.order.application.dto.request.OrderFindAllCondition;
+import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.common.CursorInfo;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.presentation.dto.SortType;
-import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
-import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
+import com.toanyone.order.common.SortType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
@@ -26,36 +26,36 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public CursorPage<Order> search(OrderSearchRequestDto requestDto) {
+    public CursorPage<Order> search(OrderSearchCondition request) {
 
         log.info("search");
-        log.info("getCursorId : {}", requestDto.getCursorId());
+        log.info("getCursorId : {}", request.getCursorId());
 
         List<Order> results = queryFactory
                 .selectFrom(order)
                 .leftJoin(order.items, orderItem).fetchJoin()
                 .where(
-                        isUserEqualTo(requestDto.getUserId()),
-                        containsKeyword(requestDto.getKeyword()),
-                        cursorId(requestDto.getCursorId()),
-                        cursorIdAndTimestamp(requestDto.getCursorId(), requestDto.getTimestamp(), requestDto.getSortType())
+                        isUserEqualTo(request.getUserId()),
+                        containsKeyword(request.getKeyword()),
+                        cursorId(request.getCursorId()),
+                        cursorIdAndTimestamp(request.getCursorId(), request.getTimestamp(), request.getSortType())
                 )
-                .orderBy(createOrderSpecifier(requestDto.getSortType()))
-                .limit(requestDto.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
+                .orderBy(createOrderSpecifier(request.getSortType()))
+                .limit(request.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
                 .fetch();
 
-        boolean hasNext = results.size() > requestDto.getSize();
+        boolean hasNext = results.size() > request.getSize();
 
         Order lastOrder = hasNext ? results.remove(results.size() - 1) : null; //마지막 값은 nextCursorInfo
 
-        CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, requestDto.getSortType());
+        CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, request.getSortType());
 
         return new CursorPage<>(results, nextCursorInfo, hasNext);
 
     }
 
     @Override
-    public CursorPage<Order> findAll(Long userId, OrderFindAllRequestDto requestDto) {
+    public CursorPage<Order> findAll(Long userId, OrderFindAllCondition request) {
 
         log.info("search");
 
@@ -64,18 +64,18 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
                 .leftJoin(order.items, orderItem).fetchJoin()
                 .where(
                         isUserEqualTo(userId),
-                        cursorId(requestDto.getCursorId()),
-                        cursorIdAndTimestamp(requestDto.getCursorId(), requestDto.getTimestamp(), requestDto.getSortType())
+                        cursorId(request.getCursorId()),
+                        cursorIdAndTimestamp(request.getCursorId(), request.getTimestamp(), request.getSortType())
                 )
-                .orderBy(createOrderSpecifier(requestDto.getSortType()))
-                .limit(requestDto.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
+                .orderBy(createOrderSpecifier(request.getSortType()))
+                .limit(request.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
                 .fetch();
 
-        boolean hasNext = results.size() > requestDto.getSize();
+        boolean hasNext = results.size() > request.getSize();
 
         Order lastOrder = hasNext ? results.remove(results.size() - 1) : null; //마지막 값은 nextCursorInfo
 
-        CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, requestDto.getSortType());
+        CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, request.getSortType());
 
         return new CursorPage<>(results, nextCursorInfo, hasNext);
 

@@ -1,5 +1,6 @@
 package com.toanyone.order.domain.repository;
 
+import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.infrastructure.OrderQueryDslRepository;
@@ -15,5 +16,5 @@ public interface OrderRepository extends OrderQueryDslRepository {
 
     Optional<Order> findByIdWithItems(Long id);
 
-    CursorPage<Order> search(OrderSearchRequestDto requestDto);
+    CursorPage<Order> search(OrderSearchCondition requestDto);
 }
