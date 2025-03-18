@@ -61,6 +61,11 @@ public class OrderException extends CustomException {
 
     }
 
+    public static class InvalidStoreException extends OrderException {
+        public InvalidStoreException() { super("ORDER_ERROR_11", "주문이 불가한 업체입니다.", HttpStatus.BAD_REQUEST); }
+
+    }
+
 
 }
 

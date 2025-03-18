@@ -31,12 +31,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ItemService itemService;
+    private final StoreService storeService;
     private final ItemRequestMapper itemRequestMapper;
 
     @Transactional
     public OrderCreateResponseDto createOrder(OrderCreateServiceDto request) {
 
-        //Todo: Store 검증 관련 작업 추가
+        boolean isValidSupplyStore = storeService.validateStore(request.getSupplyStoreId());
+        boolean isValidReceiveStore = storeService.validateStore(request.getReceiveStoreId());
+
+        if (!isValidSupplyStore || !isValidReceiveStore) {
+            throw new OrderException.InvalidStoreException();
+        }
 
         //Todo: 주문 처리가 완료되지 않은 상태에서 같은 입력의 주문 예외 처리
 
