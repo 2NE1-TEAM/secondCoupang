@@ -2,9 +2,10 @@ package com.toanyone.user.user.presentation;
 
 import com.toanyone.user.user.application.service.UserService;
 import com.toanyone.user.user.common.SingleResponse;
-import com.toanyone.user.user.domain.dto.RequestCreateUserDto;
-import com.toanyone.user.user.domain.dto.RequestLoginUserDto;
-import com.toanyone.user.user.domain.dto.ResponseUserDto;
+import com.toanyone.user.user.presentation.dto.RequestCreateUserDto;
+import com.toanyone.user.user.presentation.dto.RequestDeleteUserDto;
+import com.toanyone.user.user.presentation.dto.RequestLoginUserDto;
+import com.toanyone.user.user.presentation.dto.ResponseUserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -45,6 +46,15 @@ public class UserController {
 
 
         return ResponseEntity.ok().body(SingleResponse.success(null));
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<SingleResponse> deleteUser(@RequestParam Long userId,
+                                                     HttpServletRequest request) {
+
+        this.userService.deleteUser(userId, request);
+
+        return ResponseEntity.ok().body(SingleResponse.success(userId +" 삭제 완료 "));
     }
 
     @GetMapping("/test")

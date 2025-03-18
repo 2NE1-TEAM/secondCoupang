@@ -34,4 +34,9 @@ public abstract class BaseEntity {
     protected LocalDateTime deletedAt;
 
     protected Long deletedBy;
+
+    public void updateDeleted(Long userId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
+    }
 }

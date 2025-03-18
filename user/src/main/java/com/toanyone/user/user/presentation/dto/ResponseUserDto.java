@@ -1,4 +1,4 @@
-package com.toanyone.user.user.domain.dto;
+package com.toanyone.user.user.presentation.dto;
 
 import com.toanyone.user.user.domain.UserRole;
 import lombok.Data;

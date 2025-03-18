@@ -2,24 +2,29 @@ package com.toanyone.user.user.application.service;
 
 
 import com.toanyone.user.user.common.exception.UserException;
-import com.toanyone.user.user.domain.dto.RequestCreateUserDto;
-import com.toanyone.user.user.domain.dto.RequestLoginUserDto;
-import com.toanyone.user.user.domain.dto.ResponseUserDto;
+import com.toanyone.user.user.domain.UserRole;
+import com.toanyone.user.user.presentation.dto.RequestCreateUserDto;
+import com.toanyone.user.user.presentation.dto.RequestDeleteUserDto;
+import com.toanyone.user.user.presentation.dto.RequestLoginUserDto;
+import com.toanyone.user.user.presentation.dto.ResponseUserDto;
 import com.toanyone.user.user.domain.entity.User;
 import com.toanyone.user.user.domain.UserRepository;
 import com.toanyone.user.user.infrastructure.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -34,7 +39,7 @@ public class UserService {
     public ResponseUserDto signUp(RequestCreateUserDto requestCreateUserDto) {
 
          userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
-         { throw new UserException.NoExistId(); });
+         { throw new UserException.AlreadyExistedSlackId(); });
 
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId());
         userRepository.save(user);
@@ -50,7 +55,7 @@ public class UserService {
     public void signIn(RequestLoginUserDto requestLoginUserDto, HttpServletResponse response) {
 
         User user = this.userRepository.findUserBySlackId(requestLoginUserDto.getSlackId()).orElseThrow(() ->
-                new UserException.NoExistId()
+                new UserException.NoExistSlackId()
         );
 
         if(!passwordEncoder.matches(requestLoginUserDto.getPassword(), user.getPassword())) {
@@ -65,4 +70,17 @@ public class UserService {
     }
 
 
+    public void deleteUser(Long userId, HttpServletRequest request) {
+
+        String roles = request.getHeader("X-User-Roles");
+        if(!UserRole.MASTER.toString().equals(roles)){
+            throw new UserException.NotAuthorize();
+        }
+
+        User user = this.userRepository.findUserByIdAndDeletedAtIsNull(userId).orElseThrow(()->new UserException.NoExistId());
+
+        Long masterId = Long.parseLong( request.getHeader("X-User-Id"));
+        user.updateDeleted(masterId);
+        userRepository.save(user);
+    }
 }
