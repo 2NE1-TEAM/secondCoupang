@@ -1,5 +1,6 @@
 package com.toanyone.order.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toanyone.order.common.BaseEntity;
 import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
@@ -71,8 +72,9 @@ public class OrderItem extends BaseEntity {
         this.status = OrderItemStatus.CANCELED;
     }
 
+    @Getter
     @AllArgsConstructor
-    private enum OrderItemStatus {
+    public enum OrderItemStatus {
         PREPARING("상품 준비 중"),
 
         CANCELED("상픔 취소");

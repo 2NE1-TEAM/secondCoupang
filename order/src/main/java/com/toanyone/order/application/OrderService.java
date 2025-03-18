@@ -1,26 +1,28 @@
 package com.toanyone.order.application;
 
-import com.toanyone.order.application.dto.ItemRestoreRequestDto;
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
+import com.toanyone.order.common.CursorPage;
+import com.toanyone.order.common.MultiResponse;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
+import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
 import com.toanyone.order.presentation.dto.response.OrderCancelResponseDto;
 import com.toanyone.order.presentation.dto.response.OrderCreateResponseDto;
+import com.toanyone.order.presentation.dto.response.OrderFindResponseDto;
+import com.toanyone.order.presentation.dto.response.OrderSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Slf4j(topic = "OrderService")
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -34,29 +36,33 @@ public class OrderService {
 
         //Todo: Store 검증 관련 작업 추가
 
-        Order order = Order.create(request.getUserId(), request.getSupplyStoreId(), request.getReceiveStoreId());
-
         //Todo: 주문 처리가 완료되지 않은 상태에서 같은 입력의 주문 예외 처리
 
         //Item 검증
         boolean isValid = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request));
 
-
         if (!isValid) {
             throw new OrderException.InsufficientStockException();
         }
 
+        Order order = Order.create(request.getUserId(), request.getSupplyStoreId(), request.getReceiveStoreId());
+
+        log.info("orderId : {}", order.getId());
+
         request.getItems().stream().map(validRequest ->
-                        OrderItem.create(validRequest.getItemId(), validRequest.getItemName(), validRequest.getQuantity(), validRequest.getPrice()))
-                .forEach(order::addOrderItem);
+                        OrderItem.create(validRequest.getItemId(),
+                                validRequest.getItemName(),
+                                validRequest.getQuantity(),
+                                validRequest.getPrice()))
+                                .forEach(order::addOrderItem);
 
         order.calculateTotalPrice();
 
-        //Todo: Payment 작업 추가
-
-        log.debug("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
-
         orderRepository.save(order);
+
+        log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
+
+        //Todo: Payment 작업 추가
 
         //Todo: Delivery 관련 작업 추가
 
@@ -109,5 +115,21 @@ public class OrderService {
         });
     }
 
+    @Transactional(readOnly = true)
+    public OrderFindResponseDto findOrder(Long orderId) {
+        Order order = validateOrderExists(orderId);
+        return OrderFindResponseDto.fromOrder(order);
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchRequestDto request, int size) {
+
+        log.info("searchOrders");
+        CursorPage<Order> orders = orderRepository.search(request, size);
+
+        List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
+
+        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.toanyone.order.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toanyone.order.common.BaseEntity;
 import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
@@ -57,6 +58,7 @@ public class Order extends BaseEntity {
         items.add(item);
     }
 
+
     public void calculateTotalPrice() {
         this.totalPrice = items.stream().mapToInt(OrderItem::getTotalPrice).sum();
     }
@@ -92,8 +94,7 @@ public class Order extends BaseEntity {
             orderItem.delete(userId);
         }
     }
-
-
+    
 
     @Getter
     @AllArgsConstructor
