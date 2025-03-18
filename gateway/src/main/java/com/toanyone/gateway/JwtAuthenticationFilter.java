@@ -58,6 +58,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private void logout(ServerWebExchange exchange) {
         String token = jwtUtil.extractToken(exchange);
+
+        if(token == null || !jwtUtil.validateToken(token)){
+            throw new RuntimeException("token이 존재하지 않습니다. ");
+        }
+
         Claims claims = jwtUtil.extractClaims(token);
         Long userId = claims.get("userId", Long.class);
         redisTemplate.opsForSet().add(blacklist + ":" +  userId, token);

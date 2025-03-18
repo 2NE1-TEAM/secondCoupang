@@ -1,6 +1,7 @@
 package com.toanyone.user.user.presentation;
 
 import com.toanyone.user.user.application.service.UserService;
+import com.toanyone.user.user.common.SingleResponse;
 import com.toanyone.user.user.domain.dto.RequestCreateUserDto;
 import com.toanyone.user.user.domain.dto.RequestLoginUserDto;
 import com.toanyone.user.user.domain.dto.ResponseUserDto;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,28 +23,28 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<ResponseUserDto> signUp(@Valid @RequestBody RequestCreateUserDto requestCreateUserDto) {
+    public ResponseEntity<SingleResponse<ResponseUserDto>> signUp(@Valid @RequestBody RequestCreateUserDto requestCreateUserDto) {
 
-        log.info("requestCreateUserDto:{}", requestCreateUserDto);
+//        log.info("requestCreateUserDto:{}", requestCreateUserDto);
         ResponseUserDto responseUserDto = this.userService.signUp(requestCreateUserDto);
 
-        return ResponseEntity.ok(responseUserDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(responseUserDto));
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<?> signIn(@Valid @RequestBody RequestLoginUserDto requestLoginUserDto,
+    public ResponseEntity<SingleResponse<String>> signIn(@Valid @RequestBody RequestLoginUserDto requestLoginUserDto,
                                     HttpServletResponse response) {
 
         this.userService.signIn(requestLoginUserDto, response);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(SingleResponse.success(requestLoginUserDto.getSlackId()));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
 
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(SingleResponse.success(null));
     }
 
     @GetMapping("/test")

@@ -1,6 +1,7 @@
 package com.toanyone.user.user.application.service;
 
 
+import com.toanyone.user.user.common.exception.UserException;
 import com.toanyone.user.user.domain.dto.RequestCreateUserDto;
 import com.toanyone.user.user.domain.dto.RequestLoginUserDto;
 import com.toanyone.user.user.domain.dto.ResponseUserDto;
@@ -33,7 +34,7 @@ public class UserService {
     public ResponseUserDto signUp(RequestCreateUserDto requestCreateUserDto) {
 
          userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
-         { throw new RuntimeException("존재하는 slack Id 입니다. "); });
+         { throw new UserException.NoExistId(); });
 
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId());
         userRepository.save(user);
@@ -49,11 +50,11 @@ public class UserService {
     public void signIn(RequestLoginUserDto requestLoginUserDto, HttpServletResponse response) {
 
         User user = this.userRepository.findUserBySlackId(requestLoginUserDto.getSlackId()).orElseThrow(() ->
-                new NoSuchElementException("존재하지 않는 아이디 입니다.")
+                new UserException.NoExistId()
         );
 
         if(!passwordEncoder.matches(requestLoginUserDto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다. ");
+            throw new UserException.NotCorrectPassword();
         }
 
         String token = jwtUtil.generateAccessToken(user.getId(), user.getRole(), user.getSlackId(), user.getHubId(), user.getNickName());

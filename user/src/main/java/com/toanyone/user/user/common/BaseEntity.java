@@ -1,4 +1,4 @@
-package com.toanyone.user.user.domain.entity;
+package com.toanyone.user.user.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
