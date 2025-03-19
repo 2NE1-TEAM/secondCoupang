@@ -6,10 +6,13 @@ import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerRespons
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorInfo;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
+import com.toanyone.delivery.common.utils.SingleResponse;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
 import com.toanyone.delivery.domain.repository.DeliveryManagerRepository;
+import com.toanyone.delivery.infrastructure.client.HubClient;
+import com.toanyone.delivery.infrastructure.client.dto.GetHubResponseDto;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -34,20 +38,51 @@ class DeliveryServiceTest {
     @InjectMocks
     private DeliveryService deliveryService;
     @Mock
+    private HubClient hubClient;
+    @Mock
     private DeliveryManagerRepository deliveryManagerRepository;
     @Mock
     private CustomDeliveryMangerRepository customDeliveryMangerRepository;
 
     @Test
-    @DisplayName("배송담당자 생성 테스트")
-    public void createDeliveryManagerTest() {
+    @DisplayName("업체 배송담당자 생성 테스트")
+    public void createStoreDeliveryManagerTest() {
+
+        // given
+        CreateDeliveryManagerRequestDto request = CreateDeliveryManagerRequestDto.builder()
+                .deliveryManagerType("업체 배송 담당자")
+                .hubId(1L)
+                .userId(1L)
+                .name("익명")
+                .build();
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(request.getUserId(),
+                DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get(),
+                request.getHubId(), 1L, request.getName());
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        when(hubClient.getHubById(request.getHubId())).thenReturn(ResponseEntity.ok(SingleResponse.success(GetHubResponseDto.from(1L))));
+        when(deliveryManagerRepository.save(any(DeliveryManager.class))).thenReturn(deliveryManager);
+
+        // when
+        Long deliveryManagerId = deliveryService.createDeliveryManager(request);
+
+        // then
+        assertNotNull(deliveryManagerId);
+        assertEquals(deliveryManagerId, deliveryManager.getId());
+
+    }
+
+    @Test
+    @DisplayName("허브 배송담당자 생성 테스트")
+    public void createHubDeliveryManagerTest() {
 
         // given
         CreateDeliveryManagerRequestDto request = CreateDeliveryManagerRequestDto.builder()
                 .deliveryManagerType("허브 배송 담당자")
-                .hubId(1L)
+                .hubId(0L)
                 .userId(1L)
                 .name("익명")
+                
                 .build();
 
         DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(request.getUserId(),
