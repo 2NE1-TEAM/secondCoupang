@@ -1,5 +1,6 @@
-package com.toanyone.gateway;
+package com.toanyone.gateway.infrastructure;
 
+import com.toanyone.gateway.common.exception.exception.GatewayException;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +10,6 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -39,15 +39,13 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         if(path.equals("/users/logout") && exchange.getRequest().getMethod().equals(HttpMethod.POST)){
             logout(exchange);
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return chain.filter(exchange);
         }
 
         String token = jwtUtil.extractToken(exchange);
 
         if(token == null || !jwtUtil.validateToken(token)){
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            throw new GatewayException.InvalidToken();
         }
 
         Claims claims = jwtUtil.extractClaims(token);
@@ -60,7 +58,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String token = jwtUtil.extractToken(exchange);
 
         if(token == null || !jwtUtil.validateToken(token)){
-            throw new RuntimeException("token이 존재하지 않습니다. ");
+            throw new GatewayException.InvalidToken();
         }
 
         Claims claims = jwtUtil.extractClaims(token);
