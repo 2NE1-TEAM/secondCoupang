@@ -34,4 +34,6 @@ public class RequestCreateUserDto {
     private UserRole role;
     @NotNull
     private Long hubId;
+    @NotNull
+    private String phone;
 }

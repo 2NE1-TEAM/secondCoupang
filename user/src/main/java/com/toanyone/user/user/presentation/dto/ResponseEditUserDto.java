@@ -14,6 +14,7 @@ public class ResponseEditUserDto {
     private String nickName;
     private String slackId;
     private UserRole role;
+    private String phone;
 
 
 
@@ -23,6 +24,7 @@ public class ResponseEditUserDto {
         responseEditUserDto.nickName = user.getNickName();
         responseEditUserDto.slackId = user.getSlackId();
         responseEditUserDto.role = user.getRole();
+        responseEditUserDto.phone = user.getPhone();
 
         return responseEditUserDto;
     }

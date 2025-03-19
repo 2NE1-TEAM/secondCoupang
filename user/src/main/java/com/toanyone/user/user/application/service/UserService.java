@@ -38,10 +38,10 @@ public class UserService {
          userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
          { throw new UserException.AlreadyExistedSlackId(); });
 
-        User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId());
+        User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         userRepository.save(user);
 
-        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId());
+        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
     }
 
     public ResponseUserDto signUpByMaster(@Valid RequestCreateUserDto requestCreateUserDto, HttpServletRequest request) {
@@ -50,14 +50,14 @@ public class UserService {
         userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
         { throw new UserException.AlreadyExistedSlackId(); });
 
-        User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId());
+        User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         Long masterId = Long.parseLong(request.getHeader("X-User-Id"));
 
         user.updateCreated(masterId);
 
         userRepository.save(user);
 
-        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId());
+        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
     }
 
     private String encryptPassword(String password) {
@@ -75,7 +75,7 @@ public class UserService {
             throw new UserException.NotCorrectPassword();
         }
 
-        String token = jwtUtil.generateAccessToken(user.getId(), user.getRole(), user.getSlackId(), user.getHubId(), user.getNickName());
+        String token = jwtUtil.generateAccessToken(user.getId(), user.getRole(), user.getSlackId(), user.getHubId(), user.getNickName(), user.getPhone());
         response.setHeader(HEADER_STRING, token);
 
         String refreshToken = jwtUtil.generateRefreshToken(user.getId());
@@ -118,6 +118,7 @@ public class UserService {
         user.updateRole(requestEditUserDto.getRole());
         user.updateNickName(requestEditUserDto.getNickName());
         user.updateUpdated(Long.valueOf((request.getHeader("X-User-Id"))));
+        user.updatePhone(requestEditUserDto.getPhone());
         this.userRepository.save(user);
 
         return ResponseEditUserDto.createResponseEditUserDto(user);

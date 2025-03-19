@@ -22,6 +22,9 @@ public class User extends BaseEntity {
     private String nickName;
 
     @Column(nullable = false)
+    private String phone;
+
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -34,13 +37,14 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Long hubId;
 
-    public static User createUser(String nickName, String password, String slackId, UserRole role, Long hubId) {
+    public static User createUser(String nickName, String password, String slackId, UserRole role, Long hubId, String phone) {
         User user = new User();
         user.nickName = nickName;
         user.password = password;
         user.slackId = slackId;
         user.role = role;
         user.hubId = hubId;
+        user.phone = phone;
         return user;
 
     }
@@ -55,5 +59,8 @@ public class User extends BaseEntity {
 
     public void updateNickName(@NotNull String nickName) {
         this.nickName = nickName;
+    }
+
+    public void updatePhone(@NotNull String phone) { this.phone = phone;
     }
 }

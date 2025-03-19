@@ -19,6 +19,9 @@ public class RequestEditUserDto {
     @NotNull
     private UserRole role;
 
+    @NotNull
+    private String phone;
+
     private String password;
 
     private String newPassword;

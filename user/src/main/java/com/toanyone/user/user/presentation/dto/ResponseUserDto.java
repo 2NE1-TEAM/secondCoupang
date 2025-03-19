@@ -14,8 +14,9 @@ public class ResponseUserDto {
     private String slackId;
     private UserRole role;
     private Long hubId;
+    private String phone;
 
-    public ResponseUserDto(Long userId, String nickname, String password, String slackId, UserRole role, Long hubId
+    public ResponseUserDto(Long userId, String nickname, String password, String slackId, UserRole role, Long hubId, String phone
     ) {
         this.userId = userId;
         this.nickname = nickname;
@@ -23,5 +24,6 @@ public class ResponseUserDto {
         this.slackId = slackId;
         this.role = role;
         this.hubId = hubId;
+        this.phone = phone;
     }
 }

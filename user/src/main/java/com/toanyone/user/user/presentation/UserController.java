@@ -80,6 +80,7 @@ public class UserController {
         String slackId = request.getHeader("X-Slack-Id");
         String hubId = request.getHeader("X-Hub-Id");
         String nickName = request.getHeader("X-Nick-Name");
-        return "test :" + userId + "," + userRole + "," + slackId + "," + hubId + "," + nickName;
+        String phone = request.getHeader("X-Phone");
+        return "test :" + userId + "," + userRole + "," + slackId + "," + hubId + "," + nickName + "," + phone;
     }
 }
