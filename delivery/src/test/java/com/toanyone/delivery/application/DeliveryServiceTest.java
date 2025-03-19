@@ -2,10 +2,13 @@ package com.toanyone.delivery.application;
 
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorInfo;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
+import com.toanyone.delivery.common.utils.UserContext;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
@@ -180,5 +183,111 @@ class DeliveryServiceTest {
         Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManagers(request))
                 .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);
 
+    }
+
+    @Test
+    @DisplayName("배송 담당자 수정 테스트 - 마스터 관리자")
+    public void updateDeliveryManagerByMasterTest() {
+
+        // given
+        UpdateDeliveryManagerRequestDto request = UpdateDeliveryManagerRequestDto.builder()
+                .name("수정한 사람")
+                .build();
+
+        Long toBeUpdatedDeliveryManagerId = 1L;
+
+        UserContext.setCurrentContext(UserContext.builder()
+                .role("MASTER")
+                .build());
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정전 이름");
+
+        DeliveryManager updatedDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정한 사람");
+
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(updatedDeliveryManager, "id", 1L);
+
+        // when
+        when(deliveryManagerRepository.findById(1L)).thenReturn(Optional.of(deliveryManager));
+        when(deliveryManagerRepository.save(deliveryManager)).thenReturn(updatedDeliveryManager);
+
+        // then
+        UpdateDeliveryManagerResponseDto updateDeliveryManagerResponseDto = deliveryService.updateDeliveryManager(toBeUpdatedDeliveryManagerId, request);
+        assertNotNull(updateDeliveryManagerResponseDto);
+        assertThat(updateDeliveryManagerResponseDto.getDeliveryManagerId()).isEqualTo(toBeUpdatedDeliveryManagerId);
+        assertThat(updateDeliveryManagerResponseDto.getName()).isEqualTo(request.getName());
+
+    }
+
+    @Test
+    @DisplayName("배송 담당자 수정 테스트 - 담당허브 관리자")
+    public void updateDeliveryManagerByHubManagerTest() {
+
+        // given
+        UpdateDeliveryManagerRequestDto request = UpdateDeliveryManagerRequestDto.builder()
+                .name("수정한 사람")
+                .build();
+
+        Long toBeUpdatedDeliveryManagerId = 1L;
+
+        UserContext.setCurrentContext(UserContext.builder()
+                .role("HUB")
+                .hubId(1L)
+                .build());
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정전 이름");
+
+        DeliveryManager updatedDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정한 사람");
+
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(updatedDeliveryManager, "id", 1L);
+
+        // when
+        when(deliveryManagerRepository.findById(1L)).thenReturn(Optional.of(deliveryManager));
+        when(deliveryManagerRepository.save(deliveryManager)).thenReturn(updatedDeliveryManager);
+
+        // then
+        UpdateDeliveryManagerResponseDto updateDeliveryManagerResponseDto = deliveryService.updateDeliveryManager(toBeUpdatedDeliveryManagerId, request);
+        assertNotNull(updateDeliveryManagerResponseDto);
+        assertThat(updateDeliveryManagerResponseDto.getDeliveryManagerId()).isEqualTo(toBeUpdatedDeliveryManagerId);
+        assertThat(updateDeliveryManagerResponseDto.getName()).isEqualTo(request.getName());
+
+    }
+
+    @Test
+    @DisplayName("배송 담당자 수정 테스트 - 권한 없는 유저")
+    public void updateDeliveryManagerByUnAuthorizedUserTest() {
+
+        // given
+        UpdateDeliveryManagerRequestDto request = UpdateDeliveryManagerRequestDto.builder()
+                .name("수정한 사람")
+                .build();
+
+        Long toBeUpdatedDeliveryManagerId = 1L;
+
+        UserContext.setCurrentContext(UserContext.builder()
+                .role("HUB")
+                .hubId(2L)
+                .build());
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정전 이름");
+
+        DeliveryManager updatedDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정한 사람");
+
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(updatedDeliveryManager, "id", 1L);
+
+        // when
+        when(deliveryManagerRepository.findById(1L)).thenReturn(Optional.of(deliveryManager));
+
+        // then
+        Assertions.assertThatThrownBy(() -> deliveryService.updateDeliveryManager(toBeUpdatedDeliveryManagerId, request))
+                .isInstanceOf(DeliveryManagerException.UnauthorizedDeliveryManagerEditException.class);
     }
 }

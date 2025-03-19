@@ -2,9 +2,12 @@ package com.toanyone.delivery.application;
 
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
+import com.toanyone.delivery.common.utils.UserContext;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
@@ -53,6 +56,26 @@ public class DeliveryService {
         }
         CursorPage<GetDeliveryManagerResponseDto> responseDtos = customDeliveryMangerRepository.getDeliveryManagers(request.getDeliveryManagerId(), request.getSortBy(), null, request.getUserId(), request.getName(), request.getLimit());
         return responseDtos;
+    }
+
+    public UpdateDeliveryManagerResponseDto updateDeliveryManager(Long deliveryManagerId, UpdateDeliveryManagerRequestDto request) {
+        UserContext userInfo = UserContext.getUserContext();
+        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            deliveryManager.updateName(request.getName());
+            DeliveryManager updatedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+            return UpdateDeliveryManagerResponseDto.from(updatedDeliveryManager);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(deliveryManager.getHubId())) {
+                deliveryManager.updateName(request.getName());
+                return UpdateDeliveryManagerResponseDto.from(deliveryManagerRepository.save(deliveryManager));
+            }
+        }
+        throw new DeliveryManagerException.UnauthorizedDeliveryManagerEditException();
     }
 
 //    public Long deleteDeliveryManager(Long deliveryManagerId) {

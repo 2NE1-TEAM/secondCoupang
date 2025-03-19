@@ -23,6 +23,7 @@ public class DeliveryManager extends BaseEntity {
     private Long userId;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private DeliveryManagerType deliveryManagerType;
 
     @Column(nullable = false)
@@ -42,6 +43,10 @@ public class DeliveryManager extends BaseEntity {
         deliveryManager.deliveryOrder = deliveryOrder;
         deliveryManager.name = name;
         return deliveryManager;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
     }
 
     public void deleteDeliveryManager(Long deletedBy) {
