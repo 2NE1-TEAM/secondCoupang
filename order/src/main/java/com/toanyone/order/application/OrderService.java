@@ -1,20 +1,21 @@
 package com.toanyone.order.application;
 
+import com.toanyone.order.application.dto.StoreFindResponseDto;
 import com.toanyone.order.application.dto.message.OrderDeliveryMessage;
+import com.toanyone.order.application.dto.message.OrderPaymentMessage;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
-import com.toanyone.order.application.mapper.DeliveryMessageMapper;
+import com.toanyone.order.application.mapper.MessageConverter;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.common.CursorPage;
+import com.toanyone.order.common.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
-import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
-import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
 import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,16 +36,24 @@ public class OrderService {
     private final ItemService itemService;
     private final StoreService storeService;
     private final ItemRequestMapper itemRequestMapper;
-    private final DeliveryMessageMapper deliveryMessageMapper;
+    private final MessageConverter messageConverter;
     private final OrderKafkaProducer orderKafkaProducer;
 
     @Transactional
     public OrderCreateResponseDto createOrder(Long userId, String role, Long slackId, OrderCreateServiceDto request) {
 
-        boolean isValidSupplyStore = storeService.validateStore(request.getSupplyStoreId());
-        boolean isValidReceiveStore = storeService.validateStore(request.getReceiveStoreId());
+//        boolean isValidSupplyStore = storeService.validateStore(request.getSupplyStoreId());
+//        boolean isValidReceiveStore = storeService.validateStore(request.getReceiveStoreId());
+//
+//        if (!isValidSupplyStore || !isValidReceiveStore) {
+//            throw new OrderException.InvalidStoreException();
+//        }
 
-        if (!isValidSupplyStore || !isValidReceiveStore) {
+        //Store 검증
+        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(request.getSupplyStoreId());
+        SingleResponse<StoreFindResponseDto> receiveStore = storeService.getStore(request.getReceiveStoreId());
+
+        if (supplyStore.getErrorCode() != null || receiveStore.getErrorCode() != null) {
             throw new OrderException.InvalidStoreException();
         }
 
@@ -74,13 +83,12 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        //Todo: Payment 작업 추가
+        OrderPaymentMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
+        orderKafkaProducer.sendPaymentMessage(paymentMessage, userId, role, slackId);
 
-        //Todo: Delivery 관련 작업 추가
+        OrderDeliveryMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request,order.getId());
+        orderKafkaProducer.sendDeliveryMessage(deliveryMessage, userId, role, slackId);
 
-        OrderDeliveryMessage message = deliveryMessageMapper.toOrderDeliveryMessage(request);
-
-        orderKafkaProducer.sendOrderDeliveryMessage(message, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
     }
@@ -100,6 +108,7 @@ public class OrderService {
             }
 
             //Todo: 결제 취소
+
             //Todo: 배송 취소 메시지
 
             validateOrderItemsStatus(order.getItems());

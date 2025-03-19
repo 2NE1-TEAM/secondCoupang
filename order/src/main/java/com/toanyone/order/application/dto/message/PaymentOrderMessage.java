@@ -9,11 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDeliveryMessage {
+public class PaymentOrderMessage {
+    private Long paymentId;
     private Long orderId;
-    private Long supplyStoreId;
-    private Long receiveStoreId;
-    private Long supplyHubId;
-    private Long receiveId;
-    private String recipient;
+    private String paymentStatus;
 }

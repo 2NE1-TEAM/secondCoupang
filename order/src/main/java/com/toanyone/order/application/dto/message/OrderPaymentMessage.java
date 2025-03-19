@@ -9,11 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDeliveryMessage {
+public class OrderPaymentMessage {
     private Long orderId;
-    private Long supplyStoreId;
-    private Long receiveStoreId;
-    private Long supplyHubId;
-    private Long receiveId;
-    private String recipient;
+    private int amount;
 }
