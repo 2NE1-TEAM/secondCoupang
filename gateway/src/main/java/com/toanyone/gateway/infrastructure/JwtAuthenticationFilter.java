@@ -63,8 +63,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         Claims claims = jwtUtil.extractClaims(token);
         Long userId = claims.get("userId", Long.class);
+        long difference = (claims.getExpiration().getTime() - claims.getIssuedAt().getTime()) / 60 / 1000;
+        log.info("difference = {}", difference);
         redisTemplate.opsForSet().add(blacklist + ":" +  userId, token);
-        redisTemplate.expire(blacklist + ":" +  userId, 60, TimeUnit.MINUTES);
+        redisTemplate.expire(blacklist + ":" +  userId, difference, TimeUnit.MINUTES);
         redisTemplate.delete(refresh + ":" + userId);
     }
 
