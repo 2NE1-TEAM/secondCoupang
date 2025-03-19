@@ -20,23 +20,28 @@ public class DeliveryManager extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
-
-    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
     private DeliveryManagerType deliveryManagerType;
 
     @Column(nullable = false)
     private Long hubId;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
     private Long deliveryOrder;
 
-    public static DeliveryManager createDeliveryManager(Long userId, DeliveryManagerType deliveryManagerType, Long hubId, Long deliveryOrder) {
+    @Column(nullable = false)
+    private String name;
+
+    public static DeliveryManager createDeliveryManager(Long userId, DeliveryManagerType deliveryManagerType, Long hubId, Long deliveryOrder, String name) {
         DeliveryManager deliveryManager = new DeliveryManager();
-        deliveryManager.userId = userId;
         deliveryManager.deliveryManagerType = deliveryManagerType;
         deliveryManager.hubId = hubId;
+        deliveryManager.userId = userId;
         deliveryManager.deliveryOrder = deliveryOrder;
+        deliveryManager.name = name;
         return deliveryManager;
     }
 
