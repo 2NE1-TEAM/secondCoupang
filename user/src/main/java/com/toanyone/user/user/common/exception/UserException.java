@@ -38,4 +38,10 @@ public class UserException extends CustomException {
             super("USER_ERROR_5", "해당 기능을 위한 권한이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
     }
+
+    public static class ExistedPhoneNumber extends UserException {
+        public ExistedPhoneNumber() {
+            super("USER_ERROR_6", "이미 존재하는 phone 번호 입니다. ", HttpStatus.BAD_REQUEST);
+        }
+    }
 }

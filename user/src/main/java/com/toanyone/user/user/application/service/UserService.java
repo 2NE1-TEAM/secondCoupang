@@ -38,6 +38,10 @@ public class UserService {
          userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
          { throw new UserException.AlreadyExistedSlackId(); });
 
+         userRepository.findUserByPhone(requestCreateUserDto.getPhone()).ifPresent(user ->{
+             throw new UserException.ExistedPhoneNumber();
+         });
+
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         userRepository.save(user);
 
@@ -49,6 +53,10 @@ public class UserService {
 
         userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
         { throw new UserException.AlreadyExistedSlackId(); });
+
+        userRepository.findUserByPhone(requestCreateUserDto.getPhone()).ifPresent(user ->{
+            throw new UserException.ExistedPhoneNumber();
+        });
 
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         Long masterId = Long.parseLong(request.getHeader("X-User-Id"));
