@@ -3,6 +3,7 @@ package com.toanyone.user.user.domain.entity;
 import com.toanyone.user.user.common.BaseEntity;
 import com.toanyone.user.user.domain.UserRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,5 +43,17 @@ public class User extends BaseEntity {
         user.hubId = hubId;
         return user;
 
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateRole(@NotNull UserRole role) {
+        this.role = role;
+    }
+
+    public void updateNickName(@NotNull String nickName) {
+        this.nickName = nickName;
     }
 }

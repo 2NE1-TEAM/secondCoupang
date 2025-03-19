@@ -3,10 +3,7 @@ package com.toanyone.user.user.application.service;
 
 import com.toanyone.user.user.common.exception.UserException;
 import com.toanyone.user.user.domain.UserRole;
-import com.toanyone.user.user.presentation.dto.RequestCreateUserDto;
-import com.toanyone.user.user.presentation.dto.RequestDeleteUserDto;
-import com.toanyone.user.user.presentation.dto.RequestLoginUserDto;
-import com.toanyone.user.user.presentation.dto.ResponseUserDto;
+import com.toanyone.user.user.presentation.dto.*;
 import com.toanyone.user.user.domain.entity.User;
 import com.toanyone.user.user.domain.UserRepository;
 import com.toanyone.user.user.infrastructure.JwtUtil;
@@ -103,5 +100,27 @@ public class UserService {
         if(!UserRole.MASTER.toString().equals(roles)){
             throw new UserException.NotAuthorize();
         }
+    }
+
+    public ResponseEditUserDto editUser(@Valid RequestEditUserDto requestEditUserDto,
+                                        HttpServletRequest request) {
+        roleIsMaster(request);
+        User user = this.userRepository.findById(requestEditUserDto.getUserId()).orElseThrow(() -> new UserException.NoExistId());
+
+        if(requestEditUserDto.getNewPassword() !=null && requestEditUserDto.getPassword() != null){
+            if(!passwordEncoder.matches(requestEditUserDto.getPassword(), user.getPassword())){
+                throw new UserException.NotCorrectPassword();
+            }else{
+                user.updatePassword(encryptPassword(requestEditUserDto.getNewPassword()));
+            }
+        }
+
+        user.updateRole(requestEditUserDto.getRole());
+        user.updateNickName(requestEditUserDto.getNickName());
+        user.updateUpdated(Long.valueOf((request.getHeader("X-User-Id"))));
+        this.userRepository.save(user);
+
+        return ResponseEditUserDto.createResponseEditUserDto(user);
+
     }
 }

@@ -44,4 +44,9 @@ public abstract class BaseEntity {
         this.createdAt = LocalDateTime.now();
         this.createdBy = userId;
     }
+
+    public void updateUpdated(Long userId) {
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = userId;
+    }
 }
