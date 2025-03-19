@@ -55,7 +55,7 @@ public class DeliveryService {
 
         Long nextDeliveryOrder = customDeliveryMangerRepository.nextDeliveryOrder(hubDeliveryManagersHubId);
         DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(request.getUserId(), deliveryManagerType,
-                request.getHubId(), nextDeliveryOrder, request.getName());
+                hubDeliveryManagersHubId, nextDeliveryOrder, request.getName());
         return deliveryManagerRepository.save(deliveryManager).getId();
     }
 

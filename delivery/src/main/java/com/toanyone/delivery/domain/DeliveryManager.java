@@ -1,9 +1,6 @@
 package com.toanyone.delivery.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,14 +15,19 @@ import java.util.Optional;
 public class DeliveryManager extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "delivery_manager_id", nullable = false)
     private Long id;
 
     @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
     private DeliveryManagerType deliveryManagerType;
 
     @Column(nullable = false)
     private Long hubId;
+
+    @Column(nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
     private Long deliveryOrder;
@@ -35,9 +37,9 @@ public class DeliveryManager extends BaseEntity {
 
     public static DeliveryManager createDeliveryManager(Long userId, DeliveryManagerType deliveryManagerType, Long hubId, Long deliveryOrder, String name) {
         DeliveryManager deliveryManager = new DeliveryManager();
-        deliveryManager.id = userId;
         deliveryManager.deliveryManagerType = deliveryManagerType;
         deliveryManager.hubId = hubId;
+        deliveryManager.userId = userId;
         deliveryManager.deliveryOrder = deliveryOrder;
         deliveryManager.name = name;
         return deliveryManager;
