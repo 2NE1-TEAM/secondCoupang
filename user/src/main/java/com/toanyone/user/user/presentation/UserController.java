@@ -32,6 +32,15 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(responseUserDto));
     }
 
+    @PostMapping("/sign-up-by-master")
+    public ResponseEntity<SingleResponse<ResponseUserDto>> signUpByMaster(@Valid @RequestBody RequestCreateUserDto requestCreateUserDto,
+                                                                          HttpServletRequest request) {
+
+        ResponseUserDto responseUserDto = this.userService.signUpByMaster(requestCreateUserDto, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(responseUserDto));
+    }
+
     @PostMapping("/sign-in")
     public ResponseEntity<SingleResponse<String>> signIn(@Valid @RequestBody RequestLoginUserDto requestLoginUserDto,
                                     HttpServletResponse response) {
@@ -56,6 +65,8 @@ public class UserController {
 
         return ResponseEntity.ok().body(SingleResponse.success(userId +" 삭제 완료 "));
     }
+
+
 
     @GetMapping("/test")
     public String test(HttpServletRequest request) {

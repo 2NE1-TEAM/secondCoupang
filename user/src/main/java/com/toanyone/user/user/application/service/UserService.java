@@ -47,6 +47,22 @@ public class UserService {
         return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId());
     }
 
+    public ResponseUserDto signUpByMaster(@Valid RequestCreateUserDto requestCreateUserDto, HttpServletRequest request) {
+        roleIsMaster(request);
+
+        userRepository.findUserBySlackId(requestCreateUserDto.getSlackId()).ifPresent(user ->
+        { throw new UserException.AlreadyExistedSlackId(); });
+
+        User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId());
+        Long masterId = Long.parseLong(request.getHeader("X-User-Id"));
+
+        user.updateCreated(masterId);
+
+        userRepository.save(user);
+
+        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId());
+    }
+
     private String encryptPassword(String password) {
         return passwordEncoder.encode(password);
     }
@@ -72,15 +88,20 @@ public class UserService {
 
     public void deleteUser(Long userId, HttpServletRequest request) {
 
-        String roles = request.getHeader("X-User-Roles");
-        if(!UserRole.MASTER.toString().equals(roles)){
-            throw new UserException.NotAuthorize();
-        }
+        roleIsMaster(request);
 
         User user = this.userRepository.findUserByIdAndDeletedAtIsNull(userId).orElseThrow(()->new UserException.NoExistId());
 
         Long masterId = Long.parseLong( request.getHeader("X-User-Id"));
         user.updateDeleted(masterId);
         userRepository.save(user);
+    }
+
+
+    private void roleIsMaster(HttpServletRequest request) {
+        String roles = request.getHeader("X-User-Roles");
+        if(!UserRole.MASTER.toString().equals(roles)){
+            throw new UserException.NotAuthorize();
+        }
     }
 }
