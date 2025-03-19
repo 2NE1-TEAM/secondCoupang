@@ -41,7 +41,7 @@ public class UserService {
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         userRepository.save(user);
 
-        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
+        return new ResponseUserDto(user.getId(), user.getNickName(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
     }
 
     public ResponseUserDto signUpByMaster(@Valid RequestCreateUserDto requestCreateUserDto, HttpServletRequest request) {
@@ -57,7 +57,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        return new ResponseUserDto(user.getId(), user.getNickName(), user.getPassword(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
+        return new ResponseUserDto(user.getId(), user.getNickName(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
     }
 
     private String encryptPassword(String password) {
