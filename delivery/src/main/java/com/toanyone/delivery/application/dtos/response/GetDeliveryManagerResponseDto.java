@@ -20,6 +20,11 @@ public class GetDeliveryManagerResponseDto {
     @JsonProperty("delivery_order")
     private Long deliveryOrder;
 
+    @JsonProperty("user_id")
+    private Long userId;
+
+    private String name;
+
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
@@ -43,6 +48,8 @@ public class GetDeliveryManagerResponseDto {
         dto.deliveryManagerId = deliveryManager.getId();
         dto.deliveryManagerType = deliveryManager.getDeliveryManagerType();
         dto.hubId = deliveryManager.getHubId();
+        dto.userId = deliveryManager.getUserId();
+        dto.name = deliveryManager.getName();
         dto.deliveryOrder = deliveryManager.getDeliveryOrder();
         dto.createdAt = deliveryManager.getCreatedAt();
         dto.createdBy = deliveryManager.getCreatedBy();

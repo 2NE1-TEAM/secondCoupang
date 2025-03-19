@@ -1,6 +1,7 @@
 package com.toanyone.delivery.application.dtos.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,11 +13,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateDeliveryManagerRequestDto {
     @JsonProperty("delivery_manager_type")
+    @NotNull
     private String deliveryManagerType;
     @JsonProperty("hub_id")
+    @NotNull
     private Long hubId;
-    @JsonProperty("delivery_order")
-    private Long deliveryOrder;
     @JsonProperty("user_id")
+    @NotNull
     private Long userId;
+    @NotNull
+    private String name;
 }

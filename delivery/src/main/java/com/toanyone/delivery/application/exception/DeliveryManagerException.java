@@ -28,5 +28,11 @@ public class DeliveryManagerException extends CustomException {
             super("존재하지 않는 담당자 타입입니다", HttpStatus.BAD_REQUEST);
         }
     }
+
+    public static class InvalidHubException extends DeliveryManagerException {
+        public InvalidHubException() {
+            super("등록하려는 배송담당자의 소속허브정보가 존재하지 않습니다", HttpStatus.BAD_REQUEST);
+        }
+    }
 }
 
