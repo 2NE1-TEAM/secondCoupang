@@ -22,12 +22,11 @@ public class CustomFilter extends OncePerRequestFilter {
 
         log.info("doFilter");
 
-        String userIdHeader = servletRequest.getHeader("User-Id");
-        String userRoleHeader = servletRequest.getHeader("User-Role");
-        String slackIdHeader = servletRequest.getHeader("Slack-Id");
+        String userIdHeader = servletRequest.getHeader("X-User-Id");
+        String userRoleHeader = servletRequest.getHeader("X-User-Role");
+        String slackIdHeader = servletRequest.getHeader("X-Slack-Id");
 
         try {
-
             if (userIdHeader == null || userRoleHeader == null || slackIdHeader == null ||
                     userIdHeader.isEmpty() || userRoleHeader.isEmpty() || slackIdHeader.isEmpty()) {
                 throw new OrderException.AuthenticationFailedException();
