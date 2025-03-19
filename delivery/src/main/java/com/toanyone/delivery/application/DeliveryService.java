@@ -3,6 +3,7 @@ package com.toanyone.delivery.application;
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dtos.response.DeleteDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
@@ -78,14 +79,27 @@ public class DeliveryService {
         throw new DeliveryManagerException.UnauthorizedDeliveryManagerEditException();
     }
 
-//    public Long deleteDeliveryManager(Long deliveryManagerId) {
-//
-//        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
-//                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-//
-//        deliveryManager.deleteDeliveryManager(UserContext.getUserContext().getUserId());
-//        return deliveryManagerId;
-//    }
+    public DeleteDeliveryManagerResponseDto deleteDeliveryManager(Long deliveryManagerId) {
+        UserContext userInfo = UserContext.getUserContext();
+        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            deliveryManager.deleteDeliveryManager(userInfo.getUserId());
+            DeliveryManager deletedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+            return DeleteDeliveryManagerResponseDto.from(deletedDeliveryManager);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(deliveryManager.getHubId())) {
+                deliveryManager.deleteDeliveryManager(userInfo.getUserId());
+                DeliveryManager deletedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+                return DeleteDeliveryManagerResponseDto.from(deletedDeliveryManager);
+            }
+        }
+        throw new DeliveryManagerException.UnauthorizedDeliveryManagerDeleteException();
+
+    }
 
 
 }

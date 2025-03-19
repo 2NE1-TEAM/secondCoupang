@@ -34,5 +34,11 @@ public class DeliveryManagerException extends CustomException {
             super("해당 유저는 담당 매니저 정보 수정 권한이 없습니다.", HttpStatus.FORBIDDEN);
         }
     }
+
+    public static class UnauthorizedDeliveryManagerDeleteException extends DeliveryManagerException {
+        public UnauthorizedDeliveryManagerDeleteException() {
+            super("해당 유저는 담당 매니저 정보 삭제 권한이 없습니다.", HttpStatus.FORBIDDEN);
+        }
+    }
 }
 

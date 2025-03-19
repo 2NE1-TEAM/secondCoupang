@@ -5,6 +5,7 @@ import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerReque
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.response.CreateDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dtos.response.DeleteDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.common.utils.MultiResponse;
@@ -47,11 +48,10 @@ public class DeliveryController {
     }
 
 
-//    @DeleteMapping("/delivery-manager/{deliveryMangerId}")
-//    public ResponseEntity<?> deleteDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {
-//        Long userId = UserContext.getUserContext().getUserId();
-//        Long deletedManagerId = deliveryService.deleteDeliveryManager(userId);
-//        return ResponseEntity.ok(SingleResponse.success(deletedManagerId));
-//    }
+    @DeleteMapping("/delivery-manager/{deliveryMangerId}")
+    public ResponseEntity<?> deleteDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {
+        DeleteDeliveryManagerResponseDto response = deliveryService.deleteDeliveryManager(deliveryManagerId);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
 
 }

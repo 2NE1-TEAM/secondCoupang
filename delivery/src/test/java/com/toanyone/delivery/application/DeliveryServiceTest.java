@@ -3,13 +3,14 @@ package com.toanyone.delivery.application;
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dtos.response.DeleteDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorInfo;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
-import com.toanyone.delivery.common.utils.UserContext;
 import com.toanyone.delivery.common.utils.SingleResponse;
+import com.toanyone.delivery.common.utils.UserContext;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
@@ -116,7 +117,7 @@ class DeliveryServiceTest {
 
         // when - then
         Assertions.assertThatThrownBy(() -> deliveryService.createDeliveryManager(request))
-                .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);
+                .isInstanceOf(DeliveryManagerException.UnauthorizedDeliveryManagerDeleteException.class);
 
     }
 
@@ -216,7 +217,7 @@ class DeliveryServiceTest {
 
         // when - then
         Assertions.assertThatThrownBy(() -> deliveryService.getDeliveryManagers(request))
-                .isInstanceOf(DeliveryManagerException.InvalidDeliveryManagerTypeException.class);
+                .isInstanceOf(DeliveryManagerException.UnauthorizedDeliveryManagerDeleteException.class);
 
     }
 
@@ -324,5 +325,102 @@ class DeliveryServiceTest {
         // then
         Assertions.assertThatThrownBy(() -> deliveryService.updateDeliveryManager(toBeUpdatedDeliveryManagerId, request))
                 .isInstanceOf(DeliveryManagerException.UnauthorizedDeliveryManagerEditException.class);
+    }
+
+    @Test
+    @DisplayName("배송 담당자 삭제 테스트 - 마스터 관리자")
+    public void deleteDeliveryManagerByMasterTest() {
+
+        // given
+        Long toBeDeletedDeliveryManagerId = 1L;
+
+        UserContext.setCurrentContext(UserContext.builder()
+                .role("MASTER")
+                .hubId(1L)
+                .build());
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "이름");
+
+        DeliveryManager deletedDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정한 사람");
+
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(deletedDeliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(deliveryManager, "deletedBy", UserContext.getUserContext().getUserId());
+
+        // when
+        when(deliveryManagerRepository.findById(toBeDeletedDeliveryManagerId)).thenReturn(Optional.of(deliveryManager));
+        when(deliveryManagerRepository.save(deliveryManager)).thenReturn(deletedDeliveryManager);
+
+        // then
+        DeleteDeliveryManagerResponseDto response = deliveryService.deleteDeliveryManager(toBeDeletedDeliveryManagerId);
+        assertNotNull(response);
+        assertThat(response.getDeliveryManagerId()).isEqualTo(toBeDeletedDeliveryManagerId);
+
+    }
+
+    @Test
+    @DisplayName("배송 담당자 삭제 테스트 - 담당 허브 관리자")
+    public void deleteDeliveryManagerByHubManagerTest() {
+
+        // given
+        Long toBeDeletedDeliveryManagerId = 1L;
+
+        UserContext.setCurrentContext(UserContext.builder()
+                .role("HUB")
+                .hubId(1L)
+                .build());
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "이름");
+
+        DeliveryManager deletedDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정한 사람");
+
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(deletedDeliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(deliveryManager, "deletedBy", UserContext.getUserContext().getUserId());
+
+        // when
+        when(deliveryManagerRepository.findById(toBeDeletedDeliveryManagerId)).thenReturn(Optional.of(deliveryManager));
+        when(deliveryManagerRepository.save(deliveryManager)).thenReturn(deletedDeliveryManager);
+
+        // then
+        DeleteDeliveryManagerResponseDto response = deliveryService.deleteDeliveryManager(toBeDeletedDeliveryManagerId);
+        assertNotNull(response);
+        assertThat(response.getDeliveryManagerId()).isEqualTo(toBeDeletedDeliveryManagerId);
+
+    }
+
+    @Test
+    @DisplayName("배송 담당자 삭제 테스트 - 권한 없는 유저")
+    public void deleteDeliveryManagerByUnauthorizedUserTest() {
+
+        // given
+        Long toBeDeletedDeliveryManagerId = 1L;
+
+        UserContext.setCurrentContext(UserContext.builder()
+                .role("DELIVERY")
+                .hubId(1L)
+                .build());
+
+        DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "이름");
+
+        DeliveryManager deletedDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 1L,
+                1L, "수정한 사람");
+
+        ReflectionTestUtils.setField(deliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(deletedDeliveryManager, "id", 1L);
+        ReflectionTestUtils.setField(deliveryManager, "deletedBy", UserContext.getUserContext().getUserId());
+
+        // when
+        when(deliveryManagerRepository.findById(toBeDeletedDeliveryManagerId)).thenReturn(Optional.of(deliveryManager));
+
+        // then
+        Assertions.assertThatThrownBy(() -> deliveryService.deleteDeliveryManager(toBeDeletedDeliveryManagerId))
+                .isInstanceOf(DeliveryManagerException.UnauthorizedDeliveryManagerDeleteException.class);
+
     }
 }

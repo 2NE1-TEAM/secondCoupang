@@ -52,7 +52,7 @@ public class CustomFilter implements Filter {
 
         String requestURI = request.getRequestURI();
 
-        if (requestURI.startsWith(DELIVERY_MANAGER_PATH) && request.getMethod().equals("PUT")) {
+        if (requestURI.startsWith(DELIVERY_MANAGER_PATH) && (request.getMethod().equals("PUT") || request.getMethod().equals("DELETE"))) {
             if (role.get().equals("MASTER") || role.get().equals("HUB")) {
                 filterChain.doFilter(request, response);
             }
