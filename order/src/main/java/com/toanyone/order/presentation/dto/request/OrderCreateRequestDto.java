@@ -12,9 +12,6 @@ import java.util.List;
 public class OrderCreateRequestDto {
 
     @NotNull
-    private Long userId;
-
-    @NotNull
     private Long supplyStoreId;
 
     @NotNull

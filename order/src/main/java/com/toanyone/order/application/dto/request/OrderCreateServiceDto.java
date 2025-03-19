@@ -9,7 +9,6 @@ import java.util.List;
 @Getter
 @Builder
 public class OrderCreateServiceDto {
-    private Long userId;
     private Long supplyStoreId;
     private Long receiveStoreId;
     private List<OrderCreateServiceDto.ItemRequestDto> items;
