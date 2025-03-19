@@ -1,9 +1,11 @@
 package com.toanyone.order.application;
 
+import com.toanyone.order.application.dto.message.OrderDeliveryMessage;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
+import com.toanyone.order.application.mapper.DeliveryMessageMapper;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.common.exception.OrderException;
@@ -33,9 +35,11 @@ public class OrderService {
     private final ItemService itemService;
     private final StoreService storeService;
     private final ItemRequestMapper itemRequestMapper;
+    private final DeliveryMessageMapper deliveryMessageMapper;
+    private final OrderKafkaProducer orderKafkaProducer;
 
     @Transactional
-    public OrderCreateResponseDto createOrder(OrderCreateServiceDto request) {
+    public OrderCreateResponseDto createOrder(Long userId, String role, Long slackId, OrderCreateServiceDto request) {
 
         boolean isValidSupplyStore = storeService.validateStore(request.getSupplyStoreId());
         boolean isValidReceiveStore = storeService.validateStore(request.getReceiveStoreId());
@@ -53,7 +57,7 @@ public class OrderService {
             throw new OrderException.InsufficientStockException();
         }
 
-        Order order = Order.create(request.getUserId(), request.getSupplyStoreId(), request.getReceiveStoreId());
+        Order order = Order.create(userId, request.getSupplyStoreId(), request.getReceiveStoreId());
 
         log.info("orderId : {}", order.getId());
 
@@ -73,6 +77,10 @@ public class OrderService {
         //Todo: Payment 작업 추가
 
         //Todo: Delivery 관련 작업 추가
+
+        OrderDeliveryMessage message = deliveryMessageMapper.toOrderDeliveryMessage(request);
+
+        orderKafkaProducer.sendOrderDeliveryMessage(message, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
     }

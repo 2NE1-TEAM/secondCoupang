@@ -34,7 +34,8 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<SingleResponse<OrderCreateResponseDto>> createOrder(@RequestBody @Valid OrderCreateRequestDto request) {
         OrderCreateServiceDto serviceDto = orderMapper.toOrderCreateServiceDto(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(serviceDto)));
+        UserContext userContext = UserContext.getUserContext();
+        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(userContext.getUserId(),userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
 
     @PatchMapping("/{orderId}/cancel")
