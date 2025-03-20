@@ -59,6 +59,13 @@ public class CustomFilter implements Filter {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
 
+        if (requestURI.startsWith(DELIVERY_PATH) && (request.getMethod().equals("DELETE"))) {
+            if (role.get().equals("MASTER") || role.get().equals("HUB")) {
+                filterChain.doFilter(request, response);
+            }
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        }
+
         UserContext.clear();
 
     }

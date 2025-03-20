@@ -3,12 +3,11 @@ package com.toanyone.delivery.presentation;
 import com.toanyone.delivery.application.DeliveryService;
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.response.CreateDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.DeleteDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dtos.response.*;
 import com.toanyone.delivery.common.utils.MultiResponse;
+import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.common.utils.SingleResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,24 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class DeliveryController {
     private final DeliveryService deliveryService;
+
+    @GetMapping("/{deliveryId}")
+    public ResponseEntity<?> getDelivery(@PathVariable("deliveryId") Long deliveryId) {
+        GetDeliveryResponseDto response = deliveryService.getDelivery(deliveryId);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getDeliveries(@ModelAttribute GetDeliverySearchConditionRequestDto request) {
+        CursorPage<GetDeliveryResponseDto> responseDtos = deliveryService.getDeliveries(request);
+        return ResponseEntity.ok(MultiResponse.success(responseDtos));
+    }
+
+    @DeleteMapping("/{deliveryId}")
+    public ResponseEntity<?> deleteDelivery(@PathVariable("deliveryId") Long deliveryId) {
+        DeleteDeliveryResponseDto response = deliveryService.deleteDelivery(deliveryId);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
 
     @PostMapping("/delivery-manager")
     public ResponseEntity<?> createDeliverManager(@RequestBody @Valid CreateDeliveryManagerRequestDto request) {
@@ -37,7 +54,7 @@ public class DeliveryController {
 
     @GetMapping("/delivery-manager")
     public ResponseEntity<?> getDeliveryManagers(@ModelAttribute GetDeliveryManagerSearchConditionRequestDto request) {
-        MultiResponse.CursorPage<GetDeliveryManagerResponseDto> responseDtos = deliveryService.getDeliveryManagers(request);
+        CursorPage<GetDeliveryManagerResponseDto> responseDtos = deliveryService.getDeliveryManagers(request);
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
     }
 
