@@ -2,13 +2,18 @@ package com.toanyone.delivery.application;
 
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.exception.DeliveryException;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
+import com.toanyone.delivery.domain.Delivery;
 import com.toanyone.delivery.common.utils.SingleResponse;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
+import com.toanyone.delivery.domain.repository.CustomDeliveryRepository;
 import com.toanyone.delivery.domain.repository.DeliveryManagerRepository;
 import com.toanyone.delivery.domain.repository.DeliveryRepository;
 import com.toanyone.delivery.infrastructure.client.HubClient;
@@ -26,6 +31,7 @@ import java.util.Optional;
 public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryManagerRepository deliveryManagerRepository;
+    private final CustomDeliveryRepository customDeliveryRepository;
     private final CustomDeliveryMangerRepository customDeliveryMangerRepository;
     private final HubClient hubClient;
 
@@ -57,6 +63,29 @@ public class DeliveryService {
         DeliveryManager deliveryManager = DeliveryManager.createDeliveryManager(request.getUserId(), deliveryManagerType,
                 hubDeliveryManagersHubId, nextDeliveryOrder, request.getName());
         return deliveryManagerRepository.save(deliveryManager).getId();
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPage<GetDeliveryResponseDto> getDeliveries(GetDeliverySearchConditionRequestDto request) {
+        if (request.getDeliveryStatus() != null) {
+            Delivery.DeliveryStatus deliveryStatus = Delivery.DeliveryStatus.fromValue(request.getDeliveryStatus())
+                    .orElseThrow(DeliveryException.InvalidDeliveryTypeException::new);
+            CursorPage<GetDeliveryResponseDto> responseDtos = customDeliveryRepository.getDeliveries(request.getDeliveryId(), deliveryStatus, request.getDepartureHubId(), request.getArrivalHubId(),
+                    request.getRecipient(), request.getStoreDeliveryManagerId(), request.getLimit(), request.getSortBy());
+            return responseDtos;
+        }
+        CursorPage<GetDeliveryResponseDto> deliveries = customDeliveryRepository.getDeliveries(request.getDeliveryId(), null, request.getDepartureHubId(),
+                request.getArrivalHubId(), request.getRecipient(), request.getStoreDeliveryManagerId(), request.getLimit(), request.getSortBy());
+        return deliveries;
+    }
+
+    @Transactional(readOnly = true)
+    public GetDeliveryResponseDto getDelivery(Long deliveryId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        GetDeliveryResponseDto response = GetDeliveryResponseDto.from(delivery);
+        return response;
     }
 
     @Transactional(readOnly = true)
