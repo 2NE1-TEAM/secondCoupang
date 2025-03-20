@@ -1,9 +1,20 @@
 package com.toanyone.order.domain.repository;
 
+import com.toanyone.order.application.dto.request.OrderSearchCondition;
+import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.domain.entity.Order;
-import org.springframework.stereotype.Repository;
+import com.toanyone.order.infrastructure.OrderQueryDslRepository;
+import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
 
-public interface OrderRepository {
+import java.util.Optional;
+
+public interface OrderRepository extends OrderQueryDslRepository {
 
     Order save(Order order);
+
+    Optional<Order> findById(Long id);
+
+    Optional<Order> findByIdWithItems(Long id);
+
+    CursorPage<Order> search(OrderSearchCondition requestDto);
 }
