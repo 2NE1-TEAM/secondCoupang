@@ -3,13 +3,14 @@ package com.toanyone.delivery.application;
 import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
 import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dtos.response.*;
 import com.toanyone.delivery.application.exception.DeliveryException;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
-import com.toanyone.delivery.domain.Delivery;
 import com.toanyone.delivery.common.utils.SingleResponse;
+import com.toanyone.delivery.common.utils.UserContext;
+import com.toanyone.delivery.domain.Delivery;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
@@ -88,6 +89,27 @@ public class DeliveryService {
         return response;
     }
 
+    public DeleteDeliveryResponseDto deleteDelivery(Long deliveryId) {
+        UserContext userInfo = UserContext.getUserContext();
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            delivery.deleteDelivery(userInfo.getUserId());
+            Delivery deletedDelivery = deliveryRepository.save(delivery);
+            return DeleteDeliveryResponseDto.from(deletedDelivery);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId())) {
+                delivery.deleteDelivery(userInfo.getUserId());
+                Delivery deletedDelivery = deliveryRepository.save(delivery);
+                return DeleteDeliveryResponseDto.from(deletedDelivery);
+            }
+        }
+        throw new DeliveryException.UnauthorizedDeliveryDeleteException();
+    }
+
     @Transactional(readOnly = true)
     public GetDeliveryManagerResponseDto getDeliveryManager(Long deliveryManagerId) {
         DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
@@ -108,14 +130,47 @@ public class DeliveryService {
         return responseDtos;
     }
 
-//    public Long deleteDeliveryManager(Long deliveryManagerId) {
-//
-//        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
-//                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-//
-//        deliveryManager.deleteDeliveryManager(UserContext.getUserContext().getUserId());
-//        return deliveryManagerId;
-//    }
+    public UpdateDeliveryManagerResponseDto updateDeliveryManager(Long deliveryManagerId, UpdateDeliveryManagerRequestDto request) {
+        UserContext userInfo = UserContext.getUserContext();
+        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            deliveryManager.updateName(request.getName());
+            DeliveryManager updatedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+            return UpdateDeliveryManagerResponseDto.from(updatedDeliveryManager);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(deliveryManager.getHubId())) {
+                deliveryManager.updateName(request.getName());
+                return UpdateDeliveryManagerResponseDto.from(deliveryManagerRepository.save(deliveryManager));
+            }
+        }
+        throw new DeliveryManagerException.UnauthorizedDeliveryManagerEditException();
+    }
+
+    public DeleteDeliveryManagerResponseDto deleteDeliveryManager(Long deliveryManagerId) {
+        UserContext userInfo = UserContext.getUserContext();
+        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            deliveryManager.deleteDeliveryManager(userInfo.getUserId());
+            DeliveryManager deletedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+            return DeleteDeliveryManagerResponseDto.from(deletedDeliveryManager);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(deliveryManager.getHubId())) {
+                deliveryManager.deleteDeliveryManager(userInfo.getUserId());
+                DeliveryManager deletedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+                return DeleteDeliveryManagerResponseDto.from(deletedDeliveryManager);
+            }
+        }
+        throw new DeliveryManagerException.UnauthorizedDeliveryManagerDeleteException();
+
+    }
 
 
 }

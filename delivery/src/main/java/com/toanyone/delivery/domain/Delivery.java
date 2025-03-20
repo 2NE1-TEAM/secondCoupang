@@ -44,12 +44,12 @@ public class Delivery extends BaseEntity {
     private String recipient;
 
     @Column(nullable = false)
-    private Long recipientSlackId;
+    private String recipientSlackId;
 
     @Column(nullable = false)
     private Long storeDeliveryManagerId;
 
-    public static Delivery createDelivery(Long orderId, List<DeliveryRoad> deliveryRoads, Long departureHubId, Long arrivalHubId, String deliveryAddress, final String recipient, Long recipientSlackId, Long storeDeliveryManagerId) {
+    public static Delivery createDelivery(Long orderId, List<DeliveryRoad> deliveryRoads, Long departureHubId, Long arrivalHubId, String deliveryAddress, final String recipient, final String recipientSlackId, Long storeDeliveryManagerId) {
         Delivery delivery = new Delivery();
         delivery.orderId = orderId;
         delivery.deliveryRoads = deliveryRoads;
@@ -69,7 +69,7 @@ public class Delivery extends BaseEntity {
         this.deliveryStatus = deliveryStatus;
     }
 
-    public void deliverDelivery(Long deletedBy) {
+    public void deleteDelivery(Long deletedBy) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
     }
