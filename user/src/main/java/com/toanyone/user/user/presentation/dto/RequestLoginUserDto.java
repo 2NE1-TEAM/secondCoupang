@@ -1,4 +1,4 @@
-package com.toanyone.user.user.domain.dto;
+package com.toanyone.user.user.presentation.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
