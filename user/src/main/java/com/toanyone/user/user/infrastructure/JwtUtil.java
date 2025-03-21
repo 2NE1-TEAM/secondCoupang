@@ -17,22 +17,36 @@ public class JwtUtil {
     @Value("${service.jwt.secret-key}")
     private String secretKey;
 
-    private final Long EXPIRE_TIME = 60 * 60 * 1000L;
+    private final Long ACCESS_EXPIRE_TIME = 60 * 60 * 1000L;
+    private final Long REFRESH_EXPIRE_TIME = 7 * 60 * 60 * 1000L;
     private final String TOKEN_PREFIX = "Bearer ";
 
 
 
-    public String generateToken(Long userId, UserRole userRole) {
+    public String generateAccessToken(Long userId, UserRole userRole, String slackId, Long hubId, String nickName, String phone) {
 
         return   TOKEN_PREFIX+ Jwts.builder()
                 .claim("userId", userId)
                 .claim("userRole", userRole)
+                .claim("slackId", slackId)
+                .claim("hubId", hubId)
+                .claim("nickName", nickName)
+                .claim("phone", phone)
                 .issuer(issuer)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+EXPIRE_TIME))
+                .expiration(new Date(System.currentTimeMillis()+ ACCESS_EXPIRE_TIME))
+                .signWith(SignatureAlgorithm.HS512, secretKey)
+                .compact();
+    }
+
+    public String generateRefreshToken(Long userId) {
+        return Jwts.builder()
+                .claim("userId", userId)
+                .issuer(issuer)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRE_TIME))
                 .signWith(SignatureAlgorithm.HS512, secretKey)
                 .compact();
 
     }
-
 }

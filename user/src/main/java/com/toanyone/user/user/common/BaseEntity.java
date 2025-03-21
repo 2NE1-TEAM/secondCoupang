@@ -1,4 +1,4 @@
-package com.toanyone.user.user.domain.entity;
+package com.toanyone.user.user.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -34,4 +34,19 @@ public abstract class BaseEntity {
     protected LocalDateTime deletedAt;
 
     protected Long deletedBy;
+
+    public void updateDeleted(Long userId) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = userId;
+    }
+
+    public void updateCreated(Long userId) {
+        this.createdAt = LocalDateTime.now();
+        this.createdBy = userId;
+    }
+
+    public void updateUpdated(Long userId) {
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = userId;
+    }
 }
