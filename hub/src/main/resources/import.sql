@@ -1,0 +1,331 @@
+--  허브 거리 데이터 초기화
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('서울특별시 센터', 37.514575, 127.105399, '서울특별시 송파구 송파대로 55', '02-1234-5678');
+
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('경기 북부 센터', 37.658873, 126.832973, '경기도 고양시 덕양구 권율대로 570', '031-2234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('경기 남부 센터', 37.279456, 127.545136, '경기도 이천시 덕평로 257-21', '031-3234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('부산광역시 센터', 35.116535, 129.042189, '부산 동구 중앙대로 206', '051-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('대구광역시 센터', 35.885262, 128.611079, '대구 북구 태평로 161', '053-2234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('인천광역시 센터', 37.464531, 126.707896, '인천 남동구 정각로 29', '032-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('광주광역시 센터', 35.160172, 126.851515, '광주 서구 내방로 111', '062-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('대전광역시 센터', 36.351599, 127.378481, '대전 서구 둔산로 100', '042-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('울산광역시 센터', 35.538377, 129.311369, '울산 남구 중앙로 201', '052-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('세종특별자치시 센터', 36.487530, 127.282425, '세종특별자치시 한누리대로 2130', '044-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('강원특별자치도 센터', 37.882599, 127.734446, '강원특별자치도 춘천시 중앙로 1', '033-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('충청북도 센터', 36.635676, 127.491269, '충북 청주시 상당구 상당로 82', '043-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('충청남도 센터', 36.597889, 126.662531, '충남 홍성군 홍북읍 충남대로 21', '041-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('전북특별자치도 센터', 35.826185, 127.148526, '전북특별자치도 전주시 완산구 효자로 225', '063-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('전라남도 센터', 34.817113, 126.463046, '전남 무안군 삼향읍 오룡길 1', '061-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('경상북도 센터', 36.576020, 128.504620, '경북 안동시 풍천면 도청대로 455', '054-1234-5678');
+--
+-- INSERT INTO p_hub (hub_name, latitude, longitude, address, telephone)
+-- VALUES ('경상남도 센터', 35.227870, 128.681944, '경남 창원시 의창구 중앙대로 300', '055-1234-5678');
+
+
+
+
+
+
+
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 2, 31, 15);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 1, 31, 15);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 3, 50, 25);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 1, 50, 25);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 4, 308, 154);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 1, 308, 154);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 5, 222, 111);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 1, 222, 111);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 6, 40, 20);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 1, 40, 20);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 7, 237, 118);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 1, 237, 118);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 8, 119, 59);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 1, 119, 59);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 9, 296, 148);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 1, 296, 148);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 10, 104, 52);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 1, 104, 52);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 11, 73, 36);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 1, 73, 36);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 12, 96, 48);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 1, 96, 48);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 13, 102, 51);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 1, 102, 51);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 14, 169, 84);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 1, 169, 84);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 15, 277, 138);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 1, 277, 138);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 16, 168, 84);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 1, 168, 84);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (1, 17, 278, 139);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 1, 278, 139);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 3, 81, 40);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 2, 81, 40);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 4, 337, 168);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 2, 337, 168);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 5, 251, 125);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 2, 251, 125);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 6, 23, 11);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 2, 23, 11);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 7, 250, 125);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 2, 250, 125);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 8, 142, 71);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 2, 142, 71);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 9, 326, 163);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 2, 326, 163);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 10, 125, 62);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 2, 125, 62);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 11, 93, 46);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 2, 93, 46);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 12, 122, 61);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 2, 122, 61);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 13, 107, 53);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 2, 107, 53);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 14, 186, 93);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 2, 186, 93);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 15, 287, 143);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 2, 287, 143);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 16, 199, 99);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 2, 199, 99);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (2, 17, 305, 152);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 2, 305, 152);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 4, 263, 131);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 3, 263, 131);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 5, 175, 87);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 3, 175, 87);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 6, 86, 43);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 3, 86, 43);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 7, 223, 111);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 3, 223, 111);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 8, 94, 47);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 3, 94, 47);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 9, 248, 124);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 3, 248, 124);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 10, 83, 41);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 3, 83, 41);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 11, 63, 31);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 3, 63, 31);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 12, 65, 32);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 3, 65, 32);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 13, 112, 56);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 3, 112, 56);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 14, 151, 75);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 3, 151, 75);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 15, 269, 134);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 3, 269, 134);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 16, 119, 59);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 3, 119, 59);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (3, 17, 235, 117);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 3, 235, 117);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 5, 88, 44);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 4, 88, 44);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 6, 331, 165);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 4, 331, 165);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 7, 219, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 4, 219, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 8, 207, 103);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 4, 207, 103);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 9, 50, 25);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 4, 50, 25);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 10, 223, 111);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 4, 223, 111);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 11, 306, 153);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 4, 306, 153);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 12, 217, 108);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 4, 217, 108);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 13, 280, 140);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 4, 280, 140);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 14, 202, 101);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 4, 202, 101);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 15, 260, 130);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 4, 260, 130);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 16, 156, 78);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 4, 156, 78);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (4, 17, 38, 19);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 4, 38, 19);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 6, 247, 123);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 5, 247, 123);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 7, 190, 95);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 5, 190, 95);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 8, 132, 66);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 5, 132, 66);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 9, 78, 39);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 5, 78, 39);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 10, 146, 73);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 5, 146, 73);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 11, 218, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 5, 218, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 12, 135, 67);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 5, 135, 67);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 13, 207, 103);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 5, 207, 103);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 14, 146, 73);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 5, 146, 73);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 15, 240, 120);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 5, 240, 120);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 16, 70, 35);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 5, 70, 35);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (5, 17, 66, 33);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 5, 66, 33);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 7, 231, 115);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 6, 231, 115);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 8, 130, 65);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 6, 130, 65);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 9, 324, 162);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 6, 324, 162);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 10, 113, 56);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 6, 113, 56);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 11, 111, 55);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 6, 111, 55);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 12, 114, 57);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 6, 114, 57);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 13, 87, 43);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 6, 87, 43);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 14, 170, 85);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 6, 170, 85);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 15, 266, 133);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 6, 266, 133);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 16, 200, 100);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 6, 200, 100);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (6, 17, 298, 149);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 6, 298, 149);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 8, 130, 65);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 7, 130, 65);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 9, 249, 124);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 7, 249, 124);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 10, 140, 70);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 7, 140, 70);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 11, 286, 143);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 7, 286, 143);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 12, 161, 80);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 7, 161, 80);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 13, 145, 72);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 7, 145, 72);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 14, 73, 36);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 7, 73, 36);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 15, 52, 26);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 7, 52, 26);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 16, 218, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 7, 218, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (7, 17, 183, 91);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 7, 183, 91);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 9, 210, 105);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 8, 210, 105);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 10, 17, 8);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 8, 17, 8);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 11, 157, 78);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 8, 157, 78);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 12, 31, 15);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 8, 31, 15);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 13, 76, 38);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 8, 76, 38);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 14, 57, 28);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 8, 57, 28);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 15, 179, 89);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 8, 179, 89);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 16, 115, 57);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 8, 115, 57);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (8, 17, 172, 86);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 8, 172, 86);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 10, 224, 112);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 9, 224, 112);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 11, 283, 141);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 9, 283, 141);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 12, 213, 106);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 9, 213, 106);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 13, 285, 142);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 9, 285, 142);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 14, 218, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 9, 218, 109);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 15, 294, 147);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 9, 294, 147);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 16, 131, 65);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 9, 131, 65);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (9, 17, 70, 35);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 9, 70, 35);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 11, 147, 73);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 10, 147, 73);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 12, 26, 13);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 10, 26, 13);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 13, 63, 31);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 10, 63, 31);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 14, 67, 33);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 10, 67, 33);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 15, 186, 93);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 10, 186, 93);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 16, 123, 61);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 10, 123, 61);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (10, 17, 188, 94);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 10, 188, 94);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 12, 127, 63);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 11, 127, 63);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 13, 167, 83);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 11, 167, 83);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 14, 214, 107);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 11, 214, 107);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 15, 332, 166);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 11, 332, 166);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 16, 152, 76);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 11, 152, 76);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (11, 17, 282, 141);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 11, 282, 141);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 13, 83, 41);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 12, 83, 41);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 14, 88, 44);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 12, 88, 44);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 15, 209, 104);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 12, 209, 104);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 16, 102, 51);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 12, 102, 51);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (12, 17, 184, 92);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 12, 184, 92);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 14, 91, 45);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 13, 91, 45);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 15, 179, 89);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 13, 179, 89);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 16, 184, 92);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 13, 184, 92);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (13, 17, 244, 122);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 13, 244, 122);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 15, 122, 61);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 14, 122, 61);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 16, 155, 77);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 14, 155, 77);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (14, 17, 165, 82);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 14, 165, 82);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 16, 269, 134);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 15, 269, 134);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (15, 17, 226, 113);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 15, 226, 113);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (16, 17, 136, 68);
+-- INSERT INTO p_hub_distance (start_hub_id, end_hub_id, distance_km, estimated_time) VALUES (17, 16, 136, 68);
