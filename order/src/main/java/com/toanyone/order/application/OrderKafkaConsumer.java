@@ -1,6 +1,8 @@
 package com.toanyone.order.application;
 
-import com.toanyone.delivery.message.*;
+import com.toanyone.delivery.message.DeliveryFailedMessage;
+import com.toanyone.delivery.message.DeliveryStatusUpdatedMessage;
+import com.toanyone.delivery.message.DeliverySuccessMessage;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.message.DeliveryRequestMessage;
@@ -14,7 +16,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
