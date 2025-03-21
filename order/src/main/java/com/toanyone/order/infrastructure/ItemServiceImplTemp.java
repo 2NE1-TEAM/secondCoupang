@@ -1,16 +1,14 @@
-package com.toanyone.order.application;
+package com.toanyone.order.infrastructure;
 
+import com.toanyone.order.application.ItemService;
+import com.toanyone.order.application.dto.ItemRestoreRequestDto;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
-import com.toanyone.order.application.dto.ItemValidationResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 //Todo: FeignClient 추가하고 삭제 예정
 @Service
-public class ItemServiceImplTemp implements ItemService{
+public class ItemServiceImplTemp implements ItemService {
 
     @Override
     public boolean validateItems(@Valid ItemValidationRequestDto request) {
@@ -19,5 +17,10 @@ public class ItemServiceImplTemp implements ItemService{
         } else {
             return false;
         }
+    }
+
+    @Override
+    public boolean restoreInventory(ItemRestoreRequestDto request) {
+        return true;
     }
 }

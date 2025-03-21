@@ -1,16 +1,20 @@
 package com.toanyone.order.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toanyone.order.common.BaseEntity;
+import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Entity
 @Getter
 @Table(name = "p_order")
@@ -26,6 +30,9 @@ public class Order extends BaseEntity {
     private Long userId;
 
     @Column(nullable = false)
+    private String ordererName;
+
+    @Column(nullable = false)
     private Long supplyStoreId;
 
     @Column(nullable = false)
@@ -34,19 +41,32 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private int totalPrice;
 
+    @Column
+    private Long paymentId;
+
+    @Column(nullable = false)
+    private String request;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
+    @Column(name = "order_status", nullable = false)
     private OrderStatus status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
-    public static Order create(Long userId, Long supplyStoreId, Long receiveStoreId) {
+    public static Order create(Long userId, String ordererName, String request, Long supplyStoreId, Long receiveStoreId) {
         Order order = new Order();
         order.userId = userId;
+        order.ordererName = ordererName;
+        order.request = request;
         order.supplyStoreId = supplyStoreId;
         order.receiveStoreId = receiveStoreId;
+        order.status = OrderStatus.PAYMENT_WAITING;
         return order;
+    }
+
+    public void assignPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
     }
 
     public void addOrderItem(OrderItem item) {
@@ -54,17 +74,61 @@ public class Order extends BaseEntity {
         items.add(item);
     }
 
+
     public void calculateTotalPrice() {
         this.totalPrice = items.stream().mapToInt(OrderItem::getTotalPrice).sum();
     }
 
+    public void completedPayment() {
+        if (this.status != OrderStatus.PAYMENT_WAITING) {
+            log.info("PAYMENT_WAITING -> PREPARING");
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.PREPARING;
+    }
 
-    private enum OrderStatus {
+    public void startDelivery() {
+        if (this.status != OrderStatus.PREPARING) {
+            log.info("PREPARING -> DELIVERING");
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.DELIVERING;
+    }
 
-        PREPARING,
-        DELIVERING,
-        DELIVERY_COMPLETED,
-        CANCELED;
+    public void completedDelivery() {
+        if (this.status != OrderStatus.DELIVERING) {
+            log.info("DELIVERING -> DELIVERY_COMPLETED");
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.DELIVERY_COMPLETED;
+    }
+
+    public void cancel() {
+        if (this.status == OrderStatus.PREPARING || this.status == OrderStatus.PAYMENT_WAITING) {
+            this.status = OrderStatus.CANCELED;
+        }
+        throw new OrderException.OrderStatusIllegalException();
+    }
+
+    @Override
+    public void delete(Long userId) {
+        if (this.deletedAt != null) throw new OrderException.OrderAlreadyDeletedException();
+        super.delete(userId);
+        this.status = OrderStatus.CANCELED;
+    }
+    
+
+    @Getter
+    @AllArgsConstructor
+    public enum OrderStatus {
+
+        PAYMENT_WAITING("결제 진행 중"),
+        PREPARING("배송 준비 중"),
+        DELIVERING("배송 중"),
+        DELIVERY_COMPLETED("배송 완료"),
+        CANCELED("주문 취소");
+
+        private final String description;
 
     }
 

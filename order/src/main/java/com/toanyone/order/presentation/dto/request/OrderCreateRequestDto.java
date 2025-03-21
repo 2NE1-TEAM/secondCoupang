@@ -8,10 +8,11 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class OrderCreateRequestDto {
 
     @NotNull
-    private Long userId;
+    private String ordererName;
 
     @NotNull
     private Long supplyStoreId;
@@ -25,8 +26,12 @@ public class OrderCreateRequestDto {
     @NotNull
     private DeliveryRequestDto deliveryInfo;
 
+    @NotNull
+    private String request;
+
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class ItemRequestDto {
 
         @NotNull
@@ -45,6 +50,7 @@ public class OrderCreateRequestDto {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class DeliveryRequestDto {
 
         @NotBlank

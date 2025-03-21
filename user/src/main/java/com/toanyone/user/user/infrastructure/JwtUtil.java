@@ -23,7 +23,7 @@ public class JwtUtil {
 
 
 
-    public String generateAccessToken(Long userId, UserRole userRole, String slackId, Long hubId, String nickName) {
+    public String generateAccessToken(Long userId, UserRole userRole, String slackId, Long hubId, String nickName, String phone) {
 
         return   TOKEN_PREFIX+ Jwts.builder()
                 .claim("userId", userId)
@@ -31,6 +31,7 @@ public class JwtUtil {
                 .claim("slackId", slackId)
                 .claim("hubId", hubId)
                 .claim("nickName", nickName)
+                .claim("phone", phone)
                 .issuer(issuer)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+ ACCESS_EXPIRE_TIME))

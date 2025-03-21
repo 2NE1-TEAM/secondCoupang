@@ -1,4 +1,4 @@
-package com.toanyone.gateway;
+package com.toanyone.gateway.infrastructure;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
