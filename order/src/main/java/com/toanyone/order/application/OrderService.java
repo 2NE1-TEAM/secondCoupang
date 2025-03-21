@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
 
+    private static final int ORDER_ITEM_MAX = 20;
+
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ItemService itemService;
@@ -57,14 +59,18 @@ public class OrderService {
 
         //Todo: 주문 처리가 완료되지 않은 상태에서 같은 입력의 주문 예외 처리
 
-        //Item 검증
+        if (request.getItems().size() > ORDER_ITEM_MAX) {
+            throw new OrderException.OrderBadRequestException();
+        }
+
         boolean isValid = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request));
 
         if (!isValid) {
             throw new OrderException.InsufficientStockException();
         }
 
-        Order order = Order.create(userId, request.getSupplyStoreId(), request.getReceiveStoreId());
+        Order order = Order.create(userId, request.getOrdererName(), request.getRequest(),
+                request.getSupplyStoreId(), request.getReceiveStoreId());
 
         log.info("orderId : {}", order.getId());
 
@@ -81,7 +87,7 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request,order.getId());
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId() ,supplyStore.getData().getHubId());
 
         redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage);
 

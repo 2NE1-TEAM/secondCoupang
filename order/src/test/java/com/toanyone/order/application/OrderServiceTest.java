@@ -53,7 +53,7 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
 
-        order = Order.create(1L, 1L, 2L);
+        order = Order.create(1L, "ordererName", "12시 전에",1L, 2L);
 
         //주문 생성 요청
         OrderCreateServiceDto.ItemRequestDto itemRequestDto1 = OrderCreateServiceDto.ItemRequestDto.builder()

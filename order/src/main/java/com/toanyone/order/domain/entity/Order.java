@@ -30,6 +30,9 @@ public class Order extends BaseEntity {
     private Long userId;
 
     @Column(nullable = false)
+    private String ordererName;
+
+    @Column(nullable = false)
     private Long supplyStoreId;
 
     @Column(nullable = false)
@@ -41,6 +44,9 @@ public class Order extends BaseEntity {
     @Column
     private Long paymentId;
 
+    @Column(nullable = false)
+    private String request;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     private OrderStatus status;
@@ -48,9 +54,11 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
-    public static Order create(Long userId, Long supplyStoreId, Long receiveStoreId) {
+    public static Order create(Long userId, String ordererName, String request, Long supplyStoreId, Long receiveStoreId) {
         Order order = new Order();
         order.userId = userId;
+        order.ordererName = ordererName;
+        order.request = request;
         order.supplyStoreId = supplyStoreId;
         order.receiveStoreId = receiveStoreId;
         order.status = OrderStatus.PAYMENT_WAITING;

@@ -41,7 +41,8 @@ public class OrderKafkaConsumer {
                 throw new OrderException.DeliveryNotFoundException();
             }
             redisTemplate.delete(String.valueOf(message.getOrderId()));
-            log.info("DELIVERY REQUEST MESSAGE : {}", deliveryMessage.getOrderId(), deliveryMessage.getDeliveryAddress(), deliveryMessage.getRecipient());
+            log.info("DELIVERY REQUEST MESSAGE : {}, {}, {}, {}", deliveryMessage.getOrderId(),
+                    deliveryMessage.getDeliveryAddress(), deliveryMessage.getRecipient(),deliveryMessage.getItems().size());
             log.info("PAYMENT SUCCESS MESSAGE : {}, {}, {}", message.getOrderId(), message.getPaymentId(), message.getPaymentStatus());
             orderService.updateOrderStatus(message.getOrderId(), message.getPaymentStatus());
             orderKafkaProducer.sendDeliveryMessage(deliveryMessage, userId, role, slackId);
@@ -84,7 +85,7 @@ public class OrderKafkaConsumer {
             //Todo: Slack 메시지 보내기
 //            orderService.sendSlackMessage(slackId, "배송 요청이 시작됩니다.");
 
-            log.info("DELIVERY SUCCESS MESSAGE : {}, {}", message.getOrderId(), message.getDeliveryStatus());
+            log.info("DELIVERY SUCCESS MESSAGE : {}, {}, {}, {}", message.getOrderId(), message.getDeliveryStatus());
         } catch (ClassCastException e){
             log.error("ClassCastException : {}", e.getMessage());
         }

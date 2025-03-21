@@ -11,6 +11,8 @@ import java.util.List;
 public class OrderCreateServiceDto {
     private Long supplyStoreId;
     private Long receiveStoreId;
+    private String ordererName;
+    private String request;
     private List<OrderCreateServiceDto.ItemRequestDto> items;
     private OrderCreateServiceDto.DeliveryRequestDto deliveryInfo;
 
@@ -26,6 +28,7 @@ public class OrderCreateServiceDto {
     @Getter
     @Builder
     public static class DeliveryRequestDto {
+        private String deliveryAddress;
         private String recipient;
     }
 
