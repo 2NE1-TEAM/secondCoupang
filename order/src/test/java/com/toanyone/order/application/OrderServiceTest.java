@@ -83,7 +83,6 @@ class OrderServiceTest {
         itemRequests.add(itemRequestDto3);
 
         orderRequestDto = OrderCreateServiceDto.builder()
-                .userId(1L)
                 .supplyStoreId(2L)
                 .receiveStoreId(3L)
                 .deliveryInfo(deliveryRequestDto)
@@ -130,7 +129,7 @@ class OrderServiceTest {
 
 
         //when
-        OrderCreateResponseDto responseDto = orderService.createOrder(orderRequestDto);
+        OrderCreateResponseDto responseDto = orderService.createOrder(1L, "USER", 2L, orderRequestDto);
         int itemCount = responseDto.getOrderItemIds().size();
         int responseTotalPrice = responseDto.getTotalPrice();
 
