@@ -1,5 +1,6 @@
 package com.toanyone.ai.application.service;
 
+import com.toanyone.ai.presentation.dto.RequestCreateMessageDto;
 import com.toanyone.ai.presentation.dto.RequestGeminiDto;
 import com.toanyone.ai.presentation.dto.ResponseGeminiDto;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,10 @@ public class AiService {
     @Value("${ai.gemini.key}")
     private String apiKey;
 
-    public String generateContent(String text) {
+    public String createAnswer(String question) {
         RequestGeminiDto request = new RequestGeminiDto(
                 List.of(new RequestGeminiDto.Content(
-                        List.of(new RequestGeminiDto.Part(text))))
+                        List.of(new RequestGeminiDto.Part(question))))
         );
 
         ResponseGeminiDto response = webClient.post()
@@ -35,15 +36,24 @@ public class AiService {
                 .bodyToMono(ResponseGeminiDto.class)
                 .block(); // 응답을 String으로 변환
 
-        String answer = response.getCandidates()
+        return response.getCandidates()
                 .get(0)
                 .getContent()
                 .getParts()
                 .get(0)
                 .getText();
+    }
 
-        slackService.sendMessage(answer);
+    public String createQuestion(RequestCreateMessageDto r) {
 
-        return answer;
+        return "주문 번호 : " + r.getOrderId() + "\n" +
+                "주문자 정보 : " + r.getOrderNickName() + " / " + r.getOrderSlackId() + "\n" +
+                "상품 정보 : " + r.getItemInfo() + "\n" +
+                "요청 사항 : " + r.getRequest() + "\n" +
+                "발송지 : " + r.getShippingAddress() + "\n" +
+                "경유지 : " + r.getStopOver() + "\n" +
+                "도착지 : " + r.getDestination() + "\n" +
+                "배송담당자 : " + r.getDeliveryPerson() + " / " + r.getDeliveryPersonSlackId() + "\n";
+
     }
 }

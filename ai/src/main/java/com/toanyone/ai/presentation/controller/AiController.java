@@ -14,12 +14,5 @@ public class AiController {
 
     private final AiService aiService;
 
-    @PostMapping()
-    public String GenerateContent(@RequestBody String text){
-
-        return this.aiService.generateContent(text);
-
-    }
-
 
 }
