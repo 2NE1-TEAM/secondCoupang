@@ -20,11 +20,15 @@ public class SlackMessage extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "slack_message_id")
     private Long id;
+    @Column(nullable = false)
     private Long userId;
+    @Column(nullable = false, length = 2000)
     private String message;
+    @Column(nullable = false)
     private LocalDateTime shippingTime;
 
     @OneToOne(fetch = FetchType.LAZY)
     private Ai ai;
+
 
 }

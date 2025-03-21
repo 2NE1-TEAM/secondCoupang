@@ -22,6 +22,8 @@ server:
 ai:
   gemini:
     key: ${GEMINI_API}
+slack:
+  api: ${SLACK_API}
 
 #eureka:
 #  client:
