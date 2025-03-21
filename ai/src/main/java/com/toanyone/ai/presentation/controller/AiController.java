@@ -1,6 +1,6 @@
 package com.toanyone.ai.presentation.controller;
 
-import com.toanyone.ai.application.AiService;
+import com.toanyone.ai.application.service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

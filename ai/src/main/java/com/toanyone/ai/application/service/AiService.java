@@ -1,28 +1,23 @@
-package com.toanyone.ai.application;
+package com.toanyone.ai.application.service;
 
 import com.toanyone.ai.presentation.dto.RequestGeminiDto;
 import com.toanyone.ai.presentation.dto.ResponseGeminiDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AiService {
 
     private final WebClient webClient;
+    private final SlackService slackService;
 
     @Value("${ai.gemini.key}")
     private String apiKey;
-
-    public AiService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder
-                .baseUrl("https://generativelanguage.googleapis.com/v1beta")
-                .defaultHeader("Content-Type", "application/json")
-                .build();
-    }
 
     public String generateContent(String text) {
         RequestGeminiDto request = new RequestGeminiDto(
@@ -40,11 +35,15 @@ public class AiService {
                 .bodyToMono(ResponseGeminiDto.class)
                 .block(); // 응답을 String으로 변환
 
-        return response.getCandidates()
+        String answer = response.getCandidates()
                 .get(0)
                 .getContent()
                 .getParts()
                 .get(0)
                 .getText();
+
+        slackService.sendMessage(answer);
+
+        return answer;
     }
 }

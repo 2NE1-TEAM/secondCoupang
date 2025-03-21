@@ -17,7 +17,7 @@ public class Ai extends BaseEntity {
     @Column(name = "ai_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4000)
     private String question;
     @Column(nullable = false)
     private String answer;
