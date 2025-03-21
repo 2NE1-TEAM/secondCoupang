@@ -59,8 +59,8 @@ public class CustomFilter implements Filter {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
 
-        if (requestURI.startsWith(DELIVERY_PATH) && (request.getMethod().equals("DELETE"))) {
-            if (role.get().equals("MASTER") || role.get().equals("HUB")) {
+        if (requestURI.startsWith(DELIVERY_PATH) && (request.getMethod().equals("DELETE") || request.getMethod().equals("PUT"))) {
+            if (role.get().equals("MASTER") || role.get().equals("HUB") || role.get().equals("DELIVERY")) {
                 filterChain.doFilter(request, response);
             }
             response.sendError(HttpServletResponse.SC_FORBIDDEN);

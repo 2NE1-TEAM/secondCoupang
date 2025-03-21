@@ -1,10 +1,7 @@
 package com.toanyone.delivery.presentation;
 
 import com.toanyone.delivery.application.DeliveryService;
-import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dtos.request.*;
 import com.toanyone.delivery.application.dtos.response.*;
 import com.toanyone.delivery.common.utils.MultiResponse;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
@@ -30,6 +27,12 @@ public class DeliveryController {
     public ResponseEntity<?> getDeliveries(@ModelAttribute GetDeliverySearchConditionRequestDto request) {
         CursorPage<GetDeliveryResponseDto> responseDtos = deliveryService.getDeliveries(request);
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
+    }
+
+    @PutMapping("/{deliveryId}")
+    public ResponseEntity<?> updatedDelivery(@PathVariable("deliveryId") Long deliveryId, @RequestBody @Valid UpdateDeliveryRequestDto request) {
+        UpdateDeliveryResponseDto response = deliveryService.updateDelivery(deliveryId, request);
+        return ResponseEntity.ok(SingleResponse.success(response));
     }
 
     @DeleteMapping("/{deliveryId}")

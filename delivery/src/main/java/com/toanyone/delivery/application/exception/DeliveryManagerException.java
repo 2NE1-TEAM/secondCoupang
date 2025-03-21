@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public class DeliveryManagerException extends CustomException {
-
+    
     public DeliveryManagerException(String message, HttpStatus status) {
         super(message, status);
     }
@@ -38,6 +38,12 @@ public class DeliveryManagerException extends CustomException {
     public static class UnauthorizedDeliveryManagerDeleteException extends DeliveryManagerException {
         public UnauthorizedDeliveryManagerDeleteException() {
             super("해당 유저는 담당 매니저 정보 삭제 권한이 없습니다.", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    public static class InvalidHubException extends DeliveryManagerException {
+        public InvalidHubException() {
+            super("등록하려는 배송담당자의 소속허브정보가 존재하지 않습니다", HttpStatus.BAD_REQUEST);
         }
     }
 }
