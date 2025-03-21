@@ -1,4 +1,4 @@
-package com.toanyone.user.user.domain.dto;
+package com.toanyone.user.user.presentation.dto;
 
 import com.toanyone.user.user.domain.UserRole;
 import jakarta.persistence.Entity;
@@ -34,4 +34,6 @@ public class RequestCreateUserDto {
     private UserRole role;
     @NotNull
     private Long hubId;
+    @NotNull
+    private String phone;
 }

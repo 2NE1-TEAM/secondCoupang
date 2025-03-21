@@ -1,8 +1,11 @@
 package com.toanyone.order.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toanyone.order.common.BaseEntity;
+import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,7 +38,7 @@ public class Order extends BaseEntity {
     private int totalPrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
+    @Column(name = "order_status", nullable = false)
     private OrderStatus status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, orphanRemoval = true)
@@ -46,6 +49,7 @@ public class Order extends BaseEntity {
         order.userId = userId;
         order.supplyStoreId = supplyStoreId;
         order.receiveStoreId = receiveStoreId;
+        order.status = OrderStatus.PREPARING;
         return order;
     }
 
@@ -54,17 +58,50 @@ public class Order extends BaseEntity {
         items.add(item);
     }
 
+
     public void calculateTotalPrice() {
         this.totalPrice = items.stream().mapToInt(OrderItem::getTotalPrice).sum();
     }
 
+    public void startDelivery() {
+        if (this.status != OrderStatus.PREPARING) {
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.DELIVERING;
+    }
 
-    private enum OrderStatus {
+    public void completedDelivery() {
+        if (this.status != OrderStatus.DELIVERING) {
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.DELIVERY_COMPLETED;
+    }
 
-        PREPARING,
-        DELIVERING,
-        DELIVERY_COMPLETED,
-        CANCELED;
+    public void cancel() {
+        if (this.status != OrderStatus.PREPARING) {
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.CANCELED;
+    }
+
+    @Override
+    public void delete(Long userId) {
+        if (this.deletedAt != null) throw new OrderException.OrderAlreadyDeletedException();
+        super.delete(userId);
+        this.status = OrderStatus.CANCELED;
+    }
+    
+
+    @Getter
+    @AllArgsConstructor
+    public enum OrderStatus {
+
+        PREPARING("배송 준비 중"),
+        DELIVERING("배송 중"),
+        DELIVERY_COMPLETED("배송 완료"),
+        CANCELED("주문 취소");
+
+        private final String description;
 
     }
 

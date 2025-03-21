@@ -5,5 +5,7 @@ import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.domain.DeliveryManager;
 
 public interface CustomDeliveryMangerRepository {
-    CursorPage<GetDeliveryManagerResponseDto> getDeliveryManagers(Long deliveryManagerId, String sortBy, DeliveryManager.DeliveryManagerType deliveryManagerType, int limit);
+    CursorPage<GetDeliveryManagerResponseDto> getDeliveryManagers(Long deliveryManagerId, String sortBy, DeliveryManager.DeliveryManagerType deliveryManagerType, Long userId, String name, int limit);
+
+    Long nextDeliveryOrder(Long hubId);
 }

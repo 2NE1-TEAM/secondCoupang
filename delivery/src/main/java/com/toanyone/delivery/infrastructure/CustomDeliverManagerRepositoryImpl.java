@@ -31,6 +31,14 @@ public class CustomDeliverManagerRepositoryImpl implements CustomDeliveryMangerR
         return deliveryManagerId != null ? deliveryManager.id.gt(deliveryManagerId) : null;
     }
 
+    BooleanExpression searchByUserId(Long userId) {
+        return userId != null ? deliveryManager.userId.eq(userId) : null;
+    }
+
+    BooleanExpression searchByName(String name) {
+        return name != null ? deliveryManager.name.contains(name) : null;
+    }
+
     OrderSpecifier<LocalDateTime> sortBy(String sortBy) {
         if (sortBy == null) {
             return deliveryManager.createdAt.asc();
@@ -41,12 +49,13 @@ public class CustomDeliverManagerRepositoryImpl implements CustomDeliveryMangerR
         }
         return sortBy.equals("오름차순") ? deliveryManager.createdAt.asc() : deliveryManager.createdAt.desc();
     }
-    
+
     @Override
-    public CursorPage<GetDeliveryManagerResponseDto> getDeliveryManagers(Long deliveryManagerId, String sortBy, DeliveryManagerType deliveryManagerType, int limit) {
+    public CursorPage<GetDeliveryManagerResponseDto> getDeliveryManagers(Long deliveryManagerId, String sortBy, DeliveryManagerType deliveryManagerType, Long userId, String name, int limit) {
         List<DeliveryManager> deliveryManagers = queryFactory.selectFrom(deliveryManager)
                 .from(deliveryManager)
-                .where(searchByDeliveryManagerType(deliveryManagerType), searchByDeliveryManagerId(deliveryManagerId))
+                .where(searchByDeliveryManagerType(deliveryManagerType), searchByDeliveryManagerId(deliveryManagerId)
+                        , searchByUserId(userId), searchByName(name))
                 .limit(limit + 1)
                 .orderBy(sortBy(sortBy))
                 .fetch();
@@ -61,6 +70,10 @@ public class CustomDeliverManagerRepositoryImpl implements CustomDeliveryMangerR
                 .map(GetDeliveryManagerResponseDto::from)
                 .toList();
 
+        if (responseDtos.isEmpty()) {
+            return new CursorPage<>(null, null, false);
+        }
+
         long cursorId = responseDtos.stream()
                 .mapToLong(GetDeliveryManagerResponseDto::getDeliveryManagerId)
                 .max().getAsLong();
@@ -68,5 +81,21 @@ public class CustomDeliverManagerRepositoryImpl implements CustomDeliveryMangerR
         return new CursorPage<>(responseDtos,
                 new CursorInfo(cursorId),
                 hasNext);
+    }
+
+    @Override
+    public Long nextDeliveryOrder(Long hubId) {
+        final Long initialDeliverOrder = 1L;
+
+        Long nextDeliveryOrderNumber = queryFactory
+                .select(deliveryManager.deliveryOrder.max().add(1))
+                .from(deliveryManager)
+                .where(deliveryManager.hubId.eq(hubId))
+                .fetchFirst();
+
+        if (nextDeliveryOrderNumber != null) {
+            return nextDeliveryOrderNumber;
+        }
+        return initialDeliverOrder;
     }
 }

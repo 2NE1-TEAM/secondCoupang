@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -86,6 +87,15 @@ public class Delivery extends BaseEntity {
 
         DeliveryStatus(String value) {
             this.value = value;
+        }
+
+        public static Optional<Delivery.DeliveryStatus> fromValue(String value) {
+            for (Delivery.DeliveryStatus type : values()) {
+                if (type.value.equals(value)) {
+                    return Optional.of(type);
+                }
+            }
+            return Optional.empty();
         }
     }
 

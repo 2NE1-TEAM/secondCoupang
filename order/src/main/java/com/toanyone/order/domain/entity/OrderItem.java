@@ -1,8 +1,11 @@
 package com.toanyone.order.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toanyone.order.common.BaseEntity;
+import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,12 +38,16 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false, updatable = false)
     private Order order;
 
+    @Enumerated(EnumType.STRING)
+    private OrderItemStatus status;
+
     public static OrderItem create(Long itemId, String itemName, int quantity, int price) {
         OrderItem orderItem = new OrderItem();
         orderItem.itemId = itemId;
         orderItem.itemName = itemName;
         orderItem.quantity = quantity;
         orderItem.price = price;
+        orderItem.status = OrderItemStatus.PREPARING;
         return orderItem;
     }
 
@@ -51,4 +58,23 @@ public class OrderItem extends BaseEntity {
     public void assignOrder(Order order) {
         this.order = order;
     }
+
+    public void cancel() {
+        if (this.status != OrderItemStatus.PREPARING){
+            throw new OrderException.OrderItemCancelFailedException();
+        }
+        this.status = OrderItemStatus.CANCELED;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public enum OrderItemStatus {
+        PREPARING("상품 준비 중"),
+
+        CANCELED("상픔 취소");
+
+
+        private final String description;
+    }
+
 }
