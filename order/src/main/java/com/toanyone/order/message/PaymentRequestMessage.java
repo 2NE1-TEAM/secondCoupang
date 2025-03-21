@@ -1,4 +1,4 @@
-package com.toanyone.order.application.dto.message;
+package com.toanyone.order.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentOrderMessage {
-    private Long paymentId;
+public class PaymentRequestMessage {
     private Long orderId;
-    private String paymentStatus;
+    private int amount;
 }

@@ -1,4 +1,4 @@
-package com.toanyone.order.application.dto.message;
+package com.toanyone.order.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDeliveryMessage {
+public class DeliveryRequestMessage{
     private Long orderId;
     private Long supplyStoreId;
     private Long receiveStoreId;
-    private Long supplyHubId;
-    private Long receiveId;
+    private Long arrivalHubId;
+    private Long departureHubId;
+    private String deliveryAddress;
     private String recipient;
 }

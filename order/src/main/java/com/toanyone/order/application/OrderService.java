@@ -1,14 +1,12 @@
 package com.toanyone.order.application;
 
 import com.toanyone.order.application.dto.StoreFindResponseDto;
-import com.toanyone.order.application.dto.message.OrderDeliveryMessage;
-import com.toanyone.order.application.dto.message.OrderPaymentMessage;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
-import com.toanyone.order.application.mapper.MessageConverter;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
+import com.toanyone.order.application.mapper.MessageConverter;
 import com.toanyone.order.common.CursorPage;
 import com.toanyone.order.common.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
@@ -16,14 +14,20 @@ import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
+import com.toanyone.order.message.DeliveryRequestMessage;
+import com.toanyone.order.message.PaymentRequestMessage;
 import com.toanyone.order.presentation.dto.response.*;
+import com.toanyone.payment.message.PaymentSuccessMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j(topic = "OrderService")
@@ -38,16 +42,10 @@ public class OrderService {
     private final ItemRequestMapper itemRequestMapper;
     private final MessageConverter messageConverter;
     private final OrderKafkaProducer orderKafkaProducer;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
     public OrderCreateResponseDto createOrder(Long userId, String role, Long slackId, OrderCreateServiceDto request) {
-
-//        boolean isValidSupplyStore = storeService.validateStore(request.getSupplyStoreId());
-//        boolean isValidReceiveStore = storeService.validateStore(request.getReceiveStoreId());
-//
-//        if (!isValidSupplyStore || !isValidReceiveStore) {
-//            throw new OrderException.InvalidStoreException();
-//        }
 
         //Store 검증
         SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(request.getSupplyStoreId());
@@ -83,12 +81,12 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        OrderPaymentMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
-        orderKafkaProducer.sendPaymentMessage(paymentMessage, userId, role, slackId);
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request,order.getId());
 
-        OrderDeliveryMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request,order.getId());
-        orderKafkaProducer.sendDeliveryMessage(deliveryMessage, userId, role, slackId);
+        redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage);
 
+        PaymentRequestMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
+        orderKafkaProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
     }
@@ -97,15 +95,11 @@ public class OrderService {
     @Transactional
     public OrderCancelResponseDto cancelOrder(OrderCancelServiceDto request) {
 
-        Order order = validateOrderWithItemsExists(request.getOrderId());
-
         try {
+            Order order = validateOrderWithItemsExists(request.getOrderId());
 
             //ItemClient에 재고 restore
-            boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
-            if (!restoreSuccess) {
-                throw new OrderException.RestoreInventoryFailedException();
-            }
+            restoreInventory(order);
 
             //Todo: 결제 취소
 
@@ -119,7 +113,7 @@ public class OrderService {
 
             return OrderCancelResponseDto.fromOrder(order);
 
-        } catch (Exception e) {
+        }catch (Exception e) {
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -177,6 +171,36 @@ public class OrderService {
         CursorPage<Order> orders = orderRepository.search(request);
         List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
         return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
+    }
+
+    @Transactional(readOnly = true)
+    public Order findOrderWithItems(Long orderId) {
+        return validateOrderWithItemsExists(orderId);
+    }
+
+    public void restoreInventory(Order order) {
+        boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
+        if (!restoreSuccess) {
+            throw new OrderException.RestoreInventoryFailedException();
+        }
+    }
+
+    @Transactional
+    public void updateOrderStatus(Long orderId, String status) {
+        Order order = validateOrderExists(orderId);
+        switch (status) {
+            case "PAYMENT_SUCCESS":
+                order.completedPayment();
+                break;
+            case "DELIVERING":
+                order.startDelivery();
+                break;
+            case "DELIVERY_COMPLETED":
+                order.completedDelivery();
+                break;
+            default:
+                break;
+        }
     }
 
 }
