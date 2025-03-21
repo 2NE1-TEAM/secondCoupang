@@ -44,12 +44,12 @@ public class Delivery extends BaseEntity {
     private String recipient;
 
     @Column(nullable = false)
-    private Long recipientSlackId;
+    private String recipientSlackId;
 
     @Column(nullable = false)
     private Long storeDeliveryManagerId;
 
-    public static Delivery createDelivery(Long orderId, List<DeliveryRoad> deliveryRoads, Long departureHubId, Long arrivalHubId, String deliveryAddress, final String recipient, Long recipientSlackId, Long storeDeliveryManagerId) {
+    public static Delivery createDelivery(Long orderId, List<DeliveryRoad> deliveryRoads, Long departureHubId, Long arrivalHubId, String deliveryAddress, final String recipient, final String recipientSlackId, Long storeDeliveryManagerId) {
         Delivery delivery = new Delivery();
         delivery.orderId = orderId;
         delivery.deliveryRoads = deliveryRoads;
@@ -69,7 +69,32 @@ public class Delivery extends BaseEntity {
         this.deliveryStatus = deliveryStatus;
     }
 
-    public void deliverDelivery(Long deletedBy) {
+    public void updatedDelivery(DeliveryStatus deliveryStatus, String deliveryAddress, String recipient, String recipientSlackId) {
+        updateDeliveryStatus(deliveryStatus);
+        updateDeliveryAddress(deliveryAddress);
+        updateRecipient(recipient);
+        updateRecipientSlackId(recipientSlackId);
+    }
+
+    public void updateRecipient(String recipient) {
+        if (recipient != null) {
+            this.recipient = recipient;
+        }
+    }
+
+    public void updateDeliveryAddress(String deliveryAddress) {
+        if (deliveryAddress != null) {
+            this.deliveryAddress = deliveryAddress;
+        }
+    }
+
+    public void updateRecipientSlackId(String recipientSlackId) {
+        if (recipientSlackId != null) {
+            this.recipientSlackId = recipientSlackId;
+        }
+    }
+
+    public void deleteDelivery(Long deletedBy) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
     }

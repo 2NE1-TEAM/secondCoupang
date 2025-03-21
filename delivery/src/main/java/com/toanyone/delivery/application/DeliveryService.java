@@ -1,15 +1,13 @@
 package com.toanyone.delivery.application;
 
-import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.dtos.request.*;
+import com.toanyone.delivery.application.dtos.response.*;
 import com.toanyone.delivery.application.exception.DeliveryException;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
-import com.toanyone.delivery.domain.Delivery;
 import com.toanyone.delivery.common.utils.SingleResponse;
+import com.toanyone.delivery.common.utils.UserContext;
+import com.toanyone.delivery.domain.Delivery;
 import com.toanyone.delivery.domain.DeliveryManager;
 import com.toanyone.delivery.domain.DeliveryManager.DeliveryManagerType;
 import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
@@ -19,10 +17,17 @@ import com.toanyone.delivery.domain.repository.DeliveryRepository;
 import com.toanyone.delivery.infrastructure.client.HubClient;
 import com.toanyone.delivery.infrastructure.client.dto.GetHubResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -34,6 +39,14 @@ public class DeliveryService {
     private final CustomDeliveryRepository customDeliveryRepository;
     private final CustomDeliveryMangerRepository customDeliveryMangerRepository;
     private final HubClient hubClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @KafkaListener(topics = "delivery.requested", groupId = "delivery")
+    public void consumeDeliveryMessage(ConsumerRecord<String, DeliveryRequestMessage> record) throws IOException {
+
+        DeliveryRequestMessage message = record.value();
+        System.out.println();
+    }
 
     public Long createDeliveryManager(CreateDeliveryManagerRequestDto request) {
         final Long hubDeliveryManagersHubId = 0L;
@@ -88,6 +101,80 @@ public class DeliveryService {
         return response;
     }
 
+    public DeleteDeliveryResponseDto deleteDelivery(Long deliveryId) {
+        UserContext userInfo = UserContext.getUserContext();
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            delivery.deleteDelivery(userInfo.getUserId());
+            Delivery deletedDelivery = deliveryRepository.save(delivery);
+            return DeleteDeliveryResponseDto.from(deletedDelivery);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId())) {
+                delivery.deleteDelivery(userInfo.getUserId());
+                Delivery deletedDelivery = deliveryRepository.save(delivery);
+                return DeleteDeliveryResponseDto.from(deletedDelivery);
+            }
+        }
+        throw new DeliveryException.UnauthorizedDeliveryDeleteException();
+    }
+
+    public UpdateDeliveryResponseDto updateDelivery(Long deliveryId, UpdateDeliveryRequestDto request) {
+
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        UserContext userInfo = UserContext.getUserContext();
+
+        Delivery.DeliveryStatus deliveryStatus = Delivery.DeliveryStatus.fromValue(request.getDeliveryStatus())
+                .orElseThrow(DeliveryException.InvalidDeliveryTypeException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
+            Delivery updatedDelivery = deliveryRepository.save(delivery);
+            verifyDeliveryStatus(updatedDelivery);
+            return UpdateDeliveryResponseDto.from(delivery);
+        }
+        if (userInfo.getRole().equals("HUB") && (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId()))) {
+            delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
+            Delivery updatedDelivery = deliveryRepository.save(delivery);
+            verifyDeliveryStatus(updatedDelivery);
+            return UpdateDeliveryResponseDto.from(delivery);
+        }
+        if (userInfo.getRole().equals("DELIVERY")) {
+            DeliveryManager storeDeliveryManager = deliveryManagerRepository
+                    .findById(delivery.getStoreDeliveryManagerId())
+                    .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+            if (userInfo.getUserId().equals(storeDeliveryManager.getUserId())) {
+                delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
+                Delivery updatedDelivery = deliveryRepository.save(delivery);
+                verifyDeliveryStatus(updatedDelivery);
+                return UpdateDeliveryResponseDto.from(delivery);
+            }
+        }
+        throw new DeliveryException.UnauthorizedDeliveryUpdateException();
+    }
+
+    private void verifyDeliveryStatus(Delivery updatedDelivery) {
+        if (updatedDelivery.getDeliveryStatus().equals(Delivery.DeliveryStatus.DELIVERY_COMPLETED)) {
+            sendDeliveryCompletedMessage(updatedDelivery);
+        }
+    }
+
+    private void sendDeliveryCompletedMessage(Delivery updatedDelivery) {
+        DeliveryCompletedMessage message = DeliveryCompletedMessage.builder()
+                .completedDeliveryId(updatedDelivery.getId())
+                .message("배송이 완료되었습니다.")
+                .build();
+        Message<DeliveryCompletedMessage> kafkaMessage = MessageBuilder.withPayload(message)
+                .setHeader(KafkaHeaders.TOPIC, "delivery.completed")
+                .build();
+        kafkaTemplate.send(kafkaMessage);
+    }
+
     @Transactional(readOnly = true)
     public GetDeliveryManagerResponseDto getDeliveryManager(Long deliveryManagerId) {
         DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
@@ -108,14 +195,47 @@ public class DeliveryService {
         return responseDtos;
     }
 
-//    public Long deleteDeliveryManager(Long deliveryManagerId) {
-//
-//        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
-//                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-//
-//        deliveryManager.deleteDeliveryManager(UserContext.getUserContext().getUserId());
-//        return deliveryManagerId;
-//    }
+    public UpdateDeliveryManagerResponseDto updateDeliveryManager(Long deliveryManagerId, UpdateDeliveryManagerRequestDto request) {
+        UserContext userInfo = UserContext.getUserContext();
+        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            deliveryManager.updateName(request.getName());
+            DeliveryManager updatedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+            return UpdateDeliveryManagerResponseDto.from(updatedDeliveryManager);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(deliveryManager.getHubId())) {
+                deliveryManager.updateName(request.getName());
+                return UpdateDeliveryManagerResponseDto.from(deliveryManagerRepository.save(deliveryManager));
+            }
+        }
+        throw new DeliveryManagerException.UnauthorizedDeliveryManagerEditException();
+    }
+
+    public DeleteDeliveryManagerResponseDto deleteDeliveryManager(Long deliveryManagerId) {
+        UserContext userInfo = UserContext.getUserContext();
+        DeliveryManager deliveryManager = deliveryManagerRepository.findById(deliveryManagerId)
+                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            deliveryManager.deleteDeliveryManager(userInfo.getUserId());
+            DeliveryManager deletedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+            return DeleteDeliveryManagerResponseDto.from(deletedDeliveryManager);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(deliveryManager.getHubId())) {
+                deliveryManager.deleteDeliveryManager(userInfo.getUserId());
+                DeliveryManager deletedDeliveryManager = deliveryManagerRepository.save(deliveryManager);
+                return DeleteDeliveryManagerResponseDto.from(deletedDeliveryManager);
+            }
+        }
+        throw new DeliveryManagerException.UnauthorizedDeliveryManagerDeleteException();
+
+    }
 
 
 }
