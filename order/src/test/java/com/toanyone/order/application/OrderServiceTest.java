@@ -53,7 +53,7 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
 
-        order = Order.create(1L, 1L, 2L);
+        order = Order.create(1L, "ordererName", "12시 전에",1L, 2L);
 
         //주문 생성 요청
         OrderCreateServiceDto.ItemRequestDto itemRequestDto1 = OrderCreateServiceDto.ItemRequestDto.builder()
@@ -83,7 +83,6 @@ class OrderServiceTest {
         itemRequests.add(itemRequestDto3);
 
         orderRequestDto = OrderCreateServiceDto.builder()
-                .userId(1L)
                 .supplyStoreId(2L)
                 .receiveStoreId(3L)
                 .deliveryInfo(deliveryRequestDto)
@@ -130,7 +129,7 @@ class OrderServiceTest {
 
 
         //when
-        OrderCreateResponseDto responseDto = orderService.createOrder(orderRequestDto);
+        OrderCreateResponseDto responseDto = orderService.createOrder(1L, "USER", 2L, orderRequestDto);
         int itemCount = responseDto.getOrderItemIds().size();
         int responseTotalPrice = responseDto.getTotalPrice();
 

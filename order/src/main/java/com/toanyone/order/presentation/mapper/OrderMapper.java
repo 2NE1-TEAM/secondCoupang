@@ -18,9 +18,10 @@ public class OrderMapper {
 
     public OrderCreateServiceDto toOrderCreateServiceDto(OrderCreateRequestDto request) {
         return OrderCreateServiceDto.builder()
-                .userId(request.getUserId())
                 .supplyStoreId(request.getSupplyStoreId())
                 .receiveStoreId(request.getReceiveStoreId())
+                .ordererName(request.getOrdererName())
+                .request(request.getRequest())
                 .items(request.getItems().stream()
                         .map(itemRequestDto -> OrderCreateServiceDto.ItemRequestDto.builder()
                                 .itemId(itemRequestDto.getItemId())
@@ -30,6 +31,7 @@ public class OrderMapper {
                                 .build())
                         .collect(Collectors.toList()))
                 .deliveryInfo(OrderCreateServiceDto.DeliveryRequestDto.builder()
+                        .deliveryAddress(request.getDeliveryInfo().getDeliveryAddress())
                         .recipient(request.getDeliveryInfo().getRecipient())
                         .build())
                 .build();
