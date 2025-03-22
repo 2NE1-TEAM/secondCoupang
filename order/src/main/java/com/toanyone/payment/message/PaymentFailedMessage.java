@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentFailedMessage {
-    private Long paymentId;
     private Long orderId;
     private String paymentStatus;
     private String errorMessage;

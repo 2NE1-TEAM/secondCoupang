@@ -180,13 +180,14 @@ public class OrderService {
     }
 
     @Transactional
-    public DeliveryRequestMessage processDeliveryRequest(Long orderId, String status) {
+    public DeliveryRequestMessage processDeliveryRequest(Long orderId, String status, Long paymentId) {
         DeliveryRequestMessage deliveryMessage = (DeliveryRequestMessage) redisTemplate.opsForValue().get(String.valueOf(orderId));
         if (deliveryMessage == null) {
             throw new OrderException.DeliveryNotFoundException();
         }
         redisTemplate.delete(String.valueOf(orderId));
         Order order = validateOrderExists(orderId);
+        order.assignPaymentId(paymentId);
         updateOrderStatus(order, status);
         return deliveryMessage;
     }
@@ -226,6 +227,7 @@ public class OrderService {
                 break;
             case "CANCELED":
                 order.cancel();
+                break;
             default:
                 break;
         }

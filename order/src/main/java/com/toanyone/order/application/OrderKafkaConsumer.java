@@ -34,7 +34,7 @@ public class OrderKafkaConsumer {
                                        @Header("X-Slack-Id") Long slackId) throws IOException {
         try {
             PaymentSuccessMessage message = record.value();
-            DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus());
+            DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus(), message.getPaymentId());
             orderKafkaProducer.sendDeliveryRequestMessage(deliveryMessage, userId, role, slackId);
         } catch (Exception e) {
             throw new OrderException.DeliveryRequestFailedException();
@@ -50,8 +50,7 @@ public class OrderKafkaConsumer {
                                                  @Header("X-Slack-Id") Long slackId) throws IOException {
         try {
             PaymentFailedMessage message = record.value();
-            log.info("PAYMENT FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
-
+            log.info("PAYMENT FAILED MESSAGE : {}, {}", message.getPaymentStatus(), message.getErrorMessage());
             orderService.processOrderCancellation(message.getOrderId(),message.getPaymentStatus());
 
         } catch (Exception e) {
@@ -67,7 +66,8 @@ public class OrderKafkaConsumer {
                                             @Header("X-Slack-Id") Long slackId) throws IOException {
         try {
             PaymentCancelSuccessMessage message = record.value();
-            log.info("PAYMENT FAILED MESSAGE : {}", message.getPaymentId());
+
+            log.info("PAYMENT CANCEL SUCCESS MESSAGE : {}, {}", message.getPaymentId(), message.getPaymentStatus());
             orderService.processOrderCancellation(message.getOrderId(), message.getPaymentStatus());
         } catch (Exception e) {
             throw new OrderException.DeliveryRequestFailedException();
@@ -82,7 +82,8 @@ public class OrderKafkaConsumer {
                                                    @Header("X-Slack-Id") Long slackId) throws IOException {
         try {
             PaymentCancelFailedMessage message = record.value();
-            log.info("PAYMENT FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
+
+            log.info("PAYMENT CANCEL FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
 //            orderService.sendSlackMessage(slackId, "결제 취소가 실패했습니다.");
         } catch (Exception e) {
             throw new OrderException.DeliveryRequestFailedException();
@@ -151,6 +152,5 @@ public class OrderKafkaConsumer {
         }
 
     }
-
 
 }

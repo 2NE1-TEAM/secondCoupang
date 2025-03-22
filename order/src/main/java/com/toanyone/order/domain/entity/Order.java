@@ -112,19 +112,12 @@ public class Order extends BaseEntity {
     }
 
 
-
-//    public void cancel() {
-//        if (this.status == OrderStatus.PREPARING || this.status == OrderStatus.PAYMENT_WAITING) {
-//            this.status = OrderStatus.CANCELED;
-//        }
-//        throw new OrderException.OrderStatusIllegalException();
-//    }
-
     public void cancel() {
         if (this.status == OrderStatus.PREPARING || this.status == OrderStatus.PAYMENT_WAITING || this.status == OrderStatus.PAYMENT_CANCEL_REQUESTED) {
             this.status = OrderStatus.CANCELED;
+        } else {
+            throw new OrderException.OrderStatusIllegalException();
         }
-        throw new OrderException.OrderStatusIllegalException();
     }
 
     @Override
