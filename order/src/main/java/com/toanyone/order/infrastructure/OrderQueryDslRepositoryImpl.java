@@ -11,6 +11,7 @@ import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.common.SortType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -31,22 +32,29 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
         log.info("search");
         log.info("getCursorId : {}", request.getCursorId());
 
+        List<Long> orderIds = queryFactory
+                .select(orderItem.order.id)
+                .from(orderItem)
+                .where(containsKeyword(request.getKeyword()))
+                .fetch();
+
         List<Order> results = queryFactory
                 .selectFrom(order)
-                .leftJoin(order.items, orderItem).fetchJoin()
                 .where(
                         isUserEqualTo(request.getUserId()),
-                        containsKeyword(request.getKeyword()),
+                        order.id.in(orderIds),
                         cursorId(request.getCursorId()),
                         cursorIdAndTimestamp(request.getCursorId(), request.getTimestamp(), request.getSortType())
                 )
                 .orderBy(createOrderSpecifier(request.getSortType()))
-                .limit(request.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
+                .limit(request.getSize() + 1)
                 .fetch();
 
         boolean hasNext = results.size() > request.getSize();
 
-        Order lastOrder = hasNext ? results.remove(results.size() - 1) : null; //마지막 값은 nextCursorInfo
+        Order lastOrder = hasNext ? results.remove(results.size() - 1) : null;
+
+        results.forEach(order -> Hibernate.initialize(order.getItems()));
 
         CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, request.getSortType());
 
@@ -61,19 +69,20 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
 
         List<Order> results = queryFactory
                 .selectFrom(order)
-                .leftJoin(order.items, orderItem).fetchJoin()
                 .where(
                         isUserEqualTo(userId),
                         cursorId(request.getCursorId()),
                         cursorIdAndTimestamp(request.getCursorId(), request.getTimestamp(), request.getSortType())
                 )
                 .orderBy(createOrderSpecifier(request.getSortType()))
-                .limit(request.getSize() + 1) //nextCursorInfo를 위해 size보다 하나 더 가져오기
+                .limit(request.getSize() + 1)
                 .fetch();
 
         boolean hasNext = results.size() > request.getSize();
 
-        Order lastOrder = hasNext ? results.remove(results.size() - 1) : null; //마지막 값은 nextCursorInfo
+        Order lastOrder = hasNext ? results.remove(results.size() - 1) : null;
+
+        results.forEach(order -> Hibernate.initialize(order.getItems()));
 
         CursorInfo nextCursorInfo = createNextCursorInfo(lastOrder, request.getSortType());
 
