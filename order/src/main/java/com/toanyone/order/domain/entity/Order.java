@@ -87,6 +87,14 @@ public class Order extends BaseEntity {
         this.status = OrderStatus.PREPARING;
     }
 
+    public void paymentCancelRequested() {
+        if (this.status != OrderStatus.PREPARING) {
+            log.info("PREPARING -> PAYMENT_CANCEL_REQUESTED");
+            throw new OrderException.OrderStatusIllegalException();
+        }
+        this.status = OrderStatus.PAYMENT_CANCEL_REQUESTED;
+    }
+
     public void startDelivery() {
         if (this.status != OrderStatus.PREPARING) {
             log.info("PREPARING -> DELIVERING");
@@ -103,8 +111,17 @@ public class Order extends BaseEntity {
         this.status = OrderStatus.DELIVERY_COMPLETED;
     }
 
+
+
+//    public void cancel() {
+//        if (this.status == OrderStatus.PREPARING || this.status == OrderStatus.PAYMENT_WAITING) {
+//            this.status = OrderStatus.CANCELED;
+//        }
+//        throw new OrderException.OrderStatusIllegalException();
+//    }
+
     public void cancel() {
-        if (this.status == OrderStatus.PREPARING || this.status == OrderStatus.PAYMENT_WAITING) {
+        if (this.status == OrderStatus.PREPARING || this.status == OrderStatus.PAYMENT_WAITING || this.status == OrderStatus.PAYMENT_CANCEL_REQUESTED) {
             this.status = OrderStatus.CANCELED;
         }
         throw new OrderException.OrderStatusIllegalException();
@@ -126,6 +143,7 @@ public class Order extends BaseEntity {
         PREPARING("배송 준비 중"),
         DELIVERING("배송 중"),
         DELIVERY_COMPLETED("배송 완료"),
+        PAYMENT_CANCEL_REQUESTED("결제 취소 진행 중"),
         CANCELED("주문 취소");
 
         private final String description;

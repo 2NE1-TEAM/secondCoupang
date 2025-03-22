@@ -1,9 +1,8 @@
 package com.toanyone.order.application;
 
 import com.toanyone.order.message.DeliveryRequestMessage;
+import com.toanyone.order.message.PaymentCancelMessage;
 import com.toanyone.order.message.PaymentRequestMessage;
-import com.toanyone.payment.message.PaymentSuccessMessage;
-import com.toanyone.payment.message.PaymentCancelMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -31,7 +30,7 @@ public class OrderKafkaProducer {
     public void sendPaymentCancelMessage(PaymentCancelMessage message, Long userId, String role, Long slackId) {
         Message<PaymentCancelMessage> kafkaMessage = MessageBuilder
                 .withPayload(message)
-                .setHeader(KafkaHeaders.TOPIC, "payment.success")
+                .setHeader(KafkaHeaders.TOPIC, "payment.cancel")
                 .setHeader("X-User-Id", userId)
                 .setHeader("X-User-Role", role)
                 .setHeader("X-Slack-Id", slackId)
@@ -40,7 +39,7 @@ public class OrderKafkaProducer {
     }
 
 
-    public void sendDeliveryMessage(DeliveryRequestMessage message, Long userId, String role, Long slackId) {
+    public void sendDeliveryRequestMessage(DeliveryRequestMessage message, Long userId, String role, Long slackId) {
         Message<DeliveryRequestMessage> kafkaMessage = MessageBuilder
                 .withPayload(message)
                 .setHeader(KafkaHeaders.GROUP_ID, "delivery")

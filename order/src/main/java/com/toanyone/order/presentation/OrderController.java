@@ -43,7 +43,8 @@ public class OrderController {
             @PathVariable Long orderId,
             @RequestBody @Valid OrderCancelRequestDto request) {
         OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
-        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(serviceDto)));
+        UserContext userContext = UserContext.getUserContext();
+        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
 
     @DeleteMapping("/{orderId}")

@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentCancelMessage {
+public class PaymentCancelSuccessMessage {
     private Long paymentId;
     private Long orderId;
+    private String paymentStatus;
 }

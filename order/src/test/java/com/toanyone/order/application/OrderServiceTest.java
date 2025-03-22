@@ -149,7 +149,7 @@ class OrderServiceTest {
 
         //when&then
         Assertions.assertThrows(OrderException.OrderCancelFailedException.class, () -> {
-            orderService.cancelOrder(cancelRequestDto);
+            orderService.cancelOrder(1L, "USER", 1L, cancelRequestDto);
         });
 
     }
