@@ -54,7 +54,7 @@ public class OrderKafkaConsumer {
             orderService.processOrderCancellation(message.getOrderId(),message.getPaymentStatus());
 
         } catch (Exception e) {
-            throw new OrderException.DeliveryRequestFailedException();
+            throw new OrderException.OrderCancelFailedException();
         }
 
     }
@@ -70,7 +70,7 @@ public class OrderKafkaConsumer {
             log.info("PAYMENT CANCEL SUCCESS MESSAGE : {}, {}", message.getPaymentId(), message.getPaymentStatus());
             orderService.processOrderCancellation(message.getOrderId(), message.getPaymentStatus());
         } catch (Exception e) {
-            throw new OrderException.DeliveryRequestFailedException();
+            throw new OrderException.OrderCancelFailedException();
         }
 
     }
@@ -86,7 +86,7 @@ public class OrderKafkaConsumer {
             log.info("PAYMENT CANCEL FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
 //            orderService.sendSlackMessage(slackId, "결제 취소가 실패했습니다.");
         } catch (Exception e) {
-            throw new OrderException.DeliveryRequestFailedException();
+            throw new OrderException.OrderCancelFailedException();
         }
 
     }
@@ -144,7 +144,6 @@ public class OrderKafkaConsumer {
         try {
             DeliveryStatusUpdatedMessage message = record.value();
             log.info("DELIVERY STATUS UPDATED MESSAGE : {}, {}", message.getOrderId(),message.getDeliveryStatus());
-
             orderService.processDeliveryUpdatedRequest(message.getOrderId(), message.getDeliveryStatus());
 
         } catch (Exception e) {
