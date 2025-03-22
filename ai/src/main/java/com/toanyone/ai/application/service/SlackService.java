@@ -4,9 +4,14 @@ import com.toanyone.ai.domain.entity.Ai;
 import com.toanyone.ai.domain.entity.OrderStatus;
 import com.toanyone.ai.domain.entity.SlackMessage;
 import com.toanyone.ai.infrastructure.SlackRepository;
+import com.toanyone.ai.presentation.dto.ResponseGetSlackDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +40,12 @@ public class SlackService {
 
         slackRepository.save(slackMessage);
 
+    }
+
+    public ResponseEntity<Page<ResponseGetSlackDto>> getSlacks(Pageable pageable) {
+
+        Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
+
+        return ResponseEntity.ok(dtoPage);
     }
 }
