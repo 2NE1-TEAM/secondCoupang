@@ -1,5 +1,9 @@
 package com.toanyone.ai.application.service;
 
+import com.toanyone.ai.domain.entity.Ai;
+import com.toanyone.ai.domain.entity.OrderStatus;
+import com.toanyone.ai.domain.entity.SlackMessage;
+import com.toanyone.ai.infrastructure.SlackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -9,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class SlackService {
 
     private final WebClient slackWebClient;
+    private final SlackRepository slackRepository;
 
     public void sendMessage(String message) {
         String payload = "{\"text\":\"" + message + "\"}";
@@ -22,5 +27,13 @@ public class SlackService {
                         response -> System.out.println("Message sent successfully"),
                         error -> System.err.println("Error sending message: " + error.getMessage())
                 );
+    }
+
+    public void save(Ai ai, String message, OrderStatus success) {
+
+        SlackMessage slackMessage = SlackMessage.createSlackMessage(ai, message, success);
+
+        slackRepository.save(slackMessage);
+
     }
 }

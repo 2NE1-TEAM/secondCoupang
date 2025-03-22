@@ -7,9 +7,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @Entity
 @Table(name = "p_slack_message")
 @Getter
@@ -20,15 +17,23 @@ public class SlackMessage extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "slack_message_id")
     private Long id;
-    @Column(nullable = false)
-    private Long userId;
+
     @Column(nullable = false, length = 2000)
     private String message;
+
     @Column(nullable = false)
-    private LocalDateTime shippingTime;
+    private OrderStatus orderStatus;
 
     @OneToOne(fetch = FetchType.LAZY)
     private Ai ai;
 
 
+    public static SlackMessage createSlackMessage(Ai ai, String message, OrderStatus orderStatus) {
+        SlackMessage slackMessage = new SlackMessage();
+        slackMessage.ai = ai;
+        slackMessage.message = message;
+        slackMessage.orderStatus = orderStatus;
+
+        return slackMessage;
+    }
 }

@@ -1,5 +1,7 @@
 package com.toanyone.ai.application.service;
 
+import com.toanyone.ai.domain.entity.Ai;
+import com.toanyone.ai.infrastructure.AiRepository;
 import com.toanyone.ai.presentation.dto.RequestCreateMessageDto;
 import com.toanyone.ai.presentation.dto.RequestGeminiDto;
 import com.toanyone.ai.presentation.dto.ResponseGeminiDto;
@@ -15,7 +17,7 @@ import java.util.List;
 public class AiService {
 
     private final WebClient webClient;
-    private final SlackService slackService;
+    private final AiRepository aiRepository;
 
     @Value("${ai.gemini.key}")
     private String apiKey;
@@ -55,5 +57,13 @@ public class AiService {
                 "도착지 : " + r.getDestination() + "\n" +
                 "배송담당자 : " + r.getDeliveryPerson() + " / " + r.getDeliveryPersonSlackId() + "\n";
 
+    }
+
+    public Ai save(String question, String answer) {
+
+        Ai ai = Ai.createAi(question, answer);
+        aiRepository.save(ai);
+
+        return ai;
     }
 }
