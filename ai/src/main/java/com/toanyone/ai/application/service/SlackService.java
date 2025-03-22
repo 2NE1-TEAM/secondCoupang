@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +49,12 @@ public class SlackService {
         Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
 
         return ResponseEntity.ok(dtoPage);
+    }
+
+    public ResponseEntity<ResponseGetSlackDto> getIdSlacks(Long id) {
+
+        SlackMessage slackMessage = this.slackRepository.findById(id).orElseThrow();
+
+         return ResponseEntity.ok(new ResponseGetSlackDto(slackMessage));
     }
 }
