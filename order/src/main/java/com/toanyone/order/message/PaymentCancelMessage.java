@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentCancelMessage {
-    private Long paymentId;
     private Long orderId;
 }

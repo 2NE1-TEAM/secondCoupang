@@ -34,7 +34,7 @@ public class OrderKafkaConsumer {
                                        @Header("X-Slack-Id") Long slackId) throws IOException {
         try {
             PaymentSuccessMessage message = record.value();
-            DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus(), message.getPaymentId());
+            DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus());
             orderKafkaProducer.sendDeliveryRequestMessage(deliveryMessage, userId, role, slackId);
         } catch (Exception e) {
             throw new OrderException.DeliveryRequestFailedException();

@@ -1,6 +1,5 @@
 package com.toanyone.order.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toanyone.order.common.BaseEntity;
 import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
@@ -13,7 +12,6 @@ import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Entity
@@ -42,9 +40,6 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private int totalPrice;
 
-    @Column
-    private Long paymentId;
-
     @Column(nullable = false)
     private String request;
 
@@ -67,9 +62,6 @@ public class Order extends BaseEntity {
         return order;
     }
 
-    public void assignPaymentId(Long paymentId) {
-        this.paymentId = paymentId;
-    }
 
     public void addOrderItem(OrderItem item) {
         item.assignOrder(this);
