@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.*;
 
 
-@SpringBootTest
 @Transactional
 class PhoneNumberUtilsTest {
 
     @Test
     @DisplayName("PhoneNumberUtils 전화번호 -제거 테스트")
     void TelValidationTest() {
+
         String normalizePhoneNumber1 = PhoneNumberUtils.normalizePhoneNumber("010-1234-5678");
         String normalizePhoneNumber2 = PhoneNumberUtils.normalizePhoneNumber("+82 10-1234-5678");
         String normalizePhoneNumber3 = PhoneNumberUtils.normalizePhoneNumber("02-123-4567");

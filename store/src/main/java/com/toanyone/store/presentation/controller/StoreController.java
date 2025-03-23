@@ -1,15 +1,12 @@
 package com.toanyone.store.presentation.controller;
 
 import com.toanyone.store.domain.service.StoreService;
-import com.toanyone.store.presentation.dto.SingleResponse;
-import com.toanyone.store.presentation.dto.StoreCreateRequestDto;
-import com.toanyone.store.presentation.dto.StoreCreateResponseDto;
-import com.toanyone.store.presentation.dto.StoreFindResponseDto;
+import com.toanyone.store.presentation.dto.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,10 +29,29 @@ public class StoreController {
         return ResponseEntity.ok(SingleResponse.success(storeFindResponseDto));
     }
 
+    @GetMapping
+    public ResponseEntity findAllStore(
+            @ModelAttribute StoreSearchRequest searchRequest,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        CursorPage<StoreFindResponseDto> stores = storeService.findStores(searchRequest, sortBy, direction, size);
+        return ResponseEntity.ok(MultiResponse.success(stores));
+    }
+
     @DeleteMapping("/{storeId}")
     public ResponseEntity deleteStore(@PathVariable Long storeId) {
         log.debug("Delete Store: {}", storeId);
         storeService.deleteStore(storeId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{storeId}")
+    public ResponseEntity<Void> updateStore(@PathVariable Long storeId,
+                                            @RequestBody StoreUpdateRequestDto requestDto) {
+        log.debug("Update Store: {}", storeId);
+        storeService.updateStore(storeId, requestDto);
         return ResponseEntity.noContent().build();
     }
 

@@ -1,41 +1,22 @@
 package com.toanyone.store.presentation.dto;
 
 import lombok.Getter;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @Getter
 public class MultiResponse<T> {
     private final List<T> data;
-    private final int count;
-    private final int totalPages;
-    private final long totalElements;
-    private final int currentPage;
-    private final int pageSize;
+    private final CursorInfo nextCursor; // 다음 페이지 요청할 떄 줘야 할 값. 이 값은 정렬 기준이 뭐가 있냐에 따라 다름.
+    private final boolean hasNext; // 다음 페이지 존재 여부
     private final String errorMessage;
     private final String errorCode;
 
-    // 성공 응답
-    public MultiResponse(List<T> data) {
-        this.data = data;
-        this.count = data.size();
-        this.totalPages = 1;
-        this.totalElements = data.size();
-        this.currentPage = 0;
-        this.pageSize = data.size();
-        this.errorMessage = null;
-        this.errorCode = null;
-    }
-
-    // 성공 응답 (페이징)
-    public MultiResponse(Page<T> page) {
+    // 성공 응답 (커서 페이징 기반)
+    public MultiResponse(CursorPage<T> page) {
         this.data = page.getContent();
-        this.count = page.getNumberOfElements();
-        this.totalPages = page.getTotalPages();
-        this.totalElements = page.getTotalElements();
-        this.currentPage = page.getNumber();
-        this.pageSize = page.getSize();
+        this.nextCursor = page.getNextCursor();
+        this.hasNext = page.isHasNext();
         this.errorMessage = null;
         this.errorCode = null;
     }
@@ -43,20 +24,13 @@ public class MultiResponse<T> {
     // 에러 응답
     public MultiResponse(String errorMessage, String errorCode) {
         this.data = null;
-        this.count = 0;
-        this.totalPages = 0;
-        this.totalElements = 0;
-        this.currentPage = 0;
-        this.pageSize = 0;
+        this.nextCursor = null;
+        this.hasNext = false;
         this.errorMessage = errorMessage;
         this.errorCode = errorCode;
     }
 
-    public static <T> MultiResponse<T> success(List<T> data) {
-        return new MultiResponse<>(data);
-    }
-
-    public static <T> MultiResponse<T> success(Page<T> page) {
+    public static <T> MultiResponse<T> success(CursorPage<T> page) {
         return new MultiResponse<>(page);
     }
 
