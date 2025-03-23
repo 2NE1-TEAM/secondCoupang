@@ -1,4 +1,9 @@
+server:
+  port: 8081
+
 spring:
+  application:
+    name: store-service
   datasource:
     url: jdbc:mysql://localhost:3306/store
     username: ${DB_USERNAME}
@@ -18,3 +23,13 @@ spring:
       pageable:
         default-page-size: 10
         max-page-size: 2000
+
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+
+kafka:
+  server:
+    url: localhost:9092
