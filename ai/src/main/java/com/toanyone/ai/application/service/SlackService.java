@@ -1,5 +1,6 @@
 package com.toanyone.ai.application.service;
 
+import com.toanyone.ai.common.exception.AIException;
 import com.toanyone.ai.domain.entity.Ai;
 import com.toanyone.ai.domain.entity.OrderStatus;
 import com.toanyone.ai.domain.entity.SlackMessage;
@@ -60,7 +61,7 @@ public class SlackService {
 
     private void isMaster(String roles){
         if(!roles.equals("MASTER")){
-            throw new RuntimeException("권한을 가지고 있지 않습니다. ");
+            throw new AIException.UnAuthorized();
         }
     }
 }
