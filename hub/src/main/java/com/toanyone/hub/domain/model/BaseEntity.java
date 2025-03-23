@@ -26,7 +26,6 @@ public abstract class BaseEntity {
     private LocalDateTime updatedAt; // 수정날짜
 
     @CreatedBy
-    @Column(updatable = false)
     private Long createdBy; // 생성자ID
 
     @LastModifiedBy
@@ -35,13 +34,16 @@ public abstract class BaseEntity {
     private LocalDateTime deletedAt; // 삭제날짜
     private Long deletedBy; // 삭제자ID
 
+    protected void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
     /**
      * 엔티티 삭제할 경우 호출하기
      */
-    public void delete() {
+    public void delete(Long id) {
         if (this.deletedAt != null) throw new HubException.HubAlreadyDeletedException("이미 삭제된 상태입니다.");
         this.deletedAt = LocalDateTime.now();
-        this.deletedBy = 0L;
-//        this.deletedBy = UserContext.getUser().getUserId();;
+        this.deletedBy = id;
     }
 }

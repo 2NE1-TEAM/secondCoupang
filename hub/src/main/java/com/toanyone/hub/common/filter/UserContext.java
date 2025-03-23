@@ -2,19 +2,20 @@ package com.toanyone.hub.common.filter;
 
 
 import com.toanyone.hub.presentation.dto.UserInfo;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
 
+@Component
+@RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class UserContext {
-    private static final ThreadLocal<UserInfo> userThreadLocal = new ThreadLocal<>();
+    private UserInfo user;
 
-    public static void setUser(UserInfo user) {
-        userThreadLocal.set(user);
+    public UserInfo getUser() {
+        return user;
     }
 
-    public static UserInfo getUser() {
-        return userThreadLocal.get();
-    }
-
-    public static void clear() {
-        userThreadLocal.remove();
+    public void setUser(UserInfo user) {
+        this.user = user;
     }
 }
