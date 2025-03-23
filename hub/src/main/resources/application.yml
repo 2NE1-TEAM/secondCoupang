@@ -1,5 +1,7 @@
 
 spring:
+  application:
+    name: hub-service
   datasource:
     url: jdbc:mysql://localhost:3306/hub
     username: ${DB_USERNAME}
@@ -34,4 +36,5 @@ server:
 
 kakao:
   api:
-    key: ${KAKAO_KEY}
+    key: ${KAKAO_API_KEY}
+    url: https://apis-navi.kakaomobility.com/v1/directions
