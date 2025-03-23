@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: ai-service
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:3306/ai?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # ??? ?? ??/???? (???)
+    show-sql: true      # SQL ?? ?? ??
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect  # MySQL ??
+
+server:
+  port: 19093
+
+ai:
+  gemini:
+    key: ${GEMINI_API}
+slack:
+  api: ${SLACK_API}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+

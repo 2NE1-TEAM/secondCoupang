@@ -12,6 +12,10 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/users/**
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/total/**, /slack/**
       discovery:
         locator:
           enabled: true
