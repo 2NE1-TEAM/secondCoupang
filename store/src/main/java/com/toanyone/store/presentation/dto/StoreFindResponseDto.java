@@ -7,8 +7,10 @@ import com.toanyone.store.domain.model.Store;
 import com.toanyone.store.domain.model.StoreType;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
-public class StoreFindResponseDto {
+public class StoreFindResponseDto implements Serializable {
     private Long storeId;
     private String storeName;
     private StoreType storeType;

@@ -13,4 +13,5 @@ public class HubResponseDto {
     private String hubName;
     private DetailAddress detailAddress;
     private Location location;
+    private Long createdBy;
 }
