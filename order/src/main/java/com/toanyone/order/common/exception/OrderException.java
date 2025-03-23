@@ -30,8 +30,8 @@ public class OrderException extends CustomException {
 
     }
 
-    public static class OrderAlreadyExistsException extends OrderException {
-        public OrderAlreadyExistsException() { super("ORDER_ERROR_5", "주문이 이미 존재합니다.", HttpStatus.CONFLICT); }
+    public static class ForbiddenException extends OrderException {
+        public ForbiddenException() { super("ORDER_ERROR_5", "해당 작업을 수행할 권한이 없습니다.", HttpStatus.FORBIDDEN); }
 
     }
 
@@ -84,6 +84,8 @@ public class OrderException extends CustomException {
         public PaymentRequestFailedException() { super("ORDER_ERROR_53", "결제 요청이 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
 
     }
+
+
 
 }
 

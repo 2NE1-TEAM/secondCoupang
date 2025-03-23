@@ -45,7 +45,7 @@ public class OrderService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
-    public OrderCreateResponseDto createOrder(Long userId, String role, Long slackId, OrderCreateServiceDto request) {
+    public OrderCreateResponseDto createOrder(Long userId, String role, String slackId, OrderCreateServiceDto request) {
 
         SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(request.getSupplyStoreId());
         SingleResponse<StoreFindResponseDto> receiveStore = storeService.getStore(request.getReceiveStoreId());
@@ -67,8 +67,6 @@ public class OrderService {
         Order order = Order.create(userId, request.getOrdererName(), request.getRequest(),
                 request.getSupplyStoreId(), request.getReceiveStoreId());
 
-        log.info("orderId : {}", order.getId());
-
         request.getItems().stream().map(validRequest ->
                         OrderItem.create(validRequest.getItemId(),
                                 validRequest.getItemName(),
@@ -82,7 +80,7 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId() ,supplyStore.getData().getHubId());
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId(), supplyStore.getData().getHubId());
 
         redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage);
 
@@ -94,7 +92,7 @@ public class OrderService {
 
 
     @Transactional
-    public OrderCancelResponseDto cancelOrder(Long userId, String role, Long slackId,OrderCancelServiceDto request) {
+    public OrderCancelResponseDto cancelOrder(Long userId, String role, String slackId, OrderCancelServiceDto request) {
 
         try {
             Order order = validateOrderExists(request.getOrderId());
@@ -102,20 +100,26 @@ public class OrderService {
                 throw new OrderException.OrderCancelFailedException();
             }
             order.paymentCancelRequested();
-            PaymentCancelMessage paymentMessage = PaymentCancelMessage.builder().orderId(order.getId()).paymentId(order.getPaymentId()).build();
+            PaymentCancelMessage paymentMessage = PaymentCancelMessage.builder().orderId(order.getId()).build();
             orderKafkaProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
             return OrderCancelResponseDto.fromOrder(order);
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new OrderException.OrderCancelFailedException();
         }
     }
 
     @Transactional
-    public void deleteOrder(Long orderId, Long userId) {
+    public void deleteOrder(Long orderId, Long userId, String role) {
         Order order = validateOrderExists(orderId);
-        orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now()); //상태 상관 없이 관리자가 삭제 강제
-        order.delete(userId);
+
+        if (role.equals("MASTER")) {
+            orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now());
+            order.delete(userId);
+        } else {
+            throw new OrderException.ForbiddenException();
+        }
+
     }
 
     private Order validateOrderExists(Long orderId) {
@@ -180,14 +184,13 @@ public class OrderService {
     }
 
     @Transactional
-    public DeliveryRequestMessage processDeliveryRequest(Long orderId, String status, Long paymentId) {
+    public DeliveryRequestMessage processDeliveryRequest(Long orderId, String status) {
         DeliveryRequestMessage deliveryMessage = (DeliveryRequestMessage) redisTemplate.opsForValue().get(String.valueOf(orderId));
         if (deliveryMessage == null) {
             throw new OrderException.DeliveryNotFoundException();
         }
         redisTemplate.delete(String.valueOf(orderId));
         Order order = validateOrderExists(orderId);
-        order.assignPaymentId(paymentId);
         updateOrderStatus(order, status);
         return deliveryMessage;
     }
@@ -204,7 +207,8 @@ public class OrderService {
         updateOrderStatus(order, status);
         restoreInventory(order);
         return PaymentCancelMessage.builder()
-                .paymentId(order.getPaymentId()).build();
+                .orderId(order.getId())
+                .build();
     }
 
     @Transactional

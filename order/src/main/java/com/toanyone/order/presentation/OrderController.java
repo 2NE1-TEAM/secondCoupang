@@ -50,9 +50,8 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     public ResponseEntity deleteOrder(@PathVariable Long orderId) {
         UserContext userContext = UserContext.getUserContext();
-        orderService.deleteOrder(orderId, userContext.getUserId());
+        orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
         return ResponseEntity.noContent().build();
-
     }
 
     @GetMapping("/{orderId}")

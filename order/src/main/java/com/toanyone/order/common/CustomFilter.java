@@ -35,12 +35,10 @@ public class CustomFilter extends OncePerRequestFilter {
             UserContext context = UserContext.builder()
                     .userId(Long.parseLong(userIdHeader))
                     .role(userRoleHeader)
-                    .slackId(Long.parseLong(slackIdHeader))
+                    .slackId(slackIdHeader)
                     .build();
 
             UserContext.setUserContext(context);
-
-
             filterChain.doFilter(servletRequest, servletResponse);
         } catch (OrderException.AuthenticationFailedException e) {
             handleException(servletResponse, e);

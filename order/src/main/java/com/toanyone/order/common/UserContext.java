@@ -10,10 +10,10 @@ public class UserContext {
 
     private Long userId;
     private String role;
-    private Long slackId;
+    private String slackId;
 
     @Builder
-    public UserContext(Long userId, String role, Long slackId) {
+    public UserContext(Long userId, String role, String slackId) {
         this.userId = userId;
         this.role = role;
         this.slackId = slackId;

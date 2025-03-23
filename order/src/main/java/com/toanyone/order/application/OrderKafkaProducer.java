@@ -16,7 +16,7 @@ public class OrderKafkaProducer {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendPaymentRequestMessage(PaymentRequestMessage message, Long userId, String role, Long slackId) {
+    public void sendPaymentRequestMessage(PaymentRequestMessage message, Long userId, String role, String slackId) {
         Message<PaymentRequestMessage> kafkaMessage = MessageBuilder
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.requested")
@@ -27,7 +27,7 @@ public class OrderKafkaProducer {
         kafkaTemplate.send(kafkaMessage);
     }
 
-    public void sendPaymentCancelMessage(PaymentCancelMessage message, Long userId, String role, Long slackId) {
+    public void sendPaymentCancelMessage(PaymentCancelMessage message, Long userId, String role, String slackId) {
         Message<PaymentCancelMessage> kafkaMessage = MessageBuilder
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.cancel")
@@ -39,7 +39,7 @@ public class OrderKafkaProducer {
     }
 
 
-    public void sendDeliveryRequestMessage(DeliveryRequestMessage message, Long userId, String role, Long slackId) {
+    public void sendDeliveryRequestMessage(DeliveryRequestMessage message, Long userId, String role, String slackId) {
         Message<DeliveryRequestMessage> kafkaMessage = MessageBuilder
                 .withPayload(message)
                 .setHeader(KafkaHeaders.GROUP_ID, "delivery")
