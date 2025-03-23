@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "item")
+@FeignClient(name = "item-service")
 public interface ItemClient extends ItemService {
 
     @PostMapping("/items/validate")
