@@ -1,9 +1,6 @@
 package com.toanyone.order.application;
 
-import com.toanyone.order.application.dto.ItemRestoreRequestDto;
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
-import com.toanyone.order.application.dto.ItemValidationResponseDto;
-import com.toanyone.order.application.dto.StoreFindResponseDto;
+import com.toanyone.order.application.dto.*;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
@@ -57,6 +54,9 @@ class OrderServiceTest {
     private StoreService storeService;
 
     @Mock
+    private HubService hubService;
+
+    @Mock
     private ItemRequestMapper itemRequestMapper;
 
     @Mock
@@ -83,6 +83,7 @@ class OrderServiceTest {
     private OrderItem orderItem2;
     private SingleResponse<StoreFindResponseDto> supplyStore;
     private SingleResponse<StoreFindResponseDto> receiveStore;
+    private SingleResponse<HubFindResponseDto> hub;
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
@@ -104,6 +105,12 @@ class OrderServiceTest {
         receiveStore = SingleResponse.success(StoreFindResponseDto.builder()
                 .storeId(1L)
                 .hubId(1L)
+                .build()
+        );
+
+        hub = SingleResponse.success(HubFindResponseDto.builder()
+                        .hubName("hubName")
+                        .createdBy(1L)
                 .build()
         );
 
@@ -173,11 +180,9 @@ class OrderServiceTest {
     @DisplayName("주문 생성 성공 - Store Feign Client 호출 확인")
     void createOrderSuccess() {
         //given
-        when(storeService.getStore(1L))
-                .thenReturn(supplyStore);
+        when(storeService.getStore(1L)).thenReturn(supplyStore);
 
-        when(storeService.getStore(2L))
-                .thenReturn(receiveStore);
+        when(storeService.getStore(2L)).thenReturn(receiveStore);
 
         when(itemService.validateItems(any())).thenReturn(true);
 
@@ -194,7 +199,7 @@ class OrderServiceTest {
         when(messageConverter.toOrderPaymentMessage(anyLong(), anyInt())).thenReturn(new PaymentRequestMessage());
 
         //when
-        OrderCreateResponseDto responseDto = orderService.createOrder(1L, "USER", "slackId", orderRequestDto);
+        OrderCreateResponseDto responseDto = orderService.createOrder(1L, "MASTER", "slackId", orderRequestDto);
 
         //then
         assertNotNull(responseDto);
@@ -206,16 +211,45 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("주문 취소 성공")
-    void cancelOrderSuccess() {
+    @DisplayName("주문 취소 성공 - MASTER 권한")
+    void cancelOrderSuccessByMaster() {
 
         //given
         Long orderId = 1L;
         Long userId = 1L;
-        String role = "USER";
+        String role = "MASTER";
         String slackId = "slackId";
         order.completedPayment();
 
+        when(orderRepository.findById(orderId)).thenReturn(Optional.ofNullable(order));
+
+        //when
+        OrderCancelResponseDto responseDto = orderService.cancelOrder(userId, role, slackId, cancelRequestDto);
+
+        //then
+        assertEquals(Order.OrderStatus.PAYMENT_CANCEL_REQUESTED, order.getStatus());
+        verify(orderKafkaProducer, times(1)).sendPaymentCancelMessage(
+                any(PaymentCancelMessage.class), eq(userId), eq(role), eq(slackId)
+        );
+        assertNotNull(responseDto);
+        assertEquals(orderId, responseDto.getOrderId());
+
+    }
+
+
+    @Test
+    @DisplayName("주문 취소 성공 - HUB 권한")
+    void cancelOrderSuccessByHubManager() {
+
+        //given
+        Long orderId = 1L;
+        Long userId = 1L;
+        String role = "HUB";
+        String slackId = "slackId";
+        order.completedPayment();
+
+        when(storeService.getStore(1L)).thenReturn(supplyStore);
+        when(hubService.getHub(1L)).thenReturn(hub);
         when(orderRepository.findById(orderId)).thenReturn(Optional.ofNullable(order));
 
         //when
@@ -239,7 +273,7 @@ class OrderServiceTest {
         //given
         Long orderId = 1L;
         Long userId = 1L;
-        String role = "USER";
+        String role = "MASTER";
         String slackId = "slackId";
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.ofNullable(order));
