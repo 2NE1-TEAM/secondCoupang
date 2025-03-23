@@ -8,6 +8,8 @@ import com.toanyone.hub.domain.model.Hub;
 import com.toanyone.hub.domain.repository.HubRepository;
 import com.toanyone.hub.domain.service.HubService;
 import com.toanyone.hub.domain.service.RouteService;
+import com.toanyone.hub.infrastructure.client.SlackClient;
+import com.toanyone.hub.infrastructure.client.dto.RequestCreateMessageDto;
 import com.toanyone.hub.presentation.dto.CursorPage;
 import com.toanyone.hub.presentation.dto.HubFindResponseDto;
 import com.toanyone.hub.presentation.dto.HubSearchRequest;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
