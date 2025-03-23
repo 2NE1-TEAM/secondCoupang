@@ -1,12 +1,8 @@
 package com.toanyone.delivery.presentation;
 
 import com.toanyone.delivery.application.DeliveryService;
-import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.response.CreateDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.dtos.request.*;
+import com.toanyone.delivery.application.dtos.response.*;
 import com.toanyone.delivery.common.utils.MultiResponse;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.common.utils.SingleResponse;
@@ -33,6 +29,18 @@ public class DeliveryController {
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
     }
 
+    @PutMapping("/{deliveryId}")
+    public ResponseEntity<?> updatedDelivery(@PathVariable("deliveryId") Long deliveryId, @RequestBody @Valid UpdateDeliveryRequestDto request) {
+        UpdateDeliveryResponseDto response = deliveryService.updateDelivery(deliveryId, request);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
+
+    @DeleteMapping("/{deliveryId}")
+    public ResponseEntity<?> deleteDelivery(@PathVariable("deliveryId") Long deliveryId) {
+        DeleteDeliveryResponseDto response = deliveryService.deleteDelivery(deliveryId);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
+
     @PostMapping("/delivery-manager")
     public ResponseEntity<?> createDeliverManager(@RequestBody @Valid CreateDeliveryManagerRequestDto request) {
         Long deliveryManagerId = deliveryService.createDeliveryManager(request);
@@ -44,6 +52,7 @@ public class DeliveryController {
     public ResponseEntity<?> getDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {
         GetDeliveryManagerResponseDto response = deliveryService.getDeliveryManager(deliveryManagerId);
         return ResponseEntity.ok(SingleResponse.success(response));
+
     }
 
     @GetMapping("/delivery-manager")
@@ -52,12 +61,17 @@ public class DeliveryController {
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
     }
 
+    @PutMapping("/delivery-manager/{deliveryManagerId}")
+    public ResponseEntity<?> updateDeliveryMangaer(@PathVariable("deliveryManagerId") Long deliveryManagerId, @RequestBody @Valid UpdateDeliveryManagerRequestDto request) {
+        UpdateDeliveryManagerResponseDto response = deliveryService.updateDeliveryManager(deliveryManagerId, request);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
 
-//    @DeleteMapping("/delivery-manager/{deliveryMangerId}")
-//    public ResponseEntity<?> deleteDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {
-//        Long userId = UserContext.getUserContext().getUserId();
-//        Long deletedManagerId = deliveryService.deleteDeliveryManager(userId);
-//        return ResponseEntity.ok(SingleResponse.success(deletedManagerId));
-//    }
+
+    @DeleteMapping("/delivery-manager/{deliveryMangerId}")
+    public ResponseEntity<?> deleteDeliveryManager(@PathVariable("deliveryMangerId") Long deliveryManagerId) {
+        DeleteDeliveryManagerResponseDto response = deliveryService.deleteDeliveryManager(deliveryManagerId);
+        return ResponseEntity.ok(SingleResponse.success(response));
+    }
 
 }

@@ -30,7 +30,7 @@ public class GetDeliveryResponseDto {
     private String recipient;
 
     @JsonProperty("recipient_slack_id")
-    private Long recipientSlackId;
+    private String recipientSlackId;
 
     @JsonProperty("store_delivery_manager_id")
     private Long storeDeliveryManagerId;

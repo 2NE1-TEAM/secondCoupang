@@ -1,12 +1,14 @@
 package com.toanyone.delivery.common.utils;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class SingleResponse<T> {
-    private final T data;
-    private final String errorMessage;
-    private final String errorCode;
+    private T data;
+    private String errorMessage;
+    private String errorCode;
 
     //성공 응답
     public SingleResponse(T data) {
