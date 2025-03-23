@@ -16,7 +16,7 @@ import java.util.Optional;
 @Component
 public class CustomFilter implements Filter {
 
-    private static final String USER_ROLES_HEADER = "X-User-Roles";
+    private static final String USER_ROLES_HEADER = "X-User-Role";
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String SLACK_ID_HEADER = "X-Slack-Id";
     private static final String HUB_ID_HEADER = "X-Hub-Id";
@@ -59,7 +59,7 @@ public class CustomFilter implements Filter {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
 
-        if (requestURI.startsWith(DELIVERY_PATH) && (request.getMethod().equals("DELETE") || request.getMethod().equals("PUT"))) {
+        if (requestURI.startsWith(DELIVERY_PATH) && (request.getMethod().equals("DELETE") || request.getMethod().equals("PUT") || request.getMethod().equals("POST"))) {
             if (role.get().equals("MASTER") || role.get().equals("HUB") || role.get().equals("DELIVERY")) {
                 filterChain.doFilter(request, response);
             }
