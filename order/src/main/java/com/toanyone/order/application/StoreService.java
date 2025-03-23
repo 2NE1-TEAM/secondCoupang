@@ -1,9 +1,8 @@
 package com.toanyone.order.application;
 
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
-import org.springframework.web.bind.annotation.PathVariable;
+import com.toanyone.order.application.dto.StoreFindResponseDto;
+import com.toanyone.order.common.SingleResponse;
 
 public interface StoreService {
-    boolean validateStore(Long storeId);
-
+    SingleResponse<StoreFindResponseDto> getStore(Long storeId);
 }

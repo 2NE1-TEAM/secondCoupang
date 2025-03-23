@@ -2,6 +2,7 @@ package com.toanyone.order.application.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ItemRestoreRequestDto {
 
     @NotNull
@@ -18,6 +20,7 @@ public class ItemRestoreRequestDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class ItemRequestDto {
 
         @NotNull

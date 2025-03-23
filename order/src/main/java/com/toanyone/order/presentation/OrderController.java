@@ -34,7 +34,8 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<SingleResponse<OrderCreateResponseDto>> createOrder(@RequestBody @Valid OrderCreateRequestDto request) {
         OrderCreateServiceDto serviceDto = orderMapper.toOrderCreateServiceDto(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(serviceDto)));
+        UserContext userContext = UserContext.getUserContext();
+        return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(userContext.getUserId(),userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
 
     @PatchMapping("/{orderId}/cancel")
@@ -42,17 +43,15 @@ public class OrderController {
             @PathVariable Long orderId,
             @RequestBody @Valid OrderCancelRequestDto request) {
         OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
-        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(serviceDto)));
+        UserContext userContext = UserContext.getUserContext();
+        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
 
-    //Todo: 임시로 header에서 userId 받음
     @DeleteMapping("/{orderId}")
-    public ResponseEntity deleteOrder(@PathVariable Long orderId,
-                                      @RequestHeader(value = "User-Id", required = true) Long userId) {
-
-        orderService.deleteOrder(orderId, userId);
+    public ResponseEntity deleteOrder(@PathVariable Long orderId) {
+        UserContext userContext = UserContext.getUserContext();
+        orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
         return ResponseEntity.noContent().build();
-
     }
 
     @GetMapping("/{orderId}")
