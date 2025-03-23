@@ -26,11 +26,12 @@ public class OrderKafkaConsumer {
 
     private final OrderKafkaProducer orderKafkaProducer;
     private final OrderService orderService;
+    private final AiService aiService;
 
     @KafkaListener(topics = "payment.success", groupId = "payment")
     public void consumePaymentSuccessMessage(ConsumerRecord<String, PaymentSuccessMessage> record,
                                        @Header("X-User-Id") Long userId,
-                                       @Header("X-User-Role") String role,
+                                       @Header("X-User-Roles") String role,
                                        @Header("X-Slack-Id") String slackId) throws IOException {
         try {
             PaymentSuccessMessage message = record.value();
@@ -46,7 +47,7 @@ public class OrderKafkaConsumer {
     @KafkaListener(topics = "payment.failed", groupId = "payment")
     public void consumePaymentFailedMessage(ConsumerRecord<String, PaymentFailedMessage> record,
                                                  @Header("X-User-Id") Long userId,
-                                                 @Header("X-User-Role") String role,
+                                                 @Header("X-User-Roles") String role,
                                                  @Header("X-Slack-Id") String slackId) throws IOException {
         try {
             PaymentFailedMessage message = record.value();
@@ -62,7 +63,7 @@ public class OrderKafkaConsumer {
     @KafkaListener(topics = "payment.cancel.success", groupId = "payment")
     public void consumePaymentCancelSuccessMessage(ConsumerRecord<String, PaymentCancelSuccessMessage> record,
                                             @Header("X-User-Id") Long userId,
-                                            @Header("X-User-Role") String role,
+                                            @Header("X-User-Roles") String role,
                                             @Header("X-Slack-Id") String slackId) throws IOException {
         try {
             PaymentCancelSuccessMessage message = record.value();
@@ -78,13 +79,13 @@ public class OrderKafkaConsumer {
     @KafkaListener(topics = "payment.cancel.failed", groupId = "payment")
     public void consumePaymentCancelFailedMessage(ConsumerRecord<String, PaymentCancelFailedMessage> record,
                                                    @Header("X-User-Id") Long userId,
-                                                   @Header("X-User-Role") String role,
+                                                   @Header("X-User-Roles") String role,
                                                    @Header("X-Slack-Id") String slackId) throws IOException {
         try {
             PaymentCancelFailedMessage message = record.value();
 
             log.info("PAYMENT CANCEL FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
-//            orderService.sendSlackMessage(slackId, "결제 취소가 실패했습니다.");
+//            aiService.sendSlackMessage(slackId, "결제 취소가 실패했습니다.");
         } catch (Exception e) {
             throw new OrderException.OrderCancelFailedException();
         }
@@ -95,7 +96,7 @@ public class OrderKafkaConsumer {
     @KafkaListener(topics = "delivery.success", groupId = "delivery")
     public void consumeDeliverySuccessMessage(ConsumerRecord<String, DeliverySuccessMessage> record,
                                           @Header("X-User-Id") Long userId,
-                                          @Header("X-User-Role") String role,
+                                          @Header("X-User-Roles") String role,
                                           @Header("X-Slack-Id") String slackId) throws IOException {
         try {
             DeliverySuccessMessage message = record.value();
@@ -119,7 +120,7 @@ public class OrderKafkaConsumer {
     @KafkaListener(topics = "delivery.failed", groupId = "delivery")
     public void consumeDeliveryFailedMessage(ConsumerRecord<String, DeliveryFailedMessage> record,
                                        @Header("X-User-Id") Long userId,
-                                       @Header("X-User-Role") String role,
+                                       @Header("X-User-Roles") String role,
                                        @Header("X-Slack-Id") String slackId) throws IOException {
 
         try {
@@ -138,7 +139,7 @@ public class OrderKafkaConsumer {
     @KafkaListener(topics = "delivery.status.updated", groupId = "delivery")
     public void consumeDeliveryStatusUpdatedMessage(ConsumerRecord<String, DeliveryStatusUpdatedMessage> record,
                                              @Header("X-User-Id") Long userId,
-                                             @Header("X-User-Role") String role,
+                                             @Header("X-User-Roles") String role,
                                              @Header("X-Slack-Id") String slackId) throws IOException {
 
         try {

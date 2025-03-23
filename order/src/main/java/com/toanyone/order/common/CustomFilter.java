@@ -23,7 +23,7 @@ public class CustomFilter extends OncePerRequestFilter {
         log.info("doFilter");
 
         String userIdHeader = servletRequest.getHeader("X-User-Id");
-        String userRoleHeader = servletRequest.getHeader("X-User-Role");
+        String userRoleHeader = servletRequest.getHeader("X-User-Roles");
         String slackIdHeader = servletRequest.getHeader("X-Slack-Id");
 
         try {
