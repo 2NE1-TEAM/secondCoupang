@@ -30,7 +30,7 @@ public class KafkaConsumerConfig {
         // ValueDeserializer로 Hub 객체를 처리할 JsonDeserializer 사용
         JsonDeserializer<Hub> hubDeserializer = new JsonDeserializer<>(Hub.class);
         hubDeserializer.setRemoveTypeHeaders(false);
-        hubDeserializer.addTrustedPackages("com.toanyone.hub.domain.model");  // Trust Hub class for deserialization
+        hubDeserializer.addTrustedPackages("com.toanyone.hub.infrastructure.messaging.dto");  // Trust Hub class for deserialization
 
         // ErrorHandlingDeserializer를 사용하여 예외를 처리
         ErrorHandlingDeserializer<Hub> errorHandlingDeserializer = new ErrorHandlingDeserializer<>(hubDeserializer);

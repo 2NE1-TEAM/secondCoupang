@@ -22,20 +22,25 @@ public class KakaoDirectionService {
     @Value("${kakao.api.key}")
     private String kakaoApiKey;
 
+    @Value("${kakao.api.url}")
+    private String kakaoApiUrl;
+
     private final RestTemplate restTemplate;
 
     public RouteDTO getDirections(double originLng, double originLat, double destinationLng, double destinationLat) {
         log.info("카카오 거리 찾기 API 호출 전 :: originLng = {}, originLat = {}, destinationLng = {}, destinationLat = {}", originLng, originLat, destinationLng, destinationLat);
+
+        // yml에서 가져온 URL 사용
         String url = String.format(
-                "https://apis-navi.kakaomobility.com/v1/directions?origin=%f,%f&destination=%f,%f",
-                originLng, originLat, destinationLng, destinationLat
+                "%s?origin=%f,%f&destination=%f,%f",
+                kakaoApiUrl, originLng, originLat, destinationLng, destinationLat
         );
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + kakaoApiKey);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        log.info("카카오 Request URL: " + url);  // 요청 URL 로그 출력
+        log.info("카카오 Request URL: {}", url);
 
         try {
             ResponseEntity<RouteDTO> response = restTemplate.exchange(url, HttpMethod.GET, entity, RouteDTO.class);
