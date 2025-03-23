@@ -1,6 +1,8 @@
 package com.toanyone.ai.presentation.controller;
 
 import com.toanyone.ai.application.service.SlackService;
+import com.toanyone.ai.common.response.MultiResponse;
+import com.toanyone.ai.common.response.SingleResponse;
 import com.toanyone.ai.presentation.dto.ResponseGetSlackDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ public class SlackController {
     private final SlackService slackService;
 
     @GetMapping
-    public ResponseEntity<Page<ResponseGetSlackDto>> getSlacks(
+    public ResponseEntity<MultiResponse<ResponseGetSlackDto>> getSlacks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request)
@@ -29,11 +31,19 @@ public class SlackController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseGetSlackDto> getIdSlacks(
+    public ResponseEntity<SingleResponse<ResponseGetSlackDto>> getIdSlacks(
             @PathVariable Long id,
             HttpServletRequest request)
     {
 
         return slackService.getSlack(id, request.getHeader("X-User-Roles"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<SingleResponse> deleteSlack(@PathVariable Long id,
+                                                      HttpServletRequest request){
+
+        return slackService.deleteSlack(id, request.getHeader("X-User-Roles"),
+                Long.parseLong(request.getHeader("X-User-Id")));
     }
 }

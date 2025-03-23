@@ -1,6 +1,8 @@
 package com.toanyone.ai.application.service;
 
 import com.toanyone.ai.common.exception.AIException;
+import com.toanyone.ai.common.response.MultiResponse;
+import com.toanyone.ai.common.response.SingleResponse;
 import com.toanyone.ai.domain.entity.Ai;
 import com.toanyone.ai.domain.entity.OrderStatus;
 import com.toanyone.ai.domain.entity.SlackMessage;
@@ -43,25 +45,34 @@ public class SlackService {
 
     }
 
-    public ResponseEntity<Page<ResponseGetSlackDto>> getSlacks(Pageable pageable, String userRole) {
+    public ResponseEntity<MultiResponse<ResponseGetSlackDto>> getSlacks(Pageable pageable, String userRole) {
         isMaster(userRole);
 
         Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
 
-        return ResponseEntity.ok(dtoPage);
+        return ResponseEntity.ok().body(MultiResponse.success(dtoPage));
     }
 
-    public ResponseEntity<ResponseGetSlackDto> getSlack(Long id, String userRole) {
+    public ResponseEntity<SingleResponse<ResponseGetSlackDto>> getSlack(Long id, String userRole) {
         isMaster(userRole);
 
         SlackMessage slackMessage = this.slackRepository.findById(id).orElseThrow();
 
-         return ResponseEntity.ok(new ResponseGetSlackDto(slackMessage));
+         return ResponseEntity.ok().body(SingleResponse.success(new ResponseGetSlackDto(slackMessage)));
     }
 
     private void isMaster(String roles){
         if(!roles.equals("MASTER")){
             throw new AIException.UnAuthorized();
         }
+    }
+
+    public ResponseEntity<SingleResponse> deleteSlack(Long slackId, String role, Long userId) {
+        isMaster(role);
+
+        SlackMessage slack = this.slackRepository.findById(slackId).orElseThrow(AIException.NotFoundException::new);
+        slack.updateDeleted(userId);
+
+        return ResponseEntity.ok().body(SingleResponse.success("삭제 성공"));
     }
 }
