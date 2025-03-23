@@ -1,5 +1,6 @@
 package com.toanyone.order.application;
 
+import com.toanyone.order.application.dto.HubFindResponseDto;
 import com.toanyone.order.application.dto.StoreFindResponseDto;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j(topic = "OrderService")
@@ -39,6 +41,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final ItemService itemService;
     private final StoreService storeService;
+    private final HubService hubService;
     private final ItemRequestMapper itemRequestMapper;
     private final MessageConverter messageConverter;
     private final OrderKafkaProducer orderKafkaProducer;
@@ -94,32 +97,79 @@ public class OrderService {
     @Transactional
     public OrderCancelResponseDto cancelOrder(Long userId, String role, String slackId, OrderCancelServiceDto request) {
 
-        try {
-            Order order = validateOrderExists(request.getOrderId());
-            if (order.getStatus() != Order.OrderStatus.PREPARING) {
-                throw new OrderException.OrderCancelFailedException();
-            }
-            order.paymentCancelRequested();
-            PaymentCancelMessage paymentMessage = PaymentCancelMessage.builder().orderId(order.getId()).build();
-            orderKafkaProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
-            return OrderCancelResponseDto.fromOrder(order);
+        Order order = validateOrderExists(request.getOrderId());
 
-        } catch (Exception e) {
+        if (order.getStatus() != Order.OrderStatus.PREPARING) {
             throw new OrderException.OrderCancelFailedException();
         }
+
+        switch (role) {
+            case "MASTER":
+                return cancelOrderByMaster(order, userId, role, slackId);
+            case "HUB":
+                return cancelOrderByHubManager(order, userId, role, slackId);
+            default:
+                throw new OrderException.ForbiddenException();
+        }
+
     }
 
     @Transactional
     public void deleteOrder(Long orderId, Long userId, String role) {
         Order order = validateOrderExists(orderId);
 
-        if (role.equals("MASTER")) {
-            orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now());
-            order.delete(userId);
-        } else {
-            throw new OrderException.ForbiddenException();
+        switch (role) {
+            case "MASTER":
+                deleteOrderByMaster(order, userId);
+                break;
+            case "HUB":
+                deleteOrderByHubManager(order, userId);
+                break;
+            default:
+                throw new OrderException.ForbiddenException();
         }
 
+    }
+
+    private OrderCancelResponseDto cancelOrderByMaster(Order order, Long userId, String role, String slackId) {
+        cancelOrderAndSendPaymentCancelMessage(order, userId, role, slackId);
+        return OrderCancelResponseDto.fromOrder(order);
+    }
+
+    private OrderCancelResponseDto cancelOrderByHubManager(Order order, Long userId, String role, String slackId) {
+        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
+        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+            throw new OrderException.ForbiddenException();
+        }
+        cancelOrderAndSendPaymentCancelMessage(order, userId, role, slackId);
+        return OrderCancelResponseDto.fromOrder(order);
+    }
+
+
+    private void cancelOrderAndSendPaymentCancelMessage(Order order, Long userId, String role, String slackId) {
+        order.paymentCancelRequested();
+        PaymentCancelMessage paymentMessage = PaymentCancelMessage.builder().orderId(order.getId()).build();
+        orderKafkaProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
+    }
+
+
+    private void deleteOrderByMaster(Order order, Long userId) {
+        bulkDeleteOrderAndOrderItems(order, userId);
+    }
+
+    private void deleteOrderByHubManager(Order order, Long userId) {
+        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
+        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+            throw new OrderException.ForbiddenException();
+        }
+        bulkDeleteOrderAndOrderItems(order, userId);
+    }
+
+    private void bulkDeleteOrderAndOrderItems(Order order, Long userId) {
+        orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now());
+        order.delete(userId);
     }
 
     private Order validateOrderExists(Long orderId) {
