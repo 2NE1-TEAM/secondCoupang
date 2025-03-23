@@ -22,4 +22,9 @@ public interface HubRepository extends JpaRepository<Hub, Long>, HubRepositoryCu
 
     @EntityGraph(attributePaths = {"hubDistances"})
     Optional<Hub> findFetchById(Long hubId);
+
+    boolean existsByTelephoneAndIdNot(String telephone, Long storeId);
+
+    boolean existsByHubNameAndIdNot(String hubName, Long id);
+
 }

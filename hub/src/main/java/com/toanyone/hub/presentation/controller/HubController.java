@@ -1,5 +1,6 @@
 package com.toanyone.hub.presentation.controller;
 
+import com.toanyone.hub.common.config.annotation.RequireRole;
 import com.toanyone.hub.domain.service.HubService;
 import com.toanyone.hub.domain.service.RouteService;
 import com.toanyone.hub.presentation.dto.*;
@@ -23,6 +24,7 @@ public class HubController {
     /**
      * 허브 생성 및 생성 후 HubDistance에 경로 추가 비동기로 실행.
      */
+    @RequireRole("MASTER")
     @PostMapping
     public ResponseEntity createHub(@RequestBody @Valid HubCreateRequestDto hubCreateRequestDto) {
         log.info("HubCreateRequestDto:{}", hubCreateRequestDto);
@@ -66,6 +68,7 @@ public class HubController {
     /**
      * 허브 삭제
      */
+    @RequireRole("MASTER")
     @DeleteMapping("/{hubId}")
     public ResponseEntity deleteHub(@PathVariable Long hubId) {
         log.info("deleteHub:{}", hubId);
@@ -73,12 +76,9 @@ public class HubController {
         return ResponseEntity.noContent().build();
     }
 
-//    @PatchMapping("/{hubId}")
-//    public ResponseEntity<Void> updateHub(@PathVariable Long hubId,
-//                                          @RequestBody HubUpdateRequestDto requestDto) {
-//        hubService.updateHub(hubId, requestDto);
-//        return ResponseEntity.noContent().build();
-//    }
-
-
+    @RequireRole("MASTER")
+    @PatchMapping("/{hubId}")
+    public ResponseEntity updateHub(@PathVariable Long hubId, @RequestBody HubUpdateRequestDto requestDto) {
+        return ResponseEntity.ok(SingleResponse.success(hubService.updateHub(hubId, requestDto)));
+    }
 }
