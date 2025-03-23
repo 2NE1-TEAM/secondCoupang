@@ -12,7 +12,7 @@ public interface StoreService {
 
     void deleteStore(Long storeId);
 
-    void updateStore(Long storeId, StoreUpdateRequestDto requestDto);
+    StoreUpdateResponseDto updateStore(Long storeId, StoreUpdateRequestDto requestDto);
 
     CursorPage<StoreFindResponseDto> findStores(StoreSearchRequest storeSearchRequest, String sortBy, String direction, int size);
 }
