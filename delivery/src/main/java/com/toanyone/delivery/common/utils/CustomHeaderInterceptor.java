@@ -15,7 +15,9 @@ public class CustomHeaderInterceptor implements RequestInterceptor {
             template.header("X-User-Id", String.valueOf(user.getUserId()));
             template.header("X-User-Roles", user.getRole());
             template.header("X-Slack-Id", user.getSlackId());
-            template.header("X-Hub-Id", String.valueOf(user.getHubId()));
+            if (user.getSlackId() != null) {
+                template.header("X-Hub-Id", String.valueOf(user.getHubId()));
+            }
         }
     }
 }

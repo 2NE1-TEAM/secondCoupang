@@ -79,10 +79,10 @@ public class DeliveryService {
             // 최근 허브 배송 담당자의 ID를 배송담당자 테이블에 던져 해당 허브 배송 담당자의 정보를 가져온다.
             DeliveryManager lastOrderedHubDeliveryManager = deliveryManagerRepository.findByDeliveryManagerTypeAndId(DeliveryManagerType.HUB_DELIVERY_MANAGER, lastOrderedHubDeliveryManagerId)
                     .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-            // 최근 허브 배송 담당자의 (배송순번 % 10) + 1을 통해 다음 배송순번 담당자를 구한다.
+            // 최근 허브 배송 담당자의 (배송순번 + i) % 10을 통해 다음 배송순번 담당자를 구한다.
             List<Long> nextHubDeliveryManagersDeliveryOrders = new ArrayList<>();
             for (int i = 1; i <= neededDeliveryManagerCount; i++) {
-                long nextHubDeliveryManagersDeliveryOrder = (lastOrderedHubDeliveryManager.getDeliveryOrder() % 10) + i;
+                long nextHubDeliveryManagersDeliveryOrder = (lastOrderedHubDeliveryManager.getDeliveryOrder() + i) % 10;
                 // (lastOrderedHubDeliveryManager.getDeliveryOrder() + i) % 10의 결과가 0일 경우 다음 배송순번이 10번인 경우다.
                 // 이 경우는 배송순번 10번을 직접 할당해준다.
                 if (nextHubDeliveryManagersDeliveryOrder == 0) {
