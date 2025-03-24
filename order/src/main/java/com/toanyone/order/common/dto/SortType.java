@@ -1,4 +1,4 @@
-package com.toanyone.order.common;
+package com.toanyone.order.common.dto;
 
 import lombok.Getter;
 

@@ -1,6 +1,8 @@
-package com.toanyone.order.common;
+package com.toanyone.order.common.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toanyone.order.common.dto.SingleResponse;
+import com.toanyone.order.common.config.UserContext;
 import com.toanyone.order.common.exception.OrderException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +25,7 @@ public class CustomFilter extends OncePerRequestFilter {
         log.info("doFilter");
 
         String userIdHeader = servletRequest.getHeader("X-User-Id");
-        String userRoleHeader = servletRequest.getHeader("X-User-Role");
+        String userRoleHeader = servletRequest.getHeader("X-User-Roles");
         String slackIdHeader = servletRequest.getHeader("X-Slack-Id");
 
         try {

@@ -1,8 +1,6 @@
 package com.toanyone.order.domain.repository;
 
-import com.toanyone.order.domain.entity.OrderItem;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import com.toanyone.order.domain.model.OrderItem;
 
 import java.time.LocalDateTime;
 

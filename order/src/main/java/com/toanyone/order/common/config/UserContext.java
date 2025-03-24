@@ -1,4 +1,4 @@
-package com.toanyone.order.common;
+package com.toanyone.order.common.config;
 
 import lombok.Builder;
 import lombok.Getter;

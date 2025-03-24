@@ -1,6 +1,5 @@
-package com.toanyone.order.common;
+package com.toanyone.order.common.dto;
 
-import com.toanyone.order.presentation.dto.response.OrderSearchResponseDto;
 import lombok.Getter;
 
 import java.util.List;

@@ -1,14 +1,14 @@
-package com.toanyone.order.presentation;
+package com.toanyone.order.presentation.controller;
 
-import com.toanyone.order.application.OrderService;
+import com.toanyone.order.application.service.OrderService;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
-import com.toanyone.order.common.CursorPage;
-import com.toanyone.order.common.MultiResponse;
-import com.toanyone.order.common.SingleResponse;
-import com.toanyone.order.common.UserContext;
+import com.toanyone.order.common.dto.CursorPage;
+import com.toanyone.order.common.dto.MultiResponse;
+import com.toanyone.order.common.dto.SingleResponse;
+import com.toanyone.order.common.config.UserContext;
 import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
@@ -38,24 +38,8 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(userContext.getUserId(),userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
 
-    @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
-            @PathVariable Long orderId,
-            @RequestBody @Valid OrderCancelRequestDto request) {
-        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
-        UserContext userContext = UserContext.getUserContext();
-        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
-    }
-
-    @DeleteMapping("/{orderId}")
-    public ResponseEntity deleteOrder(@PathVariable Long orderId) {
-        UserContext userContext = UserContext.getUserContext();
-        orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/{orderId}")
-    public ResponseEntity<SingleResponse<OrderFindResponseDto>> findOrder(@PathVariable Long orderId) {
+    public ResponseEntity<SingleResponse<OrderFindResponseDto>> findOrder(@PathVariable("orderId") Long orderId) {
         log.info("findOrder");
         return ResponseEntity.ok().body(SingleResponse.success(orderService.findOrder(orderId)));
     }
@@ -85,5 +69,23 @@ public class OrderController {
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
     }
+
+
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
+            @PathVariable("orderId") Long orderId,
+            @RequestBody @Valid OrderCancelRequestDto request) {
+        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
+        UserContext userContext = UserContext.getUserContext();
+        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
+    }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity deleteOrder(@PathVariable("orderId") Long orderId) {
+        UserContext userContext = UserContext.getUserContext();
+        orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

@@ -1,13 +1,15 @@
 package com.toanyone.order.presentation.dto.request;
 
-import com.toanyone.order.common.SortType;
+import com.toanyone.order.common.dto.SortType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-import static com.toanyone.order.common.CursorConstants.DEFAULT_SIZE;
-import static com.toanyone.order.common.CursorConstants.DEFAULT_SORT_TYPE;
+import static com.toanyone.order.common.dto.CursorConstants.DEFAULT_SIZE;
+import static com.toanyone.order.common.dto.CursorConstants.DEFAULT_SORT_TYPE;
 
 @Getter
 public class OrderFindAllRequestDto {

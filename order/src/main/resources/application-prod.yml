@@ -1,35 +1,59 @@
+server:
+  port: 8081
+
 spring:
   application:
-    name: order
+    name: order-service
   datasource:
     url: jdbc:mysql://localhost:3306/order?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
-    username: { $username }
-    password: { $password }
-    driver-class-name: { $database_driver }
-
+    username: ${username}
+    password: ${password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
-    database: { $database }
+    database: mysql
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         show_sql: true
         format_sql: true
-
+        default_batch_fetch_size: 10
   data:
     redis:
-      host: { $database_host }
-      port: { $database_port }
+      host: localhost
+      port: 6379
+      username: ${redis_username}
+      password: ${redis_password}
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
 
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:19090/eureka/
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
 
+spring.cloud.openfeign.enabled: true
 
-#  jackson:
-#    serialization:
-#      WRITE_DATES_AS_TIMESTAMPS: false  # ISO-8601 형식으로 날짜를 저장
-#    default-property-inclusion: non_null
-
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0

@@ -14,6 +14,8 @@ import java.util.List;
 @Builder
 public class ItemValidationRequestDto {
 
+    private String type; //INCREASE, DECREASE
+
     @NotNull
     private List<ItemRequestDto> items;
 

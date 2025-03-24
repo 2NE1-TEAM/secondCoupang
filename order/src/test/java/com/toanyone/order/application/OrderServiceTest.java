@@ -5,18 +5,16 @@ import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.application.mapper.MessageConverter;
-import com.toanyone.order.common.SingleResponse;
-import com.toanyone.order.common.UserContext;
+import com.toanyone.order.application.service.*;
+import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
-import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.domain.entity.OrderItem;
+import com.toanyone.order.domain.model.Order;
+import com.toanyone.order.domain.model.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.message.DeliveryRequestMessage;
 import com.toanyone.order.message.PaymentCancelMessage;
 import com.toanyone.order.message.PaymentRequestMessage;
-import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
-import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
 import com.toanyone.order.presentation.dto.response.OrderCancelResponseDto;
 import com.toanyone.order.presentation.dto.response.OrderCreateResponseDto;
 import org.junit.jupiter.api.*;
@@ -26,13 +24,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.FactoryBasedNavigableListAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -81,9 +78,9 @@ class OrderServiceTest {
     private Order order;
     private OrderItem orderItem1;
     private OrderItem orderItem2;
-    private SingleResponse<StoreFindResponseDto> supplyStore;
-    private SingleResponse<StoreFindResponseDto> receiveStore;
-    private SingleResponse<HubFindResponseDto> hub;
+    private ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore;
+    private ResponseEntity<SingleResponse<StoreFindResponseDto>> receiveStore;
+    private ResponseEntity<SingleResponse<HubFindResponseDto>> hub;
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
@@ -96,23 +93,23 @@ class OrderServiceTest {
         orderItem1 = OrderItem.create(1L, "Item 1", 2, 1000);
         orderItem2 = OrderItem.create(2L, "Item 2", 1, 2000);
 
-        supplyStore = SingleResponse.success(StoreFindResponseDto.builder()
+        supplyStore = ResponseEntity.ok().body(SingleResponse.success(StoreFindResponseDto.builder()
                 .storeId(1L)
                 .hubId(1L)
                 .build()
-        );
+        ));
 
-        receiveStore = SingleResponse.success(StoreFindResponseDto.builder()
+        receiveStore = ResponseEntity.ok().body(SingleResponse.success(StoreFindResponseDto.builder()
                 .storeId(1L)
                 .hubId(1L)
                 .build()
-        );
+        ));
 
-        hub = SingleResponse.success(HubFindResponseDto.builder()
+        hub = ResponseEntity.ok().body(SingleResponse.success(HubFindResponseDto.builder()
                         .hubName("hubName")
                         .createdBy(1L)
                 .build()
-        );
+        ));
 
         //주문 생성 요청 데이터
         orderRequestDto = OrderCreateServiceDto.builder()
@@ -142,6 +139,7 @@ class OrderServiceTest {
 
         //상품 검증 요청 데이터
         itemValidationRequestDto = ItemValidationRequestDto.builder()
+                .type("DECREASE")
                 .items(List.of(
                         ItemValidationRequestDto.ItemRequestDto.builder()
                                 .itemId(1L)
@@ -184,7 +182,7 @@ class OrderServiceTest {
 
         when(storeService.getStore(2L)).thenReturn(receiveStore);
 
-        when(itemService.validateItems(any())).thenReturn(true);
+        when(itemService.validateItems(any())).thenReturn(ResponseEntity.ok().build());
 
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
@@ -400,7 +398,10 @@ class OrderServiceTest {
         order.addOrderItem(orderItem2);
 
         when(orderRepository.findByIdWithItems(orderId)).thenReturn(Optional.of(order));
-        when(itemService.restoreInventory(any())).thenReturn(true);
+
+        when(itemService.validateItems(any())).thenReturn(ResponseEntity.ok().build());
+
+//        when(itemService.restoreInventory(any())).thenReturn(true);
 
         //when
         orderService.processOrderCancellation(orderId, status);
@@ -408,7 +409,7 @@ class OrderServiceTest {
         //then
         assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
         verify(orderRepository, times(1)).findByIdWithItems(orderId);
-        verify(itemService, times(1)).restoreInventory(any());
+        verify(itemService, times(1)).validateItems(any());
         verify(orderItemRepository, times(1)).bulkUpdateOrderItemsStatus(orderId, OrderItem.OrderItemStatus.CANCELED);
     }
 

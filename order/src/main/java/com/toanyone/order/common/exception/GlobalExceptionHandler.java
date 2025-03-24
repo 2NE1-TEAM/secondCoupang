@@ -1,6 +1,6 @@
 package com.toanyone.order.common.exception;
 
-import com.toanyone.order.common.SingleResponse;
+import com.toanyone.order.common.dto.SingleResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,15 +1,12 @@
-package com.toanyone.order.domain.entity;
+package com.toanyone.order.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.toanyone.order.common.BaseEntity;
+import com.toanyone.order.common.model.BaseEntity;
 import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Getter

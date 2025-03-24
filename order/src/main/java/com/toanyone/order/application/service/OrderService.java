@@ -1,6 +1,7 @@
-package com.toanyone.order.application;
+package com.toanyone.order.application.service;
 
 import com.toanyone.order.application.dto.HubFindResponseDto;
+import com.toanyone.order.application.dto.SlackMessageRequestDto;
 import com.toanyone.order.application.dto.StoreFindResponseDto;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
@@ -8,11 +9,11 @@ import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.application.mapper.MessageConverter;
-import com.toanyone.order.common.CursorPage;
-import com.toanyone.order.common.SingleResponse;
+import com.toanyone.order.common.dto.CursorPage;
+import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
-import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.domain.entity.OrderItem;
+import com.toanyone.order.domain.model.Order;
+import com.toanyone.order.domain.model.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.message.DeliveryRequestMessage;
@@ -22,9 +23,12 @@ import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +40,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private static final int ORDER_ITEM_MAX = 20;
+    private static final int DELIVERY_REQUEST_EXPIRATION_MINUTES = 10;
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -50,10 +55,10 @@ public class OrderService {
     @Transactional
     public OrderCreateResponseDto createOrder(Long userId, String role, String slackId, OrderCreateServiceDto request) {
 
-        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(request.getSupplyStoreId());
-        SingleResponse<StoreFindResponseDto> receiveStore = storeService.getStore(request.getReceiveStoreId());
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(request.getSupplyStoreId());
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> receiveStore = storeService.getStore(request.getReceiveStoreId());
 
-        if (supplyStore.getErrorCode() != null || receiveStore.getErrorCode() != null) {
+        if (supplyStore.getBody().getErrorCode() != null || receiveStore.getBody().getErrorCode() != null) {
             throw new OrderException.InvalidStoreException();
         }
 
@@ -61,9 +66,8 @@ public class OrderService {
             throw new OrderException.OrderBadRequestException();
         }
 
-        boolean isValid = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request));
-
-        if (!isValid) {
+        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
+        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
             throw new OrderException.InsufficientStockException();
         }
 
@@ -83,14 +87,38 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId(), supplyStore.getData().getHubId());
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getBody().getData().getHubId(), supplyStore.getBody().getData().getHubId());
 
-        redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage);
+        redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage, Duration.ofMinutes(DELIVERY_REQUEST_EXPIRATION_MINUTES));
 
         PaymentRequestMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
         orderKafkaProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderFindResponseDto findOrder(Long orderId) {
+        Order order = validateOrderExists(orderId);
+        return OrderFindResponseDto.fromOrder(order);
+    }
+
+
+    @Transactional(readOnly = true)
+    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllCondition request) {
+        CursorPage<Order> orders = orderRepository.findAll(userId, request);
+
+        List<OrderFindAllResponseDto> responseDtos = orders.getContent().stream().map(OrderFindAllResponseDto::fromOrder).collect(Collectors.toList());
+
+        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchCondition request) {
+        log.info("searchOrders");
+        CursorPage<Order> orders = orderRepository.search(request);
+        List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
+        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
     }
 
 
@@ -137,9 +165,12 @@ public class OrderService {
     }
 
     private OrderCancelResponseDto cancelOrderByHubManager(Order order, Long userId, String role, String slackId) {
-        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
-        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
-        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        if (supplyStore.getBody().getErrorCode() != null) {
+            throw new OrderException.InvalidStoreException();
+        }
+        ResponseEntity<SingleResponse<HubFindResponseDto>> hub = hubService.getHub(supplyStore.getBody().getData().getHubId());
+        if (!Objects.equals(hub.getBody().getData().getCreatedBy(), userId)) {
             throw new OrderException.ForbiddenException();
         }
         cancelOrderAndSendPaymentCancelMessage(order, userId, role, slackId);
@@ -159,9 +190,9 @@ public class OrderService {
     }
 
     private void deleteOrderByHubManager(Order order, Long userId) {
-        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
-        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
-        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        ResponseEntity<SingleResponse<HubFindResponseDto>> hub = hubService.getHub(supplyStore.getBody().getData().getHubId());
+        if (!Objects.equals(hub.getBody().getData().getCreatedBy(), userId)) {
             throw new OrderException.ForbiddenException();
         }
         bulkDeleteOrderAndOrderItems(order, userId);
@@ -188,38 +219,11 @@ public class OrderService {
         });
     }
 
-    @Transactional(readOnly = true)
-    public OrderFindResponseDto findOrder(Long orderId) {
-        Order order = validateOrderExists(orderId);
-        return OrderFindResponseDto.fromOrder(order);
-    }
-
-
-    @Transactional(readOnly = true)
-    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllCondition request) {
-        CursorPage<Order> orders = orderRepository.findAll(userId, request);
-
-        List<OrderFindAllResponseDto> responseDtos = orders.getContent().stream().map(OrderFindAllResponseDto::fromOrder).collect(Collectors.toList());
-
-        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
-    }
-
-    @Transactional(readOnly = true)
-    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchCondition request) {
-        log.info("searchOrders");
-        CursorPage<Order> orders = orderRepository.search(request);
-        List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
-        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
-    }
-
-    @Transactional(readOnly = true)
-    public Order findOrderWithItems(Long orderId) {
-        return validateOrderWithItemsExists(orderId);
-    }
 
     public void restoreInventory(Order order) {
-        boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
-        if (!restoreSuccess) {
+
+        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemRestoreDto(order, "INCREASE"));
+        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
             throw new OrderException.RestoreInventoryFailedException();
         }
     }

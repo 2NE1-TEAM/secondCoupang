@@ -1,6 +1,6 @@
 package com.toanyone.order.application.dto.request;
 
-import com.toanyone.order.common.SortType;
+import com.toanyone.order.common.dto.SortType;
 import lombok.Builder;
 import lombok.Getter;
 

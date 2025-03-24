@@ -1,4 +1,4 @@
-package com.toanyone.order.application;
+package com.toanyone.order.application.service;
 
 import com.toanyone.order.message.DeliveryRequestMessage;
 import com.toanyone.order.message.PaymentCancelMessage;
@@ -21,7 +21,7 @@ public class OrderKafkaProducer {
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.requested")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);
@@ -32,7 +32,7 @@ public class OrderKafkaProducer {
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.cancel")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);
@@ -45,7 +45,7 @@ public class OrderKafkaProducer {
                 .setHeader(KafkaHeaders.GROUP_ID, "delivery")
                 .setHeader(KafkaHeaders.TOPIC, "delivery.requested")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);
