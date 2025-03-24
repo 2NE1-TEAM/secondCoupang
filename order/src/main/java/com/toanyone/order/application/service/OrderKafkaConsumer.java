@@ -41,7 +41,8 @@ public class OrderKafkaConsumer {
 
             SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
                     .slackId(slackId)
-                    .message(message.getOrderId() + " 주문의 결제가 완료되었습니다.").build();
+                    .orderId(message.getOrderId())
+                    .message("주문의 결제가 완료되었습니다.").build();
 
             aiService.sendSlackMessage(slackMessage);
 
@@ -64,7 +65,8 @@ public class OrderKafkaConsumer {
 
             SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
                     .slackId(slackId)
-                    .message(message.getOrderId() + " 주문의 결제가 실패했습니다.").build();
+                    .orderId(message.getOrderId())
+                    .message("주문의 결제가 실패했습니다.").build();
 
             aiService.sendSlackMessage(slackMessage);
 
@@ -142,7 +144,8 @@ public class OrderKafkaConsumer {
 
             SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
                     .slackId(slackId)
-                    .message(message.getOrderId() + " 주문이 실패했습니다.").build();
+                    .orderId(message.getOrderId())
+                    .message("주문이 실패했습니다.").build();
 
             aiService.sendSlackMessage(slackMessage);
 

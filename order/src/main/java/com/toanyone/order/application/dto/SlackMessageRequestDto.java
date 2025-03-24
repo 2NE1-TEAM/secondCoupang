@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class SlackMessageRequestDto {
     String slackId;
     String message;
+    Long orderId;
 }

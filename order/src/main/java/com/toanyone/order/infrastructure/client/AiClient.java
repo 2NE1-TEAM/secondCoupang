@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "ai-service", configuration = FeignClient.class)
 public interface AiClient extends AiService {
 
-    @PostMapping("/total")
+    @PostMapping("/slack")
     void sendSlackMessage(@RequestBody SlackMessageRequestDto requestDto);
 
 }
