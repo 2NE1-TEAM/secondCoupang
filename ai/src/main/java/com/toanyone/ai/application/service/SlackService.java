@@ -8,6 +8,7 @@ import com.toanyone.ai.domain.entity.OrderStatus;
 import com.toanyone.ai.domain.entity.SlackMessage;
 import com.toanyone.ai.infrastructure.SlackRepository;
 import com.toanyone.ai.presentation.dto.ResponseGetSlackDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,12 +38,13 @@ public class SlackService {
                 );
     }
 
-    public void save(Ai ai, String message, OrderStatus success) {
+    public void save(Ai ai, String message, OrderStatus success, HttpServletRequest request) {
 
         SlackMessage slackMessage = SlackMessage.createSlackMessage(ai, message, success);
 
+        slackMessage.updateUpdated(Long.parseLong(request.getHeader("X-User-Id")));
+        slackMessage.updateCreated(Long.parseLong(request.getHeader("X-User-Id")));
         slackRepository.save(slackMessage);
-
     }
 
     public ResponseEntity<MultiResponse<ResponseGetSlackDto>> getSlacks(Pageable pageable, String userRole) {
@@ -72,6 +74,7 @@ public class SlackService {
 
         SlackMessage slack = this.slackRepository.findById(slackId).orElseThrow(AIException.NotFoundException::new);
         slack.updateDeleted(userId);
+        slack.updateUpdated(userId);
 
         return ResponseEntity.ok().body(SingleResponse.success("삭제 성공"));
     }

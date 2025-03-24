@@ -20,10 +20,10 @@ public abstract class BaseEntity {
 
     @CreatedDate
     @Column(updatable = false)
-    protected LocalDateTime createdAt;
+    protected LocalDateTime createdAt= LocalDateTime.now();
 
     @CreatedBy
-    @Column(updatable = false)
+    @Column
     protected Long createdBy;
 
     @LastModifiedDate
@@ -38,6 +38,16 @@ public abstract class BaseEntity {
     public void updateDeleted(Long userId) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = userId;
+    }
+
+    public void updateCreated(Long userId) {
+        this.createdAt = LocalDateTime.now();
+        this.createdBy = userId;
+    }
+
+    public void updateUpdated(Long userId) {
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = userId;
     }
 
 }
