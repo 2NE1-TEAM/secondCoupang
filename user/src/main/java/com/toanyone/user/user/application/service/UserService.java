@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,9 @@ public class UserService {
 
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         userRepository.save(user);
+        user.updateCreated(user.getId());
+        user.updateUpdated(user.getId());
+        userRepository.save(user);
 
         return new ResponseUserDto(user.getId(), user.getNickName(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
     }
@@ -62,6 +67,7 @@ public class UserService {
         Long masterId = Long.parseLong(request.getHeader("X-User-Id"));
 
         user.updateCreated(masterId);
+        user.updateUpdated(masterId);
 
         userRepository.save(user);
 
@@ -99,6 +105,7 @@ public class UserService {
 
         Long masterId = Long.parseLong( request.getHeader("X-User-Id"));
         user.updateDeleted(masterId);
+        user.updateUpdated(masterId);
         userRepository.save(user);
     }
 
@@ -130,6 +137,14 @@ public class UserService {
         this.userRepository.save(user);
 
         return ResponseEditUserDto.createResponseEditUserDto(user);
+
+    }
+
+    public Page<ResponseGetUserDto> getUsers(Pageable pageable, HttpServletRequest request) {
+        roleIsMaster(request);
+
+        Page<User> userPage = this.userRepository.findByDeletedAtIsNull(pageable);
+        return userPage.map(ResponseGetUserDto::new);
 
     }
 }

@@ -45,8 +45,10 @@ public class User extends BaseEntity {
         user.role = role;
         user.hubId = hubId;
         user.phone = phone;
-        return user;
 
+        user.updateCreated(user.getId());
+
+        return user;
     }
 
     public void updatePassword(String password) {

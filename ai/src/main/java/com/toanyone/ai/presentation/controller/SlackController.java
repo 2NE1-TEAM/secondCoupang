@@ -3,10 +3,11 @@ package com.toanyone.ai.presentation.controller;
 import com.toanyone.ai.application.service.SlackService;
 import com.toanyone.ai.common.response.MultiResponse;
 import com.toanyone.ai.common.response.SingleResponse;
+import com.toanyone.ai.presentation.dto.RequestCreateSlackDto;
+import com.toanyone.ai.presentation.dto.ResponseCreateSlackDto;
 import com.toanyone.ai.presentation.dto.ResponseGetSlackDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,19 @@ import org.springframework.web.bind.annotation.*;
 public class SlackController {
 
     private final SlackService slackService;
+
+    @PostMapping()
+    public ResponseEntity<SingleResponse<ResponseCreateSlackDto>> createSlack(
+            @RequestBody RequestCreateSlackDto requestCreateSlackDto,
+            HttpServletRequest request
+    ){
+
+        ResponseCreateSlackDto response = this.slackService.sendAndCreateSlack(
+                requestCreateSlackDto,
+                request);
+
+        return ResponseEntity.ok().body(SingleResponse.success(response));
+    }
 
     @GetMapping
     public ResponseEntity<MultiResponse<ResponseGetSlackDto>> getSlacks(

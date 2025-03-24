@@ -1,6 +1,7 @@
 package com.toanyone.user.user.presentation;
 
 import com.toanyone.user.user.application.service.UserService;
+import com.toanyone.user.user.common.MultiResponse;
 import com.toanyone.user.user.common.SingleResponse;
 import com.toanyone.user.user.presentation.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +75,16 @@ public class UserController {
         return ResponseEntity.ok().body(SingleResponse.success(userId +" 삭제 완료 "));
     }
 
+    @GetMapping()
+    public ResponseEntity<MultiResponse> getUsers(HttpServletRequest request,
+                                                  @RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ResponseGetUserDto> userDtoPage = this.userService.getUsers(pageable, request);
+
+        return ResponseEntity.ok().body(MultiResponse.success(userDtoPage));
+    }
 
 
     @GetMapping("/test")

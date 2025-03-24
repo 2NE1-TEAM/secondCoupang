@@ -22,7 +22,7 @@ public abstract class BaseEntity {
     protected LocalDateTime createdAt;
 
     @CreatedBy
-    @Column(updatable = false)
+    @Column
     protected Long createdBy;
 
     @LastModifiedDate

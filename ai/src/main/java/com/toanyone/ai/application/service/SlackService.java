@@ -7,12 +7,16 @@ import com.toanyone.ai.domain.entity.Ai;
 import com.toanyone.ai.domain.entity.OrderStatus;
 import com.toanyone.ai.domain.entity.SlackMessage;
 import com.toanyone.ai.infrastructure.SlackRepository;
+import com.toanyone.ai.presentation.dto.RequestCreateSlackDto;
+import com.toanyone.ai.presentation.dto.ResponseCreateSlackDto;
 import com.toanyone.ai.presentation.dto.ResponseGetSlackDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 
@@ -37,18 +41,19 @@ public class SlackService {
                 );
     }
 
-    public void save(Ai ai, String message, OrderStatus success) {
+    public void save(Ai ai, String message, OrderStatus success, HttpServletRequest request) {
 
         SlackMessage slackMessage = SlackMessage.createSlackMessage(ai, message, success);
 
+        slackMessage.updateUpdated(Long.parseLong(request.getHeader("X-User-Id")));
+        slackMessage.updateCreated(Long.parseLong(request.getHeader("X-User-Id")));
         slackRepository.save(slackMessage);
-
     }
 
     public ResponseEntity<MultiResponse<ResponseGetSlackDto>> getSlacks(Pageable pageable, String userRole) {
         isMaster(userRole);
 
-        Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
+        Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByDeletedAtIsNullOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
 
         return ResponseEntity.ok().body(MultiResponse.success(dtoPage));
     }
@@ -56,7 +61,7 @@ public class SlackService {
     public ResponseEntity<SingleResponse<ResponseGetSlackDto>> getSlack(Long id, String userRole) {
         isMaster(userRole);
 
-        SlackMessage slackMessage = this.slackRepository.findById(id).orElseThrow();
+        SlackMessage slackMessage = this.slackRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(AIException.NotFoundException::new);
 
          return ResponseEntity.ok().body(SingleResponse.success(new ResponseGetSlackDto(slackMessage)));
     }
@@ -72,7 +77,34 @@ public class SlackService {
 
         SlackMessage slack = this.slackRepository.findById(slackId).orElseThrow(AIException.NotFoundException::new);
         slack.updateDeleted(userId);
+        slack.updateUpdated(userId);
+        this.slackRepository.save(slack);
 
         return ResponseEntity.ok().body(SingleResponse.success("삭제 성공"));
+    }
+
+    @Transactional
+    public ResponseCreateSlackDto sendAndCreateSlack(RequestCreateSlackDto requestCreateSlackDto, HttpServletRequest request) {
+
+        if(requestCreateSlackDto.getOrderId() == null){
+            String message = "slack id : " + requestCreateSlackDto.getSlackId() + " \n" +
+                    "message : " + requestCreateSlackDto.getMessage();
+
+            sendMessage(message);
+            save(null, message, OrderStatus.SUCCESS, request);
+
+            return ResponseCreateSlackDto.createSlackDto(requestCreateSlackDto.getSlackId(), requestCreateSlackDto.getMessage(), null);
+        }else{
+            String message =
+                    "order id : " + requestCreateSlackDto.getOrderId() + " \n" +
+                    "slack id : " + requestCreateSlackDto.getSlackId() + " \n" +
+                    "message : " + requestCreateSlackDto.getMessage();
+            SlackMessage.createSlackMessage(null, message, OrderStatus.SUCCESS);
+
+            sendMessage(message);
+            save(null, message, OrderStatus.SUCCESS, request);
+
+            return ResponseCreateSlackDto.createSlackDto(requestCreateSlackDto.getSlackId(), requestCreateSlackDto.getMessage(), requestCreateSlackDto.getOrderId());
+        }
     }
 }

@@ -5,6 +5,7 @@ import com.toanyone.ai.infrastructure.AiRepository;
 import com.toanyone.ai.presentation.dto.RequestCreateMessageDto;
 import com.toanyone.ai.presentation.dto.RequestGeminiDto;
 import com.toanyone.ai.presentation.dto.ResponseGeminiDto;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,10 +60,12 @@ public class AiService {
 
     }
 
-    public Ai save(String question, String answer) {
+    public Ai save(String question, String answer, HttpServletRequest request) {
 
         Ai ai = Ai.createAi(question, answer);
         aiRepository.save(ai);
+        ai.updateCreated(Long.parseLong(request.getHeader("X-User-Id")));
+        ai.updateUpdated(Long.parseLong(request.getHeader("X-User-Id")));
 
         return ai;
     }
