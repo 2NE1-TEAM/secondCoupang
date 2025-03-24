@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "slack-service", configuration = FeignConfig.class)
 public interface SlackClient {
 
-    @PostMapping(value = "/slacks",  consumes = "application/json")
+    @PostMapping(value = "/slack",  consumes = "application/json")
     void sendSlackMessage(@RequestBody RequestCreateMessageDto requestCreateMessageDto);
 }
