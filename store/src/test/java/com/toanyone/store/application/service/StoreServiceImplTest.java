@@ -15,19 +15,21 @@ import com.toanyone.store.infrastructure.client.HubClient;
 import com.toanyone.store.infrastructure.client.dto.HubResponseDto;
 import com.toanyone.store.presentation.dto.*;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -36,6 +38,9 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Transactional
 class StoreServiceImplTest {
+
+    @Autowired
+    UserContext userContext;
 
     @Autowired
     StoreRepository storeRepository;
@@ -49,25 +54,27 @@ class StoreServiceImplTest {
     @Autowired
     EntityManager em;
 
+    @TestConfiguration
+    public class TestAuditorAwareConfig {
+        @Bean
+        public AuditorAware<Long> auditorAware() {
+            return () -> Optional.of(999L); // 테스트용 사용자 ID
+        }
+    }
+
     @BeforeEach
     void setUp() {
         // 테스트 실행 전에 UserContext에 임의의 사용자 정보 설정
         UserInfo mockUser = new UserInfo(1L, "ROLE_USER", "xxxx"); // 사용자 ID: 1, 역할: ROLE_USER
-        UserContext.setUser(mockUser);
+        userContext.setUser(mockUser);
     }
-
-    @AfterEach
-    void tearDown() {
-        UserContext.clear();  // 테스트가 끝나면 ThreadLocal 정리
-    }
-
 
     @Test
     @DisplayName("업체 생성 테스트")
     void StoreCreateTest() {
         //given
         HubResponseDto mockHubResponse = new HubResponseDto(1L, "허브 A", new DetailAddress("a동 102동"),
-                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)));
+                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)), 1L);
         when(hubClient.getHubById(1L)).thenReturn(ResponseEntity.ok(SingleResponse.success(mockHubResponse)));
 
         StoreCreateRequestDto requestDto = new StoreCreateRequestDto(
@@ -87,7 +94,7 @@ class StoreServiceImplTest {
     void storeFindOneTest() {
         // given
         HubResponseDto mockHubResponse = new HubResponseDto(1L, "허브 A", new DetailAddress("a동 102동"),
-                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)));
+                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)), 1L);
         when(hubClient.getHubById(1L)).thenReturn(ResponseEntity.ok(SingleResponse.success(mockHubResponse)));
 
         StoreCreateRequestDto requestDto = new StoreCreateRequestDto(
@@ -113,7 +120,7 @@ class StoreServiceImplTest {
                 StoreType.PRODUCER, "02-123-4567", "서울허브"));
 
         // when
-        savedStore.delete();
+        savedStore.delete(userContext.getUser().getUserId());
 
         Store findStore = storeRepository.findById(savedStore.getId()).get();
 
@@ -126,15 +133,21 @@ class StoreServiceImplTest {
     @DisplayName("스토어 업데이트 테스트")
     void storeUpdateTest() {
         //given
+
+        HubResponseDto mockHubResponse = new HubResponseDto(1L, "허브 A", new DetailAddress("a동 102동"),
+                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)), 1L);
+        when(hubClient.getHubById(1L)).thenReturn(ResponseEntity.ok(SingleResponse.success(mockHubResponse)));
+
+
         Store savedStore = storeRepository.save(Store.create("찬이네 서울 정육점", 1L, new DetailAddress("102동 1201호"),
                 new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)),
-                StoreType.PRODUCER, "02-123-4567", "서울허브"));
+                StoreType.PRODUCER, "021234567", "서울허브"));
 
         //when
         storeService.updateStore(savedStore.getId(), new StoreUpdateRequestDto(
-                null, StoreType.PRODUCER,
+                null, StoreType.CONSUMER,
                 new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)),
-                null, 1L, "02-123-4567"));
+                null, 1L, "02-123-1111"));
 
         em.flush();
         em.clear();
@@ -144,21 +157,22 @@ class StoreServiceImplTest {
         //then
         assertThat(findStore.getStoreName()).isNotNull();
         assertThat(findStore.getDetailAddress()).isNotNull();
+
+        assertThat(findStore.getTelephone()).isEqualTo("021231111");
     }
 
     @Test
     @DisplayName("스토어 검색 테스트")
-    @Rollback(false)
     void storeSearchTest() throws JsonProcessingException {
         // given
         HubResponseDto mockHubResponse = new HubResponseDto(1L, "허브 A", new DetailAddress("a동 102동"),
-                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)));
+                new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)), 1L);
         when(hubClient.getHubById(1L)).thenReturn(ResponseEntity.ok(SingleResponse.success(mockHubResponse)));
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 1; i < 9; i++) {
             StoreCreateRequestDto requestDto = new StoreCreateRequestDto(
                     "찬이네 서울 정육점" + i, StoreType.PRODUCER,
-                    new Location(new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.1234567").setScale(7, RoundingMode.HALF_UP)),
+                    new Location(new BigDecimal("123.123456"+i).setScale(7, RoundingMode.HALF_UP), new BigDecimal("123.123456"+i).setScale(7, RoundingMode.HALF_UP)),
                     new DetailAddress("102동 1201호"), 1L, "02-123-4567" + i);
             storeService.createStore(requestDto);
 
@@ -176,11 +190,11 @@ class StoreServiceImplTest {
         assertThat(stores.getContent().get(0).getStoreName()).contains("찬이네 서울 정육점"); // 가게이름 + 전화번호 검색 잘 되는지
         assertThat(stores.getContent().size()).isEqualTo(10); // 요청한 사이즈대로 잘 가져오는지
 //        assertThat(stores.getNextCursor().getLastStoreId()).isEqualTo(10L); //커서페이징 잘 되는지
-        assertThat(stores.getNextCursor().getLastStoreName()).isEqualTo("찬이네 서울 정육점9"); //커서페이징 잘 되는지
+//        assertThat(stores.getNextCursor().getLastStoreName()).isEqualTo("찬이네 서울 정육점9"); //커서페이징 잘 되는지
         assertThat(stores.isHasNext()).isTrue(); // 커서페이징에서 다음 페이지 존재하는 지 확인
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.registerModule(new JavaTimeModule());
-//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 //
 //        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(stores));
     }

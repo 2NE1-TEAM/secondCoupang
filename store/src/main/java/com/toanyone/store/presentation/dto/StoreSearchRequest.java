@@ -1,16 +1,13 @@
 package com.toanyone.store.presentation.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 기본 생성자는 Spring이 필요로 해서 추가
 public class StoreSearchRequest {
     private String keyword;  // 가게명 검색
     private String telephone; // 가게 전화번호

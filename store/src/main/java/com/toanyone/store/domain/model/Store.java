@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "P_STORE")
+@SQLRestriction("deleted_at IS NULL")
 public class Store extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,5 +52,30 @@ public class Store extends BaseEntity {
         store.telephone = telephone;
         store.hubName = hubName;
         return store;
+    }
+
+    public void updateStoreName(String storeName) {
+        this.storeName = storeName;
+    }
+
+    public void updateStoreType(StoreType storeType) {
+        this.storeType = storeType;
+    }
+
+    public void updateLocation(Location location) {
+        this.location = location;
+    }
+
+    public void updateDetailAddress(DetailAddress detailAddress) {
+        this.detailAddress = detailAddress;
+    }
+
+    public void updateTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public void updateHub(Long hubId, String hubName) {
+        this.hubId = hubId;
+        this.hubName = hubName;
     }
 }

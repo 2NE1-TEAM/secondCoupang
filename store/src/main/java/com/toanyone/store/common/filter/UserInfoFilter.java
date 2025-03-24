@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -12,7 +13,10 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class UserInfoFilter extends OncePerRequestFilter {
+
+    private final UserContext userContext; // DI 받음
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -24,7 +28,7 @@ public class UserInfoFilter extends OncePerRequestFilter {
 
         if (userIdHeaderStr.isEmpty() || roleHeader.isEmpty() || slackHeader.isEmpty()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "인증 정보가 없습니다.");
-            return; // 요청 차단
+            return;
         }
 
         Long userIdHeader;
@@ -36,12 +40,8 @@ public class UserInfoFilter extends OncePerRequestFilter {
         }
 
         UserInfo userInfo = new UserInfo(userIdHeader, roleHeader.get(), slackHeader.get());
-        UserContext.setUser(userInfo);
+        userContext.setUser(userInfo);
 
-        try {
-            filterChain.doFilter(request, response);
-        } finally {
-            UserContext.clear();
-        }
+        filterChain.doFilter(request, response);
     }
 }

@@ -11,8 +11,8 @@ public class StoreException extends CustomException{
         }
     }
 
-    public static class StoreNameExistException extends StoreException {
-        public StoreNameExistException(String message) {
+    public static class StoreDuplicateException extends StoreException {
+        public StoreDuplicateException(String message) {
             super(message);
         }
     }
@@ -25,6 +25,18 @@ public class StoreException extends CustomException{
 
     public static class StoreAlreadyDeletedException extends StoreException {
         public StoreAlreadyDeletedException(String message) {
+            super(message);
+        }
+    }
+
+    public static class HubServerErrorException extends StoreException {
+        public HubServerErrorException(String message) {
+            super(message);
+        }
+    }
+
+    public static class StoreDeniedException extends StoreException {
+        public StoreDeniedException(String message) {
             super(message);
         }
     }

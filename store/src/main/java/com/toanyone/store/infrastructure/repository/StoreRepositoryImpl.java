@@ -9,6 +9,7 @@ import com.toanyone.store.domain.model.QStore;
 import com.toanyone.store.domain.model.Store;
 import com.toanyone.store.presentation.dto.CursorInfo;
 import com.toanyone.store.presentation.dto.CursorPage;
+import com.toanyone.store.presentation.dto.StoreFindResponseDto;
 import com.toanyone.store.presentation.dto.StoreSearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -24,7 +25,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public CursorPage<Store> search(StoreSearchRequest storeSearchRequest, String sortBy, String direction, int size) {
+    public CursorPage search(StoreSearchRequest storeSearchRequest, String sortBy, String direction, int size) {
         QStore store = QStore.store;
 
         List<Store> results = queryFactory
@@ -53,7 +54,8 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                 nextCursorInfo = new CursorInfo(lastStore.getId(), null, lastStore.getStoreName());
             }
         }
-        return new CursorPage<>(results, nextCursorInfo, hasNext);
+
+        return new CursorPage<>(results.stream().map(s -> StoreFindResponseDto.of(s, s.getHubId(), s.getHubName())).toList(), nextCursorInfo, hasNext);
     }
 
     // 전화번호 검색
@@ -79,18 +81,20 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         QStore store = QStore.store;
         boolean isDescending = "DESC".equalsIgnoreCase(direction);
 
-        // createdAt 기준 페이징
         if ("createdAt".equals(sortBy)) {
             return isDescending
-                    ? store.createdAt.lt(cursorCreatedAt).or(store.createdAt.eq(cursorCreatedAt).and(store.id.lt(cursorId)))
-                    : store.createdAt.gt(cursorCreatedAt).or(store.createdAt.eq(cursorCreatedAt).and(store.id.gt(cursorId)));
+                    ? store.createdAt.lt(cursorCreatedAt)
+                    .or(store.createdAt.eq(cursorCreatedAt).and(store.id.loe(cursorId)))
+                    : store.createdAt.gt(cursorCreatedAt)
+                    .or(store.createdAt.eq(cursorCreatedAt).and(store.id.goe(cursorId)));
         }
 
-        // storeName 기준 페이징
         if ("storeName".equals(sortBy)) {
             return isDescending
-                    ? store.storeName.lt(cursorStoreName).or(store.storeName.eq(cursorStoreName).and(store.id.lt(cursorId)))
-                    : store.storeName.gt(cursorStoreName).or(store.storeName.eq(cursorStoreName).and(store.id.gt(cursorId)));
+                    ? store.storeName.lt(cursorStoreName)
+                    .or(store.storeName.eq(cursorStoreName).and(store.id.loe(cursorId)))
+                    : store.storeName.gt(cursorStoreName)
+                    .or(store.storeName.eq(cursorStoreName).and(store.id.goe(cursorId)));
         }
 
         return null;

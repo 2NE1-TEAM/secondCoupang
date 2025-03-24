@@ -6,10 +6,8 @@ import com.toanyone.store.domain.model.StoreType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
@@ -23,7 +21,7 @@ public class StoreCreateRequestDto {
     private Location location;
     @NotNull
     private DetailAddress detailAddress;
-    @NotBlank
+    @NotNull
     private Long hubId;
     @NotBlank
     private String telephone;

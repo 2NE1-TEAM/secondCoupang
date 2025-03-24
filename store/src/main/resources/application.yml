@@ -1,4 +1,16 @@
+server:
+  port: 19092
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
 spring:
+  application:
+    name: store-service
   datasource:
     url: jdbc:mysql://localhost:3306/store
     username: ${DB_USERNAME}
@@ -18,3 +30,13 @@ spring:
       pageable:
         default-page-size: 10
         max-page-size: 2000
+
+    redis:
+      host: localhost
+      port: 6379
+      username: default
+      password: systempass
+
+kafka:
+  server:
+    url: localhost:9092

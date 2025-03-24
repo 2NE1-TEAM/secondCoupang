@@ -33,7 +33,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer' // 추가
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
 	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
@@ -54,6 +57,10 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+	options.compilerArgs += "-parameters"
 }
 
 // QueryDSL 빌드 경로 설정 추가 (QClass 파일을 build/generated에 생성)
