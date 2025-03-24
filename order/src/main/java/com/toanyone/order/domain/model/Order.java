@@ -1,6 +1,6 @@
-package com.toanyone.order.domain.entity;
+package com.toanyone.order.domain.model;
 
-import com.toanyone.order.common.BaseEntity;
+import com.toanyone.order.common.model.BaseEntity;
 import com.toanyone.order.common.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

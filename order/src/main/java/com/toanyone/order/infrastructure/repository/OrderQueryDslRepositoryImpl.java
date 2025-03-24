@@ -1,14 +1,15 @@
-package com.toanyone.order.infrastructure;
+package com.toanyone.order.infrastructure.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
-import com.toanyone.order.common.CursorInfo;
-import com.toanyone.order.common.CursorPage;
-import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.common.SortType;
+import com.toanyone.order.common.dto.CursorInfo;
+import com.toanyone.order.common.dto.CursorPage;
+import com.toanyone.order.domain.model.Order;
+import com.toanyone.order.common.dto.SortType;
+import com.toanyone.order.infrastructure.repository.OrderQueryDslRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
@@ -17,8 +18,8 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.toanyone.order.domain.entity.QOrder.order;
-import static com.toanyone.order.domain.entity.QOrderItem.orderItem;
+import static com.toanyone.order.domain.model.QOrder.order;
+import static com.toanyone.order.domain.model.QOrderItem.orderItem;
 
 @Slf4j(topic = "OrderQueryDslImpl")
 @RequiredArgsConstructor

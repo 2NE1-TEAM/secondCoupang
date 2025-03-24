@@ -1,4 +1,4 @@
-package com.toanyone.order.common;
+package com.toanyone.order.common.config;
 
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;

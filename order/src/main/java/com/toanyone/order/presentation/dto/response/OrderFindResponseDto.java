@@ -1,7 +1,6 @@
 package com.toanyone.order.presentation.dto.response;
 
-import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.domain.entity.OrderItem;
+import com.toanyone.order.domain.model.Order;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

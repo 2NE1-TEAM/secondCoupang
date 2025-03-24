@@ -1,4 +1,4 @@
-package com.toanyone.order.application;
+package com.toanyone.order.application.service;
 
 import com.toanyone.order.message.DeliveryRequestMessage;
 import com.toanyone.order.message.PaymentCancelMessage;

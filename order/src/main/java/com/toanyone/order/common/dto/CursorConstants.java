@@ -1,4 +1,4 @@
-package com.toanyone.order.common;
+package com.toanyone.order.common.dto;
 
 public class CursorConstants {
     public static final int DEFAULT_SIZE = 10;

@@ -1,4 +1,4 @@
-package com.toanyone.order.application;
+package com.toanyone.order.application.service;
 
 import com.toanyone.order.application.dto.HubFindResponseDto;
 import com.toanyone.order.application.dto.StoreFindResponseDto;
@@ -8,11 +8,11 @@ import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
 import com.toanyone.order.application.mapper.MessageConverter;
-import com.toanyone.order.common.CursorPage;
-import com.toanyone.order.common.SingleResponse;
+import com.toanyone.order.common.dto.CursorPage;
+import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
-import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.domain.entity.OrderItem;
+import com.toanyone.order.domain.model.Order;
+import com.toanyone.order.domain.model.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
 import com.toanyone.order.message.DeliveryRequestMessage;

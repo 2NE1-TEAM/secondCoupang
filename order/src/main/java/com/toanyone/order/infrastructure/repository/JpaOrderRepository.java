@@ -1,9 +1,8 @@
-package com.toanyone.order.infrastructure;
+package com.toanyone.order.infrastructure.repository;
 
-import com.toanyone.order.domain.entity.Order;
+import com.toanyone.order.domain.model.Order;
 import com.toanyone.order.domain.repository.OrderRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;

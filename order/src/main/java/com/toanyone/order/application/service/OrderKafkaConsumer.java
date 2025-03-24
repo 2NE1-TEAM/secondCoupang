@@ -1,4 +1,4 @@
-package com.toanyone.order.application;
+package com.toanyone.order.application.service;
 
 import com.toanyone.delivery.message.DeliveryFailedMessage;
 import com.toanyone.delivery.message.DeliveryStatusUpdatedMessage;

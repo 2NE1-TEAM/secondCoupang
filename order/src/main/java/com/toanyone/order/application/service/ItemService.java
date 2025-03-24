@@ -1,4 +1,4 @@
-package com.toanyone.order.application;
+package com.toanyone.order.application.service;
 
 import com.toanyone.order.application.dto.ItemRestoreRequestDto;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;

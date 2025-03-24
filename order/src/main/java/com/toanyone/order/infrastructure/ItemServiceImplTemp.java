@@ -1,6 +1,6 @@
 package com.toanyone.order.infrastructure;
 
-import com.toanyone.order.application.ItemService;
+import com.toanyone.order.application.service.ItemService;
 import com.toanyone.order.application.dto.ItemRestoreRequestDto;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
 import jakarta.validation.Valid;

@@ -1,13 +1,8 @@
 package com.toanyone.order.presentation.dto.response;
 
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
-import com.toanyone.order.domain.entity.Order;
-import com.toanyone.order.domain.entity.OrderItem;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import com.toanyone.order.domain.model.Order;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
