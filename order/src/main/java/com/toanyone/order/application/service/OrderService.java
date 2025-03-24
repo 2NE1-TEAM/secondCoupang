@@ -55,21 +55,21 @@ public class OrderService {
     @Transactional
     public OrderCreateResponseDto createOrder(Long userId, String role, String slackId, OrderCreateServiceDto request) {
 
-        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(request.getSupplyStoreId());
-        ResponseEntity<SingleResponse<StoreFindResponseDto>> receiveStore = storeService.getStore(request.getReceiveStoreId());
-
-        if (supplyStore.getBody().getErrorCode() != null || receiveStore.getBody().getErrorCode() != null) {
-            throw new OrderException.InvalidStoreException();
-        }
-
-        if (request.getItems().size() > ORDER_ITEM_MAX) {
-            throw new OrderException.OrderBadRequestException();
-        }
-
-        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
-        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
-            throw new OrderException.InsufficientStockException();
-        }
+//        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(request.getSupplyStoreId());
+//        ResponseEntity<SingleResponse<StoreFindResponseDto>> receiveStore = storeService.getStore(request.getReceiveStoreId());
+//
+//        if (supplyStore.getBody().getErrorCode() != null || receiveStore.getBody().getErrorCode() != null) {
+//            throw new OrderException.InvalidStoreException();
+//        }
+//
+//        if (request.getItems().size() > ORDER_ITEM_MAX) {
+//            throw new OrderException.OrderBadRequestException();
+//        }
+//
+//        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
+//        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
+//            throw new OrderException.InsufficientStockException();
+//        }
 
         Order order = Order.create(userId, request.getOrdererName(), request.getRequest(),
                 request.getSupplyStoreId(), request.getReceiveStoreId());
@@ -87,7 +87,8 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getBody().getData().getHubId(), supplyStore.getBody().getData().getHubId());
+//        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getBody().getData().getHubId(), supplyStore.getBody().getData().getHubId());
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), 1L, 2L);
 
         redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage, Duration.ofMinutes(DELIVERY_REQUEST_EXPIRATION_MINUTES));
 
@@ -232,7 +233,7 @@ public class OrderService {
     public void processOrderCancellation(Long orderId, String status) {
         Order order = validateOrderWithItemsExists(orderId);
         updateOrderStatus(order, status);
-        restoreInventory(order);
+//        restoreInventory(order);
         validateOrderItemsStatus(order.getItems());
         orderItemRepository.bulkUpdateOrderItemsStatus(order.getId(), OrderItem.OrderItemStatus.CANCELED);
     }
