@@ -61,7 +61,7 @@ public class HubServiceImpl implements HubService {
                         hubCreateRequestDto.getTelephone()));
 
 //        kafkaProducerService.createHub(new HubCreateMessage(savedHub.getId(), userContext.getUser().getSlackId()));
-        eventPublisher.publishEvent(new HubCreateMessage(savedHub.getId(), userContext.getUser().getSlackId()));
+        eventPublisher.publishEvent(new HubCreateMessage(savedHub.getId(), userContext.getUser().getSlackId(), userContext.getUser().getUserId(), userContext.getUser().getRole()));
 
 
         // 허브 생성 시 단건 조회 허브에 저장을 위해 단건 조회 시 사용하는 DTO 생성 후 cacheManager 활용.

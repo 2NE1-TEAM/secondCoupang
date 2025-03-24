@@ -3,9 +3,9 @@ spring:
     name: ai-service
 
   datasource:
-    url: jdbc:mysql://${DB_HOST}:3306/ai?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/ai?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -21,9 +21,9 @@ server:
 
 ai:
   gemini:
-    key: ${GEMINI_API}
+    key: AIzaSyB764WBxPgvp158tmLA4ICN5KdzT_LCWjY
 slack:
-  api: ${SLACK_API}
+  api: T08JU27JG3W/B08K0KX1PA5/ixim5vZoEZ85uCMdSCz6UWwB
 
 eureka:
   client:

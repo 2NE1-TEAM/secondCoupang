@@ -53,7 +53,7 @@ public class DeliveryService {
     @KafkaListener(topics = "delivery.requested", groupId = "delivery")
     public CreateDeliveryResponseDto consumeDeliveryMessage(ConsumerRecord<String, DeliveryRequestMessage> record,
                                                             @Header("X-User-Id") Long userId,
-                                                            @Header("X-User-Role") String userRole,
+                                                            @Header("X-User-Roles") String userRole,
                                                             @Header("X-Slack-Id") String slackId) throws IOException {
         DeliveryRequestMessage message = record.value();
         UserContext.setCurrentContext(UserContext.builder()
@@ -164,7 +164,7 @@ public class DeliveryService {
                         .shippingAddress(departureHubAddress)
                         .build();
 
-//                aiClient.sendMessage(messageForAiService);
+                aiClient.sendMessage(messageForAiService);
                 UserContext.clear();
 
                 return CreateDeliveryResponseDto.from(savedDelivery.getId());
@@ -219,7 +219,7 @@ public class DeliveryService {
                     .shippingAddress(departureHubAddress)
                     .build();
 
-//                aiClient.sendMessage(messageForAiService);
+                aiClient.sendMessage(messageForAiService);
             UserContext.clear();
             return CreateDeliveryResponseDto.from(savedDelivery.getId());
         }
@@ -295,7 +295,7 @@ public class DeliveryService {
                     .shippingAddress(departureHubAddress)
                     .build();
 
-//                aiClient.sendMessage(messageForAiService);
+                aiClient.sendMessage(messageForAiService);
             UserContext.clear();
             return CreateDeliveryResponseDto.from(savedDelivery.getId());
         }
@@ -350,7 +350,7 @@ public class DeliveryService {
                 .shippingAddress(departureHubAddress)
                 .build();
 
-//                aiClient.sendMessage(messageForAiService);
+                aiClient.sendMessage(messageForAiService);
 
         return CreateDeliveryResponseDto.from(savedDelivery.getId());
     }

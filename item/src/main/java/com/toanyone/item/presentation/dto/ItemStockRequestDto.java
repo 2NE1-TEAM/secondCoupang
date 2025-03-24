@@ -13,7 +13,4 @@ public class ItemStockRequestDto {
 
     @NotNull
     private Integer quantity;
-
-    @NotNull
-    private AdjustmentType type;
 }
