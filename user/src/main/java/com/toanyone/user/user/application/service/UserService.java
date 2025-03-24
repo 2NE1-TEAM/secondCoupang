@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -135,6 +137,14 @@ public class UserService {
         this.userRepository.save(user);
 
         return ResponseEditUserDto.createResponseEditUserDto(user);
+
+    }
+
+    public Page<ResponseGetUserDto> getUsers(Pageable pageable, HttpServletRequest request) {
+        roleIsMaster(request);
+
+        Page<User> userPage = this.userRepository.findByDeletedAtIsNull(pageable);
+        return userPage.map(ResponseGetUserDto::new);
 
     }
 }

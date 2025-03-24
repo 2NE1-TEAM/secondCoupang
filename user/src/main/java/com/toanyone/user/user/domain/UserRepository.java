@@ -1,6 +1,8 @@
 package com.toanyone.user.user.domain;
 
 import com.toanyone.user.user.domain.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findUserByIdAndDeletedAtIsNull(Long id);
 
     Optional<User> findUserByPhone(String phone);
+
+    Page<User> findByDeletedAtIsNull(Pageable pageable);
 }
