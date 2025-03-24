@@ -32,7 +32,13 @@ spring:
       username: default
       password: systempass
 server:
-  port: 8082
+  port: 19093
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
 
 kakao:
   api:
