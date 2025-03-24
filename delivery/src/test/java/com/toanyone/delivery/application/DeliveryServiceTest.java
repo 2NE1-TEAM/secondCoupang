@@ -16,8 +16,9 @@ import com.toanyone.delivery.domain.repository.CustomDeliveryMangerRepository;
 import com.toanyone.delivery.domain.repository.CustomDeliveryRepository;
 import com.toanyone.delivery.domain.repository.DeliveryManagerRepository;
 import com.toanyone.delivery.domain.repository.DeliveryRepository;
+import com.toanyone.delivery.infrastructure.client.AiClient;
 import com.toanyone.delivery.infrastructure.client.HubClient;
-import com.toanyone.delivery.infrastructure.client.dto.GetHubResponseDto;
+import com.toanyone.delivery.infrastructure.client.dto.HubFindResponseDto;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -57,6 +58,8 @@ class DeliveryServiceTest {
     @Mock
     private HubClient hubClient;
     @Mock
+    private AiClient aiClient;
+    @Mock
     private KafkaTemplate<String, Object> kafkaTemplate;
     @Mock
     private DeliveryRepository deliveryRepository;
@@ -71,6 +74,12 @@ class DeliveryServiceTest {
 
     @Nested
     class DeliveryTest {
+
+        @Test
+        @DisplayName("배송 생성 테스트")
+        void createDeliveryTest() {
+        }
+
 
         @Test
         @DisplayName("배송 단건 조회 테스트")
@@ -513,7 +522,7 @@ class DeliveryServiceTest {
                     DeliveryManagerType.fromValue(request.getDeliveryManagerType()).get(),
                     request.getHubId(), 1L, request.getName());
             ReflectionTestUtils.setField(deliveryManager, "id", 1L);
-            when(hubClient.getHubById(request.getHubId())).thenReturn(ResponseEntity.ok(SingleResponse.success(GetHubResponseDto.from(1L))));
+            when(hubClient.getHubById(request.getHubId())).thenReturn(ResponseEntity.ok(SingleResponse.success(new HubFindResponseDto())));
             when(deliveryManagerRepository.save(any(DeliveryManager.class))).thenReturn(deliveryManager);
 
             // when
