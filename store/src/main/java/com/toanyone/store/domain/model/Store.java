@@ -34,10 +34,13 @@ public class Store extends BaseEntity {
     @Column(nullable = false)
     private Location location; // 위도, 경도
 
+    @Column(nullable = false)
+    private String hubName;
+
     /**
      * 업체를 생성하는 정적 팩토리 메서드
      */
-    public static Store create(String storeName, Long hubId, DetailAddress detailAddress, Location location, StoreType storeType, String telephone) {
+    public static Store create(String storeName, Long hubId, DetailAddress detailAddress, Location location, StoreType storeType, String telephone, String hubName) {
         Store store = new Store();
         store.storeType = storeType;
         store.storeName = storeName;
@@ -45,6 +48,7 @@ public class Store extends BaseEntity {
         store.detailAddress = detailAddress;
         store.location = location;
         store.telephone = telephone;
+        store.hubName = hubName;
         return store;
     }
 }

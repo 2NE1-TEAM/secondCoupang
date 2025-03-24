@@ -9,4 +9,8 @@ public interface DeliveryRepository {
 
     Optional<Delivery> findById(Long id);
 
+    Optional<Delivery> findTopByOrderByIdDesc();
+//    Optional<Long> findTopByOrderByIdDescId();
+
+    Optional<Delivery> findTopByArrivalHubIdOrderByIdDesc(Long arrivalHubId);
 }

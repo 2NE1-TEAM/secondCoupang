@@ -1,10 +1,10 @@
-package com.toanyone.store;
+package com.toanyone.payment;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class StoreApplicationTests {
+class PaymentApplicationTests {
 
 	@Test
 	void contextLoads() {

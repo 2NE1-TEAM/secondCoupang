@@ -20,14 +20,14 @@ public class DeliveryManager extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
+    private Long userId;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private DeliveryManagerType deliveryManagerType;
 
     @Column(nullable = false)
     private Long hubId;
-
-    @Column(nullable = false)
-    private Long userId;
 
     @Column(nullable = false)
     private Long deliveryOrder;
@@ -37,12 +37,16 @@ public class DeliveryManager extends BaseEntity {
 
     public static DeliveryManager createDeliveryManager(Long userId, DeliveryManagerType deliveryManagerType, Long hubId, Long deliveryOrder, String name) {
         DeliveryManager deliveryManager = new DeliveryManager();
+        deliveryManager.userId = userId;
         deliveryManager.deliveryManagerType = deliveryManagerType;
         deliveryManager.hubId = hubId;
-        deliveryManager.userId = userId;
         deliveryManager.deliveryOrder = deliveryOrder;
         deliveryManager.name = name;
         return deliveryManager;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
     }
 
     public void deleteDeliveryManager(Long deletedBy) {
