@@ -21,7 +21,7 @@ public class StoreCreateRequestDto {
     private Location location;
     @NotNull
     private DetailAddress detailAddress;
-    @NotBlank
+    @NotNull
     private Long hubId;
     @NotBlank
     private String telephone;
