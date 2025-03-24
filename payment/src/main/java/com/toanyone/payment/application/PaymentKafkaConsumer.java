@@ -26,7 +26,7 @@ public class PaymentKafkaConsumer {
     @KafkaListener(topics = "payment.requested", groupId = "payment")
     public void consumePaymentRequestMessage(ConsumerRecord<String, PaymentRequestMessage> record,
                                           @Header("X-User-Id") Long userId,
-                                          @Header("X-User-Role") String role,
+                                          @Header("X-User-Roles") String role,
                                           @Header("X-Slack-Id") String slackId) throws IOException {
 
         PaymentRequestMessage message = record.value();
@@ -49,7 +49,7 @@ public class PaymentKafkaConsumer {
     @KafkaListener(topics = "payment.cancel", groupId = "payment")
     public void consumePaymentCancelMessage(ConsumerRecord<String, PaymentCancelMessage> record,
                                              @Header("X-User-Id") Long userId,
-                                             @Header("X-User-Role") String role,
+                                             @Header("X-User-Roles") String role,
                                              @Header("X-Slack-Id") String slackId) throws IOException {
 
         PaymentCancelMessage message = record.value();

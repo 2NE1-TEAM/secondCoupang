@@ -1,12 +1,18 @@
 package com.toanyone.store.presentation.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 @Getter
-public class SingleResponse<T> {
-    private final T data;
-    private final String errorMessage;
-    private final String errorCode;
+@NoArgsConstructor
+@AllArgsConstructor
+public class SingleResponse<T> implements Serializable {
+    private T data;
+    private String errorMessage;
+    private String errorCode;
 
     //성공 응답
     public SingleResponse(T data) {

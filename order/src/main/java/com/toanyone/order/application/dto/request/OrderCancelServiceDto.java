@@ -10,6 +10,4 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OrderCancelServiceDto {
     private Long orderId;
-    private Long deliveryId;
-
 }

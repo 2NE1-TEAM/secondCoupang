@@ -37,10 +37,9 @@ public class OrderMapper {
                 .build();
     }
 
-    public OrderCancelServiceDto toOrderCancelServiceDto(Long orderId, OrderCancelRequestDto request) {
+    public OrderCancelServiceDto toOrderCancelServiceDto(Long orderId) {
         return OrderCancelServiceDto.builder()
                 .orderId(orderId)
-                .deliveryId(request.getDeliveryId())
                 .build();
     }
 

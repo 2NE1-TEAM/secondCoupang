@@ -1,8 +1,10 @@
 package com.toanyone.item.presentation.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class SingleResponse<T> {
     private final T data;
     private final String errorMessage;

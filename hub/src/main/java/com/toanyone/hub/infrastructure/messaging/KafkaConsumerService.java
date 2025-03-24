@@ -1,6 +1,5 @@
 package com.toanyone.hub.infrastructure.messaging;
 
-import com.toanyone.hub.common.filter.UserContext;
 import com.toanyone.hub.domain.exception.HubException;
 import com.toanyone.hub.domain.model.Hub;
 import com.toanyone.hub.domain.repository.HubRepository;
@@ -25,7 +24,6 @@ public class KafkaConsumerService {
     private final RouteService routeService;
     private final HubRepository hubRepository;
     private final SlackClient slackClient;
-    private final UserContext userContext;
 
     @KafkaListener(topics = "hub-create", groupId = "my-group1")
     public void consumeHubCreateMessage(HubCreateMessage hubCreateMessage) {
@@ -43,7 +41,7 @@ public class KafkaConsumerService {
     public void consumeHubCreateSuccessMessage(HubCreateMessage hubCreateMessage) {
         log.info("허브간 거리 데이터 생성 성공 리스너 :: KafkaConsumerService :: consumeHubCreateSuccessMessage :: {}", hubCreateMessage);
         // 사용자에게 성공했다고 슬랙 보내기 - to do
-        slackClient.sendSlackMessage(new RequestCreateMessageDto(userContext.getUser().getSlackId(), "허브 생성에 성공했습니다."));
+        slackClient.sendSlackMessage(hubCreateMessage.getRole(), hubCreateMessage.getSlackId(), hubCreateMessage.getUserId(), new RequestCreateMessageDto(hubCreateMessage.getSlackId(), "허브 생성에 성공했습니다."));
     }
 
     @KafkaListener(topics = "hub-create-failure", groupId = "my-group3")
@@ -53,7 +51,7 @@ public class KafkaConsumerService {
                 new HubException.HubNotFoundException("허브가 존재하지 않습니다."));
         hubService.deleteHub(findHub.getId()); // 비동기라서 이미 생성된 허브 삭제
         // 사용자에게 허브 생성 실패했다고 슬랙 보내기 - to do
-        slackClient.sendSlackMessage(new RequestCreateMessageDto(userContext.getUser().getSlackId(), "허브 생성에 실패했습니다. 다시 시도해 주세요."));
+        slackClient.sendSlackMessage(hubCreateMessage.getRole(), hubCreateMessage.getSlackId(), hubCreateMessage.getUserId(),  new RequestCreateMessageDto(hubCreateMessage.getSlackId(), "허브 생성에 실패했습니다. 다시 시도해 주세요."));
 
     }
 }

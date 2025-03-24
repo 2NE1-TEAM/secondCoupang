@@ -22,7 +22,7 @@ public class PaymentKafkaProducer {
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.success")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);
@@ -33,7 +33,7 @@ public class PaymentKafkaProducer {
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.failed")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);
@@ -46,7 +46,7 @@ public class PaymentKafkaProducer {
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.cancel.success")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);
@@ -57,7 +57,7 @@ public class PaymentKafkaProducer {
                 .withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "payment.cancel.failed")
                 .setHeader("X-User-Id", userId)
-                .setHeader("X-User-Role", role)
+                .setHeader("X-User-Roles", role)
                 .setHeader("X-Slack-Id", slackId)
                 .build();
         kafkaTemplate.send(kafkaMessage);

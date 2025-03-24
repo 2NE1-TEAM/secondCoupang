@@ -14,4 +14,6 @@ import java.io.Serializable;
 public class HubCreateMessage implements Serializable {
     private Long hubId;
     private String slackId;
+    private Long userId;
+    private String role;
 }

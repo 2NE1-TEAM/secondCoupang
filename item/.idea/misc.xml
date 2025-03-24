@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/../ai" />
+    <file type="web" url="file://$PROJECT_DIR$/../delivery" />
+    <file type="web" url="file://$PROJECT_DIR$/../eureka-server" />
+    <file type="web" url="file://$PROJECT_DIR$/../gateway" />
+    <file type="web" url="file://$PROJECT_DIR$/../hub" />
+    <file type="web" url="file://$PROJECT_DIR$" />
+    <file type="web" url="file://$PROJECT_DIR$/../order" />
+    <file type="web" url="file://$PROJECT_DIR$/../payment" />
+    <file type="web" url="file://$PROJECT_DIR$/../store" />
+    <file type="web" url="file://$PROJECT_DIR$/../user" />
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="openjdk-21" project-jdk-type="JavaSDK" />
+</project>

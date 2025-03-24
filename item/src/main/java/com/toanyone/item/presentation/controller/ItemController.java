@@ -55,8 +55,8 @@ public class ItemController {
         return ResponseEntity.ok(SingleResponse.success(itemService.updateItem(itemId, requestDto)));
     }
 
-    @PatchMapping("/adjust-stock")
-    public ResponseEntity adjustMultipleStocks(@RequestBody @Valid List<ItemStockRequestDto> requestDtos) {
+    @PostMapping("/adjust-stock")
+    public ResponseEntity adjustMultipleStocks(@RequestBody @Valid itemStockRequestDtos requestDtos) {
         itemService.adjustStock(requestDtos);
         return ResponseEntity.ok().build();
     }

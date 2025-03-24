@@ -73,9 +73,8 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
-            @PathVariable("orderId") Long orderId,
-            @RequestBody @Valid OrderCancelRequestDto request) {
-        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
+            @PathVariable("orderId") Long orderId) {
+        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId);
         UserContext userContext = UserContext.getUserContext();
         return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }

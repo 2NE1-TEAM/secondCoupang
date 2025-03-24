@@ -16,5 +16,5 @@ public interface ItemService {
 
     CursorPage<ItemFindResponseDto> findItems(ItemSearchRequest itemSearchRequest, String sortBy, String direction, int size);
 
-    void adjustStock(List<ItemStockRequestDto> requestDtos);
+    void adjustStock(itemStockRequestDtos requestDtos);
 }

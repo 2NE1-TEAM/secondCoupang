@@ -82,12 +82,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = "ItemSearchCache", allEntries = true)
-    public void adjustStock(List<ItemStockRequestDto> requestDtos) {
-        for (ItemStockRequestDto requestDto : requestDtos) {
+    public void adjustStock(itemStockRequestDtos requestDtos) {
+        AdjustmentType type = requestDtos.getType();
+        for (ItemStockRequestDto requestDto : requestDtos.getItems()) {
             Long itemId = requestDto.getItemId();
             Integer quantity = requestDto.getQuantity();
-            AdjustmentType type = requestDto.getType();
-
             if (itemId == null || quantity == null || quantity <= 0 || type == null) {
                 throw new ItemException.StockBadRequestException("요청 정보가 잘못되었습니다.");
             }
