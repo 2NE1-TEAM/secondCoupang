@@ -39,7 +39,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<SingleResponse<OrderFindResponseDto>> findOrder(@PathVariable Long orderId) {
+    public ResponseEntity<SingleResponse<OrderFindResponseDto>> findOrder(@PathVariable("orderId") Long orderId) {
         log.info("findOrder");
         return ResponseEntity.ok().body(SingleResponse.success(orderService.findOrder(orderId)));
     }
@@ -73,7 +73,7 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
-            @PathVariable Long orderId,
+            @PathVariable("orderId") Long orderId,
             @RequestBody @Valid OrderCancelRequestDto request) {
         OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
         UserContext userContext = UserContext.getUserContext();
@@ -81,7 +81,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity deleteOrder(@PathVariable Long orderId) {
+    public ResponseEntity deleteOrder(@PathVariable("orderId") Long orderId) {
         UserContext userContext = UserContext.getUserContext();
         orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
         return ResponseEntity.noContent().build();
