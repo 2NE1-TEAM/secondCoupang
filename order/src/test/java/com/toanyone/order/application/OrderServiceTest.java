@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -81,9 +82,9 @@ class OrderServiceTest {
     private Order order;
     private OrderItem orderItem1;
     private OrderItem orderItem2;
-    private SingleResponse<StoreFindResponseDto> supplyStore;
-    private SingleResponse<StoreFindResponseDto> receiveStore;
-    private SingleResponse<HubFindResponseDto> hub;
+    private ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore;
+    private ResponseEntity<SingleResponse<StoreFindResponseDto>> receiveStore;
+    private ResponseEntity<SingleResponse<HubFindResponseDto>> hub;
 
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
@@ -96,23 +97,23 @@ class OrderServiceTest {
         orderItem1 = OrderItem.create(1L, "Item 1", 2, 1000);
         orderItem2 = OrderItem.create(2L, "Item 2", 1, 2000);
 
-        supplyStore = SingleResponse.success(StoreFindResponseDto.builder()
+        supplyStore = ResponseEntity.ok().body(SingleResponse.success(StoreFindResponseDto.builder()
                 .storeId(1L)
                 .hubId(1L)
                 .build()
-        );
+        ));
 
-        receiveStore = SingleResponse.success(StoreFindResponseDto.builder()
+        receiveStore = ResponseEntity.ok().body(SingleResponse.success(StoreFindResponseDto.builder()
                 .storeId(1L)
                 .hubId(1L)
                 .build()
-        );
+        ));
 
-        hub = SingleResponse.success(HubFindResponseDto.builder()
+        hub = ResponseEntity.ok().body(SingleResponse.success(HubFindResponseDto.builder()
                         .hubName("hubName")
                         .createdBy(1L)
                 .build()
-        );
+        ));
 
         //주문 생성 요청 데이터
         orderRequestDto = OrderCreateServiceDto.builder()

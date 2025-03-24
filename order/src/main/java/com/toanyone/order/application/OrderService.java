@@ -22,6 +22,7 @@ import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,10 +53,10 @@ public class OrderService {
     @Transactional
     public OrderCreateResponseDto createOrder(Long userId, String role, String slackId, OrderCreateServiceDto request) {
 
-        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(request.getSupplyStoreId());
-        SingleResponse<StoreFindResponseDto> receiveStore = storeService.getStore(request.getReceiveStoreId());
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(request.getSupplyStoreId());
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> receiveStore = storeService.getStore(request.getReceiveStoreId());
 
-        if (supplyStore.getErrorCode() != null || receiveStore.getErrorCode() != null) {
+        if (supplyStore.getBody().getErrorCode() != null || receiveStore.getBody().getErrorCode() != null) {
             throw new OrderException.InvalidStoreException();
         }
 
@@ -85,7 +86,7 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId(), supplyStore.getData().getHubId());
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getBody().getData().getHubId(), supplyStore.getBody().getData().getHubId());
 
         redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage, Duration.ofMinutes(DELIVERY_REQUEST_EXPIRATION_MINUTES));
 
@@ -163,12 +164,12 @@ public class OrderService {
     }
 
     private OrderCancelResponseDto cancelOrderByHubManager(Order order, Long userId, String role, String slackId) {
-        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
-        if (supplyStore.getErrorCode() != null) {
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        if (supplyStore.getBody().getErrorCode() != null) {
             throw new OrderException.InvalidStoreException();
         }
-        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
-        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+        ResponseEntity<SingleResponse<HubFindResponseDto>> hub = hubService.getHub(supplyStore.getBody().getData().getHubId());
+        if (!Objects.equals(hub.getBody().getData().getCreatedBy(), userId)) {
             throw new OrderException.ForbiddenException();
         }
         cancelOrderAndSendPaymentCancelMessage(order, userId, role, slackId);
@@ -188,9 +189,9 @@ public class OrderService {
     }
 
     private void deleteOrderByHubManager(Order order, Long userId) {
-        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
-        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
-        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+        ResponseEntity<SingleResponse<StoreFindResponseDto>> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        ResponseEntity<SingleResponse<HubFindResponseDto>> hub = hubService.getHub(supplyStore.getBody().getData().getHubId());
+        if (!Objects.equals(hub.getBody().getData().getCreatedBy(), userId)) {
             throw new OrderException.ForbiddenException();
         }
         bulkDeleteOrderAndOrderItems(order, userId);
