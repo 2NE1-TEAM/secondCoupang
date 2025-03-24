@@ -50,7 +50,7 @@ public class SlackService {
     public ResponseEntity<MultiResponse<ResponseGetSlackDto>> getSlacks(Pageable pageable, String userRole) {
         isMaster(userRole);
 
-        Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
+        Page<ResponseGetSlackDto> dtoPage = this.slackRepository.findAllByDeletedAtIsNullOrderByIdDesc(pageable).map(ResponseGetSlackDto::new);
 
         return ResponseEntity.ok().body(MultiResponse.success(dtoPage));
     }
@@ -58,7 +58,7 @@ public class SlackService {
     public ResponseEntity<SingleResponse<ResponseGetSlackDto>> getSlack(Long id, String userRole) {
         isMaster(userRole);
 
-        SlackMessage slackMessage = this.slackRepository.findById(id).orElseThrow();
+        SlackMessage slackMessage = this.slackRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(AIException.NotFoundException::new);
 
          return ResponseEntity.ok().body(SingleResponse.success(new ResponseGetSlackDto(slackMessage)));
     }
@@ -75,6 +75,7 @@ public class SlackService {
         SlackMessage slack = this.slackRepository.findById(slackId).orElseThrow(AIException.NotFoundException::new);
         slack.updateDeleted(userId);
         slack.updateUpdated(userId);
+        this.slackRepository.save(slack);
 
         return ResponseEntity.ok().body(SingleResponse.success("삭제 성공"));
     }
