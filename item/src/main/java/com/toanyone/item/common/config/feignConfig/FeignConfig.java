@@ -13,9 +13,4 @@ public class FeignConfig {
     public ErrorDecoder errorDecoder() {
         return new StoreClientErrorDecoder();
     }
-
-    @Bean
-    public RequestInterceptor userInfoHeaderInterceptor(UserInfoHeaderInterceptor interceptor) {
-        return interceptor;
-    }
 }
