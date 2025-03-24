@@ -12,8 +12,6 @@ import static com.toanyone.order.common.dto.CursorConstants.DEFAULT_SIZE;
 import static com.toanyone.order.common.dto.CursorConstants.DEFAULT_SORT_TYPE;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class OrderFindAllRequestDto {
 
     private int size;
