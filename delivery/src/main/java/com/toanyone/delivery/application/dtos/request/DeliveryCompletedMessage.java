@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class DeliveryCompletedMessage {
-    private Long completedDeliveryId;
-    private String message;
+    private Long orderId;
+    private String deliveryStatus;
 }

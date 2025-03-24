@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -59,6 +60,12 @@ public class DeliveryRoad extends BaseEntity {
         deliveryRoad.estimatedDuration = estimatedDuration;
         deliveryRoad.currentStatus = CurrentStatus.HUB_WAITING;
         return deliveryRoad;
+    }
+
+
+    public void deleteDeliveryRoad(Long deletedBy) {
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
     }
 
     public void addDelivery(Delivery delivery) {

@@ -97,6 +97,8 @@ public class Delivery extends BaseEntity {
     public void deleteDelivery(Long deletedBy) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
+        this.getDeliveryRoads()
+                .forEach(deliveryRoad -> deliveryRoad.deleteDeliveryRoad(deletedBy));
     }
 
     @Getter
