@@ -23,4 +23,16 @@ public class HubException extends CustomException {
             super(message);
         }
     }
+
+    public static class HubDeniedException extends HubException {
+        public HubDeniedException(String message) {
+            super(message);
+        }
+    }
+
+    public static class SlackServerErrorException extends HubException {
+        public SlackServerErrorException(String message) {
+            super(message);
+        }
+    }
 }

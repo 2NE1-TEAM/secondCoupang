@@ -1,8 +1,11 @@
 package com.toanyone.hub.domain.model;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.Where;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.List;
 
@@ -11,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_hub")
 @ToString
-@Where(clause = "deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL")
 public class Hub extends BaseEntity {
 
     @Id
@@ -41,4 +44,17 @@ public class Hub extends BaseEntity {
         hub.telephone = telephone;
         return hub;
     }
+
+    public void updateStoreName(String hubName) {
+        this.hubName = hubName;
+    }
+
+    public void updateTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public void updateCreatedBy(Long userId) {
+        super.setCreatedBy(userId);
+    }
+
 }

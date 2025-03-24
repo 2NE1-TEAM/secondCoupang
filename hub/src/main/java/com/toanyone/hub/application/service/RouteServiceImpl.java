@@ -1,17 +1,18 @@
 package com.toanyone.hub.application.service;
 
+import com.toanyone.hub.domain.exception.HubException;
 import com.toanyone.hub.domain.model.Hub;
 import com.toanyone.hub.domain.model.HubDistance;
 import com.toanyone.hub.domain.repository.HubDistanceRepository;
 import com.toanyone.hub.domain.repository.HubRepository;
 import com.toanyone.hub.domain.service.RouteService;
+import com.toanyone.hub.infrastructure.messaging.dto.HubCreateMessage;
 import com.toanyone.hub.presentation.dto.RouteDTO;
 import com.toanyone.hub.presentation.dto.RouteSegmentDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -32,9 +33,9 @@ public class RouteServiceImpl implements RouteService {
     @Cacheable(value = "routeCache", key = "T(String).valueOf(#startHubId).concat('-').concat(T(String).valueOf(#endHubId))")
     public List<RouteSegmentDto> findShortestPath(Long startHubId, Long endHubId) {
         Hub startHub = hubRepository.findById(startHubId)
-                .orElseThrow(() -> new RuntimeException("출발 허브를 찾을 수 없음"));
+                .orElseThrow(() -> new HubException.HubNotFoundException("출발 허브를 찾을 수 없음"));
         Hub endHub = hubRepository.findById(endHubId)
-                .orElseThrow(() -> new RuntimeException("도착 허브를 찾을 수 없음"));
+                .orElseThrow(() -> new HubException.HubNotFoundException("도착 허브를 찾을 수 없음"));
 
         // 허브 정보를 그래프로 변환
         Map<Long, List<HubDistance>> graph = buildGraph();
@@ -52,11 +53,10 @@ public class RouteServiceImpl implements RouteService {
      *  새로운 허브 추가 시, 기존 허브들과의 거리를 계산하여 저장
      */
     @Transactional
-    public void addHubDistances(Hub newHub) {
+    public void addHubDistances(HubCreateMessage hubCreateMessage) {
         List<Hub> existingHubs = hubRepository.findAll();
         existingHubs.remove(existingHubs.size()-1);
-//        System.out.println("리스너 실패");
-//        throw new RuntimeException("리스너 실패");
+        Hub newHub = hubRepository.findById(hubCreateMessage.getHubId()).orElseThrow(()->new HubException.HubNotFoundException("허브가 존재하지 않습니다."));
         try{
             for (Hub existingHub : existingHubs) {
                 if (!existingHub.equals(newHub)) {

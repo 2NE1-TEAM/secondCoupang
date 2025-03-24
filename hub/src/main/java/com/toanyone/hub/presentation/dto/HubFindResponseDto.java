@@ -15,5 +15,6 @@ public class HubFindResponseDto implements Serializable {
     private Address address;
     private Location location;
     private String telephone;
+    private Long createdBy;
     // 허브에 소속된 배달기사, 허브매니저를 보여줄 지?
 }

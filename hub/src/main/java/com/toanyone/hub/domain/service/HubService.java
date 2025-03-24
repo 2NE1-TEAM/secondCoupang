@@ -6,9 +6,11 @@ import jakarta.validation.Valid;
 public interface HubService {
     CursorPage<HubFindResponseDto> findHubs(HubSearchRequest searchRequest, String sortBy, String direction, int size);
 
-    HubCreateResponseDto createHub(@Valid HubCreateRequestDto hubCreateRequestDto);
+    HubCreateResponseDto createHub(HubCreateRequestDto hubCreateRequestDto);
 
     HubFindResponseDto findOne(Long hubId);
 
     void deleteHub(Long hubId);
+
+    HubUpdateResponseDto updateHub(Long hubId, HubUpdateRequestDto requestDto);
 }

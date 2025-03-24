@@ -56,7 +56,7 @@ public class HubRepositoryImpl implements HubRepositoryCustom {
 
         return new CursorPage<>(results.stream().map(h ->
                 new HubFindResponseDto(h.getId(), h.getHubName(),
-                        h.getAddress(), h.getLocation(), h.getTelephone())).toList(), nextCursorInfo, hasNext);
+                        h.getAddress(), h.getLocation(), h.getTelephone(), h.getCreatedBy())).toList(), nextCursorInfo, hasNext);
     }
 
     // 전화번호 검색
