@@ -21,4 +21,16 @@ public class DeliveryException extends CustomException {
             super("존재하지 않는 배송상태입니다", HttpStatus.BAD_REQUEST);
         }
     }
+
+    public static class UnauthorizedDeliveryUpdateException extends DeliveryException {
+        public UnauthorizedDeliveryUpdateException() {
+            super("해당 유저는 배송정보 수정 권한이 없습니다.", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    public static class UnauthorizedDeliveryDeleteException extends DeliveryException {
+        public UnauthorizedDeliveryDeleteException() {
+            super("해당 유저는 배송정보 삭제 권한이 없습니다.", HttpStatus.FORBIDDEN);
+        }
+    }
 }

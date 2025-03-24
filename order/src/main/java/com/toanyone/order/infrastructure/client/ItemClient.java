@@ -5,10 +5,11 @@ import com.toanyone.order.application.dto.ItemRestoreRequestDto;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
 import com.toanyone.order.application.dto.ItemValidationResponseDto;
 import jakarta.validation.Valid;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-//@FeignClient(name = "item", url = "${item.service.url}")
+@FeignClient(name = "item")
 public interface ItemClient extends ItemService {
 
     @PostMapping("/items/validate")

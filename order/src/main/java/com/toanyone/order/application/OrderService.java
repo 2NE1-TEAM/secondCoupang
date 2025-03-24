@@ -1,26 +1,33 @@
 package com.toanyone.order.application;
 
+import com.toanyone.order.application.dto.HubFindResponseDto;
+import com.toanyone.order.application.dto.StoreFindResponseDto;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
 import com.toanyone.order.application.dto.request.OrderFindAllCondition;
 import com.toanyone.order.application.dto.request.OrderSearchCondition;
 import com.toanyone.order.application.mapper.ItemRequestMapper;
+import com.toanyone.order.application.mapper.MessageConverter;
 import com.toanyone.order.common.CursorPage;
+import com.toanyone.order.common.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.domain.entity.Order;
 import com.toanyone.order.domain.entity.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
-import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
-import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
+import com.toanyone.order.message.DeliveryRequestMessage;
+import com.toanyone.order.message.PaymentCancelMessage;
+import com.toanyone.order.message.PaymentRequestMessage;
 import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j(topic = "OrderService")
@@ -28,34 +35,40 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
 
+    private static final int ORDER_ITEM_MAX = 20;
+
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ItemService itemService;
     private final StoreService storeService;
+    private final HubService hubService;
     private final ItemRequestMapper itemRequestMapper;
+    private final MessageConverter messageConverter;
+    private final OrderKafkaProducer orderKafkaProducer;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
-    public OrderCreateResponseDto createOrder(OrderCreateServiceDto request) {
+    public OrderCreateResponseDto createOrder(Long userId, String role, String slackId, OrderCreateServiceDto request) {
 
-        boolean isValidSupplyStore = storeService.validateStore(request.getSupplyStoreId());
-        boolean isValidReceiveStore = storeService.validateStore(request.getReceiveStoreId());
+        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(request.getSupplyStoreId());
+        SingleResponse<StoreFindResponseDto> receiveStore = storeService.getStore(request.getReceiveStoreId());
 
-        if (!isValidSupplyStore || !isValidReceiveStore) {
+        if (supplyStore.getErrorCode() != null || receiveStore.getErrorCode() != null) {
             throw new OrderException.InvalidStoreException();
         }
 
-        //Todo: 주문 처리가 완료되지 않은 상태에서 같은 입력의 주문 예외 처리
+        if (request.getItems().size() > ORDER_ITEM_MAX) {
+            throw new OrderException.OrderBadRequestException();
+        }
 
-        //Item 검증
         boolean isValid = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request));
 
         if (!isValid) {
             throw new OrderException.InsufficientStockException();
         }
 
-        Order order = Order.create(request.getUserId(), request.getSupplyStoreId(), request.getReceiveStoreId());
-
-        log.info("orderId : {}", order.getId());
+        Order order = Order.create(userId, request.getOrdererName(), request.getRequest(),
+                request.getSupplyStoreId(), request.getReceiveStoreId());
 
         request.getItems().stream().map(validRequest ->
                         OrderItem.create(validRequest.getItemId(),
@@ -70,48 +83,92 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        //Todo: Payment 작업 추가
+        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId(), supplyStore.getData().getHubId());
 
-        //Todo: Delivery 관련 작업 추가
+        redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage);
+
+        PaymentRequestMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
+        orderKafkaProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
     }
 
 
     @Transactional
-    public OrderCancelResponseDto cancelOrder(OrderCancelServiceDto request) {
+    public OrderCancelResponseDto cancelOrder(Long userId, String role, String slackId, OrderCancelServiceDto request) {
 
-        Order order = validateOrderWithItemsExists(request.getOrderId());
+        Order order = validateOrderExists(request.getOrderId());
 
-        try {
-
-            //ItemClient에 재고 restore
-            boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
-            if (!restoreSuccess) {
-                throw new OrderException.RestoreInventoryFailedException();
-            }
-
-            //Todo: 결제 취소
-            //Todo: 배송 취소 메시지
-
-            validateOrderItemsStatus(order.getItems());
-
-            orderItemRepository.bulkUpdateOrderItemsStatus(order.getId(), OrderItem.OrderItemStatus.CANCELED);
-
-            order.cancel();
-
-            return OrderCancelResponseDto.fromOrder(order);
-
-        } catch (Exception e) {
+        if (order.getStatus() != Order.OrderStatus.PREPARING) {
             throw new OrderException.OrderCancelFailedException();
+        }
+
+        switch (role) {
+            case "MASTER":
+                return cancelOrderByMaster(order, userId, role, slackId);
+            case "HUB":
+                return cancelOrderByHubManager(order, userId, role, slackId);
+            default:
+                throw new OrderException.ForbiddenException();
         }
 
     }
 
     @Transactional
-    public void deleteOrder(Long orderId, Long userId) {
+    public void deleteOrder(Long orderId, Long userId, String role) {
         Order order = validateOrderExists(orderId);
-        orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now()); //상태 상관 없이 관리자가 삭제 강제
+
+        switch (role) {
+            case "MASTER":
+                deleteOrderByMaster(order, userId);
+                break;
+            case "HUB":
+                deleteOrderByHubManager(order, userId);
+                break;
+            default:
+                throw new OrderException.ForbiddenException();
+        }
+
+    }
+
+    private OrderCancelResponseDto cancelOrderByMaster(Order order, Long userId, String role, String slackId) {
+        cancelOrderAndSendPaymentCancelMessage(order, userId, role, slackId);
+        return OrderCancelResponseDto.fromOrder(order);
+    }
+
+    private OrderCancelResponseDto cancelOrderByHubManager(Order order, Long userId, String role, String slackId) {
+        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
+        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+            throw new OrderException.ForbiddenException();
+        }
+        cancelOrderAndSendPaymentCancelMessage(order, userId, role, slackId);
+        return OrderCancelResponseDto.fromOrder(order);
+    }
+
+
+    private void cancelOrderAndSendPaymentCancelMessage(Order order, Long userId, String role, String slackId) {
+        order.paymentCancelRequested();
+        PaymentCancelMessage paymentMessage = PaymentCancelMessage.builder().orderId(order.getId()).build();
+        orderKafkaProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
+    }
+
+
+    private void deleteOrderByMaster(Order order, Long userId) {
+        bulkDeleteOrderAndOrderItems(order, userId);
+    }
+
+    private void deleteOrderByHubManager(Order order, Long userId) {
+        SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
+        if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
+            throw new OrderException.ForbiddenException();
+        }
+        bulkDeleteOrderAndOrderItems(order, userId);
+    }
+
+    private void bulkDeleteOrderAndOrderItems(Order order, Long userId) {
+        orderItemRepository.bulkDeleteOrderItems(order.getId(), OrderItem.OrderItemStatus.CANCELED, userId, LocalDateTime.now());
         order.delete(userId);
     }
 
@@ -128,13 +185,6 @@ public class OrderService {
             if (orderItem.getStatus() != OrderItem.OrderItemStatus.PREPARING) {
                 throw new OrderException.OrderItemCancelFailedException();
             }
-        });
-    }
-
-
-    private void validateOrderAlreadyExists(Long orderId) {
-        orderRepository.findById(orderId).ifPresent( order -> {
-            throw new OrderException.OrderNotFoundException();
         });
     }
 
@@ -160,6 +210,81 @@ public class OrderService {
         CursorPage<Order> orders = orderRepository.search(request);
         List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
         return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
+    }
+
+    @Transactional(readOnly = true)
+    public Order findOrderWithItems(Long orderId) {
+        return validateOrderWithItemsExists(orderId);
+    }
+
+    public void restoreInventory(Order order) {
+        boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
+        if (!restoreSuccess) {
+            throw new OrderException.RestoreInventoryFailedException();
+        }
+    }
+
+    @Transactional
+    public void processOrderCancellation(Long orderId, String status) {
+        Order order = validateOrderWithItemsExists(orderId);
+        updateOrderStatus(order, status);
+        restoreInventory(order);
+        validateOrderItemsStatus(order.getItems());
+        orderItemRepository.bulkUpdateOrderItemsStatus(order.getId(), OrderItem.OrderItemStatus.CANCELED);
+    }
+
+    @Transactional
+    public DeliveryRequestMessage processDeliveryRequest(Long orderId, String status) {
+        DeliveryRequestMessage deliveryMessage = (DeliveryRequestMessage) redisTemplate.opsForValue().get(String.valueOf(orderId));
+        if (deliveryMessage == null) {
+            throw new OrderException.DeliveryNotFoundException();
+        }
+        redisTemplate.delete(String.valueOf(orderId));
+        Order order = validateOrderExists(orderId);
+        updateOrderStatus(order, status);
+        return deliveryMessage;
+    }
+
+    @Transactional
+    public void processDeliverySuccessRequest(Long orderId, String status) {
+        Order order = validateOrderExists(orderId);
+        updateOrderStatus(order, status);
+    }
+
+    @Transactional
+    public PaymentCancelMessage processDeliveryFailedRequest(Long orderId, String status) {
+        Order order = validateOrderWithItemsExists(orderId);
+        updateOrderStatus(order, status);
+        restoreInventory(order);
+        return PaymentCancelMessage.builder()
+                .orderId(order.getId())
+                .build();
+    }
+
+    @Transactional
+    public void processDeliveryUpdatedRequest(Long orderId, String status) {
+        Order order = validateOrderExists(orderId);
+        updateOrderStatus(order, status);
+    }
+
+    @Transactional
+    public void updateOrderStatus(Order order, String status) {
+        switch (status) {
+            case "PAYMENT_SUCCESS":
+                order.completedPayment();
+                break;
+            case "DELIVERING":
+                order.startDelivery();
+                break;
+            case "DELIVERY_COMPLETED":
+                order.completedDelivery();
+                break;
+            case "CANCELED":
+                order.cancel();
+                break;
+            default:
+                break;
+        }
     }
 
 }

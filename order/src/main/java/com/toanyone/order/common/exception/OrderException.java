@@ -4,7 +4,6 @@ package com.toanyone.order.common.exception;
 import org.springframework.http.HttpStatus;
 
 public class OrderException extends CustomException {
-
     public OrderException(String errorCode, String message, HttpStatus status) {
         super(errorCode, message, status);
     }
@@ -31,8 +30,8 @@ public class OrderException extends CustomException {
 
     }
 
-    public static class OrderAlreadyExistsException extends OrderException {
-        public OrderAlreadyExistsException() { super("ORDER_ERROR_5", "주문이 이미 존재합니다.", HttpStatus.CONFLICT); }
+    public static class ForbiddenException extends OrderException {
+        public ForbiddenException() { super("ORDER_ERROR_5", "해당 작업을 수행할 권한이 없습니다.", HttpStatus.FORBIDDEN); }
 
     }
 
@@ -65,6 +64,27 @@ public class OrderException extends CustomException {
         public InvalidStoreException() { super("ORDER_ERROR_11", "주문이 불가한 업체입니다.", HttpStatus.BAD_REQUEST); }
 
     }
+
+    public static class DeliveryNotFoundException extends OrderException {
+        public DeliveryNotFoundException() { super("ORDER_ERROR_12", "배송이 존재하지 않습니다.", HttpStatus.NOT_FOUND); }
+
+    }
+
+    public static class DeliveryRequestFailedException extends OrderException {
+        public DeliveryRequestFailedException() { super("ORDER_ERROR_13", "배송 요청이 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
+
+    }
+
+    public static class DeliveryStatusUpdateFailedException extends OrderException {
+        public DeliveryStatusUpdateFailedException() { super("ORDER_ERROR_14", "배송 상태 변경이 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
+
+    }
+
+    public static class PaymentRequestFailedException extends OrderException {
+        public PaymentRequestFailedException() { super("ORDER_ERROR_53", "결제 요청이 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR); }
+
+    }
+
 
 
 }
