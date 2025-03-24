@@ -38,22 +38,6 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(userContext.getUserId(),userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
 
-    @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
-            @PathVariable Long orderId,
-            @RequestBody @Valid OrderCancelRequestDto request) {
-        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
-        UserContext userContext = UserContext.getUserContext();
-        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
-    }
-
-    @DeleteMapping("/{orderId}")
-    public ResponseEntity deleteOrder(@PathVariable Long orderId) {
-        UserContext userContext = UserContext.getUserContext();
-        orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/{orderId}")
     public ResponseEntity<SingleResponse<OrderFindResponseDto>> findOrder(@PathVariable Long orderId) {
         log.info("findOrder");
@@ -85,5 +69,23 @@ public class OrderController {
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
     }
+
+
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
+            @PathVariable Long orderId,
+            @RequestBody @Valid OrderCancelRequestDto request) {
+        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId, request);
+        UserContext userContext = UserContext.getUserContext();
+        return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
+    }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity deleteOrder(@PathVariable Long orderId) {
+        UserContext userContext = UserContext.getUserContext();
+        orderService.deleteOrder(orderId, userContext.getUserId(),userContext.getRole());
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

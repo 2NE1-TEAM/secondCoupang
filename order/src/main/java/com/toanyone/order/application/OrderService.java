@@ -25,6 +25,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private static final int ORDER_ITEM_MAX = 20;
+    private static final int DELIVERY_REQUEST_EXPIRATION_MINUTES = 10;
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -85,12 +87,36 @@ public class OrderService {
 
         DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getData().getHubId(), supplyStore.getData().getHubId());
 
-        redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage);
+        redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage, Duration.ofMinutes(DELIVERY_REQUEST_EXPIRATION_MINUTES));
 
         PaymentRequestMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
         orderKafkaProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderFindResponseDto findOrder(Long orderId) {
+        Order order = validateOrderExists(orderId);
+        return OrderFindResponseDto.fromOrder(order);
+    }
+
+
+    @Transactional(readOnly = true)
+    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllCondition request) {
+        CursorPage<Order> orders = orderRepository.findAll(userId, request);
+
+        List<OrderFindAllResponseDto> responseDtos = orders.getContent().stream().map(OrderFindAllResponseDto::fromOrder).collect(Collectors.toList());
+
+        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
+    }
+
+    @Transactional(readOnly = true)
+    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchCondition request) {
+        log.info("searchOrders");
+        CursorPage<Order> orders = orderRepository.search(request);
+        List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
+        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
     }
 
 
@@ -138,6 +164,9 @@ public class OrderService {
 
     private OrderCancelResponseDto cancelOrderByHubManager(Order order, Long userId, String role, String slackId) {
         SingleResponse<StoreFindResponseDto> supplyStore = storeService.getStore(order.getSupplyStoreId());
+        if (supplyStore.getErrorCode() != null) {
+            throw new OrderException.InvalidStoreException();
+        }
         SingleResponse<HubFindResponseDto> hub = hubService.getHub(supplyStore.getData().getHubId());
         if (!Objects.equals(hub.getData().getCreatedBy(), userId)) {
             throw new OrderException.ForbiddenException();
@@ -188,34 +217,6 @@ public class OrderService {
         });
     }
 
-    @Transactional(readOnly = true)
-    public OrderFindResponseDto findOrder(Long orderId) {
-        Order order = validateOrderExists(orderId);
-        return OrderFindResponseDto.fromOrder(order);
-    }
-
-
-    @Transactional(readOnly = true)
-    public CursorPage<OrderFindAllResponseDto> findOrders(Long userId, OrderFindAllCondition request) {
-        CursorPage<Order> orders = orderRepository.findAll(userId, request);
-
-        List<OrderFindAllResponseDto> responseDtos = orders.getContent().stream().map(OrderFindAllResponseDto::fromOrder).collect(Collectors.toList());
-
-        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
-    }
-
-    @Transactional(readOnly = true)
-    public CursorPage<OrderSearchResponseDto> searchOrders(OrderSearchCondition request) {
-        log.info("searchOrders");
-        CursorPage<Order> orders = orderRepository.search(request);
-        List<OrderSearchResponseDto> responseDtos = orders.getContent().stream().map(OrderSearchResponseDto::fromOrder).collect(Collectors.toList());
-        return new CursorPage<>(responseDtos, orders.getNextCursor(), orders.isHasNext());
-    }
-
-    @Transactional(readOnly = true)
-    public Order findOrderWithItems(Long orderId) {
-        return validateOrderWithItemsExists(orderId);
-    }
 
     public void restoreInventory(Order order) {
         boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));

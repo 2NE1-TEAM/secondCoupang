@@ -26,7 +26,7 @@ public class OrderKafkaConsumer {
 
     private final OrderKafkaProducer orderKafkaProducer;
     private final OrderService orderService;
-    private final AiService aiService;
+//    private final AiService aiService;
 
     @KafkaListener(topics = "payment.success", groupId = "payment")
     public void consumePaymentSuccessMessage(ConsumerRecord<String, PaymentSuccessMessage> record,
@@ -103,8 +103,7 @@ public class OrderKafkaConsumer {
 
             orderService.processDeliverySuccessRequest(message.getOrderId(), message.getDeliveryStatus());
 
-            //Todo: Slack 메시지 보내기
-//            orderService.sendSlackMessage(slackId, "배송 요청이 시작됩니다.");
+//            aiService.sendSlackMessage(slackId, "배송 요청이 시작됩니다.");
 
             log.info("DELIVERY SUCCESS MESSAGE : {}, {}", message.getOrderId(), message.getDeliveryStatus());
         } catch (ClassCastException e){
