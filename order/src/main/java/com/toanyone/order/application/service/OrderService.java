@@ -23,6 +23,7 @@ import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,9 +66,8 @@ public class OrderService {
             throw new OrderException.OrderBadRequestException();
         }
 
-        boolean isValid = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request));
-
-        if (!isValid) {
+        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
+        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
             throw new OrderException.InsufficientStockException();
         }
 
@@ -221,8 +221,9 @@ public class OrderService {
 
 
     public void restoreInventory(Order order) {
-        boolean restoreSuccess = itemService.restoreInventory(itemRequestMapper.toItemRestoreDto(order));
-        if (!restoreSuccess) {
+
+        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemRestoreDto(order, "INCREASE"));
+        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
             throw new OrderException.RestoreInventoryFailedException();
         }
     }

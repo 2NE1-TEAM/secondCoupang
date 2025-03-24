@@ -139,6 +139,7 @@ class OrderServiceTest {
 
         //상품 검증 요청 데이터
         itemValidationRequestDto = ItemValidationRequestDto.builder()
+                .type("DECREASE")
                 .items(List.of(
                         ItemValidationRequestDto.ItemRequestDto.builder()
                                 .itemId(1L)
@@ -181,7 +182,7 @@ class OrderServiceTest {
 
         when(storeService.getStore(2L)).thenReturn(receiveStore);
 
-        when(itemService.validateItems(any())).thenReturn(true);
+        when(itemService.validateItems(any())).thenReturn(ResponseEntity.ok().build());
 
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
@@ -397,7 +398,10 @@ class OrderServiceTest {
         order.addOrderItem(orderItem2);
 
         when(orderRepository.findByIdWithItems(orderId)).thenReturn(Optional.of(order));
-        when(itemService.restoreInventory(any())).thenReturn(true);
+
+        when(itemService.validateItems(any())).thenReturn(ResponseEntity.ok().build());
+
+//        when(itemService.restoreInventory(any())).thenReturn(true);
 
         //when
         orderService.processOrderCancellation(orderId, status);
@@ -405,7 +409,7 @@ class OrderServiceTest {
         //then
         assertEquals(Order.OrderStatus.CANCELED, order.getStatus());
         verify(orderRepository, times(1)).findByIdWithItems(orderId);
-        verify(itemService, times(1)).restoreInventory(any());
+        verify(itemService, times(1)).validateItems(any());
         verify(orderItemRepository, times(1)).bulkUpdateOrderItemsStatus(orderId, OrderItem.OrderItemStatus.CANCELED);
     }
 

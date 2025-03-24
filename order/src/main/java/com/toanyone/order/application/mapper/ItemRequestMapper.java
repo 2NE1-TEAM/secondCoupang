@@ -12,9 +12,11 @@ import java.util.stream.Collectors;
 @Component
 public class ItemRequestMapper {
 
-    public ItemValidationRequestDto toItemValidationRequestDto(OrderCreateServiceDto orderCreateRequest) {
+    public ItemValidationRequestDto toItemValidationRequestDto(OrderCreateServiceDto orderCreateRequest, String type) {
 
-        return new ItemValidationRequestDto(orderCreateRequest.getItems().stream()
+        return new ItemValidationRequestDto(
+                type,
+                orderCreateRequest.getItems().stream()
                 .map(orderItem ->
                         new ItemValidationRequestDto.ItemRequestDto(orderItem.getItemId(), orderItem.getQuantity())
                 ).collect(Collectors.toList())
@@ -22,9 +24,11 @@ public class ItemRequestMapper {
     }
 
 
-    public ItemRestoreRequestDto toItemRestoreDto(Order order) {
-        return new ItemRestoreRequestDto(order.getItems().stream()
-                .map(orderItem -> new ItemRestoreRequestDto.ItemRequestDto(orderItem.getItemId(), orderItem.getQuantity())
+    public ItemValidationRequestDto toItemRestoreDto(Order order, String type) {
+        return new ItemValidationRequestDto(
+                type,
+                order.getItems().stream()
+                .map(orderItem -> new ItemValidationRequestDto.ItemRequestDto(orderItem.getItemId(), orderItem.getQuantity())
                 ).collect(Collectors.toList()));
     }
 

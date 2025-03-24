@@ -2,10 +2,9 @@ package com.toanyone.order.application.service;
 
 import com.toanyone.order.application.dto.ItemRestoreRequestDto;
 import com.toanyone.order.application.dto.ItemValidationRequestDto;
+import org.springframework.http.ResponseEntity;
 
 public interface ItemService {
-    boolean validateItems(ItemValidationRequestDto request);
-
-    boolean restoreInventory(ItemRestoreRequestDto request);
+    ResponseEntity<Void> validateItems(ItemValidationRequestDto request);
 
 }
