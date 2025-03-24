@@ -18,12 +18,12 @@ public class getCurrentAuditor implements AuditorAware<Long> {
     public Optional<Long> getCurrentAuditor() {
         // 요청 스코프가 활성화되어 있는 경우만 userContext 사용
         if (RequestContextHolder.getRequestAttributes() == null) {
-            return Optional.of(-1L); // system 또는 default
+            return Optional.of(1L); // system 또는 default
         }
 
         UserContext userContext = userContextProvider.getIfAvailable();
         if (userContext == null || userContext.getUser() == null) {
-            return Optional.of(-1L);
+            return Optional.of(1L);
         }
         return Optional.ofNullable(userContext.getUser().getUserId());
     }
