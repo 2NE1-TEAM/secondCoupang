@@ -1,6 +1,7 @@
 package com.toanyone.order.application.service;
 
 import com.toanyone.order.application.dto.HubFindResponseDto;
+import com.toanyone.order.application.dto.SlackMessageRequestDto;
 import com.toanyone.order.application.dto.StoreFindResponseDto;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
