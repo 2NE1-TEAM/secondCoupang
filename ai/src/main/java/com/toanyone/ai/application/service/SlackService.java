@@ -7,6 +7,8 @@ import com.toanyone.ai.domain.entity.Ai;
 import com.toanyone.ai.domain.entity.OrderStatus;
 import com.toanyone.ai.domain.entity.SlackMessage;
 import com.toanyone.ai.infrastructure.SlackRepository;
+import com.toanyone.ai.presentation.dto.RequestCreateSlackDto;
+import com.toanyone.ai.presentation.dto.ResponseCreateSlackDto;
 import com.toanyone.ai.presentation.dto.ResponseGetSlackDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 
@@ -78,5 +81,30 @@ public class SlackService {
         this.slackRepository.save(slack);
 
         return ResponseEntity.ok().body(SingleResponse.success("삭제 성공"));
+    }
+
+    @Transactional
+    public ResponseCreateSlackDto sendAndCreateSlack(RequestCreateSlackDto requestCreateSlackDto, HttpServletRequest request) {
+
+        if(requestCreateSlackDto.getOrderId() == null){
+            String message = "slack id : " + requestCreateSlackDto.getSlackId() + " \n" +
+                    "message : " + requestCreateSlackDto.getMessage();
+
+            sendMessage(message);
+            save(null, message, OrderStatus.SUCCESS, request);
+
+            return ResponseCreateSlackDto.createSlackDto(requestCreateSlackDto.getSlackId(), requestCreateSlackDto.getMessage(), null);
+        }else{
+            String message =
+                    "order id : " + requestCreateSlackDto.getOrderId() + " \n" +
+                    "slack id : " + requestCreateSlackDto.getSlackId() + " \n" +
+                    "message : " + requestCreateSlackDto.getMessage();
+            SlackMessage.createSlackMessage(null, message, OrderStatus.SUCCESS);
+
+            sendMessage(message);
+            save(null, message, OrderStatus.SUCCESS, request);
+
+            return ResponseCreateSlackDto.createSlackDto(requestCreateSlackDto.getSlackId(), requestCreateSlackDto.getMessage(), requestCreateSlackDto.getOrderId());
+        }
     }
 }
