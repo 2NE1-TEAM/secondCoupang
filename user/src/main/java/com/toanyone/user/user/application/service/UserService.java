@@ -44,6 +44,9 @@ public class UserService {
 
         User user = User.createUser(requestCreateUserDto.getNickName(), encryptPassword(requestCreateUserDto.getPassword()), requestCreateUserDto.getSlackId(), requestCreateUserDto.getRole(), requestCreateUserDto.getHubId(), requestCreateUserDto.getPhone());
         userRepository.save(user);
+        user.updateCreated(user.getId());
+        user.updateUpdated(user.getId());
+        userRepository.save(user);
 
         return new ResponseUserDto(user.getId(), user.getNickName(), user.getSlackId(), user.getRole(), user.getHubId(), user.getPhone());
     }
@@ -62,6 +65,7 @@ public class UserService {
         Long masterId = Long.parseLong(request.getHeader("X-User-Id"));
 
         user.updateCreated(masterId);
+        user.updateUpdated(masterId);
 
         userRepository.save(user);
 
@@ -99,6 +103,7 @@ public class UserService {
 
         Long masterId = Long.parseLong( request.getHeader("X-User-Id"));
         user.updateDeleted(masterId);
+        user.updateUpdated(masterId);
         userRepository.save(user);
     }
 
