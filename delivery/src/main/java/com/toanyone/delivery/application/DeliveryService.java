@@ -26,6 +26,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,11 +51,20 @@ public class DeliveryService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @KafkaListener(topics = "delivery.requested", groupId = "delivery")
-    public CreateDeliveryResponseDto consumeDeliveryMessage(ConsumerRecord<String, DeliveryRequestMessage> record) throws IOException {
+    public CreateDeliveryResponseDto consumeDeliveryMessage(ConsumerRecord<String, DeliveryRequestMessage> record,
+                                                            @Header("X-User-Id") Long userId,
+                                                            @Header("X-User-Role") String userRole,
+                                                            @Header("X-Slack-Id") String slackId) throws IOException {
         DeliveryRequestMessage message = record.value();
+        UserContext.setCurrentContext(UserContext.builder()
+                .role(userRole)
+                .userId(userId)
+                .slackId(slackId)
+                .build());
         List<RouteSegmentDto> response = Objects.requireNonNull(hubClient.findHub(message.getDepartureHubId(), message.getArrivalHubId())
                         .getBody())
                 .getData();
+
         int neededDeliveryManagerCount = response.size();
         Delivery lastDeliveryByOrderId = deliveryRepository.findTopByOrderByIdDesc()
                 .orElse(null);
@@ -69,10 +79,10 @@ public class DeliveryService {
             // 최근 허브 배송 담당자의 ID를 배송담당자 테이블에 던져 해당 허브 배송 담당자의 정보를 가져온다.
             DeliveryManager lastOrderedHubDeliveryManager = deliveryManagerRepository.findByDeliveryManagerTypeAndId(DeliveryManagerType.HUB_DELIVERY_MANAGER, lastOrderedHubDeliveryManagerId)
                     .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-            // 최근 허브 배송 담당자의 (배송순번 + 1, 2 ... N) % 10을 통해 다음 배송순번 담당자를 구한다.
+            // 최근 허브 배송 담당자의 (배송순번 % 10) + 1을 통해 다음 배송순번 담당자를 구한다.
             List<Long> nextHubDeliveryManagersDeliveryOrders = new ArrayList<>();
             for (int i = 1; i <= neededDeliveryManagerCount; i++) {
-                long nextHubDeliveryManagersDeliveryOrder = (lastOrderedHubDeliveryManager.getDeliveryOrder() + i) % 10;
+                long nextHubDeliveryManagersDeliveryOrder = (lastOrderedHubDeliveryManager.getDeliveryOrder() % 10) + i;
                 // (lastOrderedHubDeliveryManager.getDeliveryOrder() + i) % 10의 결과가 0일 경우 다음 배송순번이 10번인 경우다.
                 // 이 경우는 배송순번 10번을 직접 할당해준다.
                 if (nextHubDeliveryManagersDeliveryOrder == 0) {
@@ -101,32 +111,31 @@ public class DeliveryService {
                 // 업체 배송 담당자 ID를 통해 해당 업체 배송 담당자 정보를 조회해온다.
                 DeliveryManager lastStoreDeliveryManagerFroArrivalHub = deliveryManagerRepository.findById(storeDeliveryManagerId)
                         .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-                long nextStoreDeliveryManagersDeliveryOrder = (lastStoreDeliveryManagerFroArrivalHub.getDeliveryOrder() + 1) % 10;
-                // 조회해온 업체 배송 담당자의 (배송 순번 + 1) % 10에 해당하는 배송순번을 구한 후 배송담당자 테이블에서 도착허브 ID와 배송순번을 조건으로 하여 다음 업체 배송 담당자 정보를 불러온다.
+                long nextStoreDeliveryManagersDeliveryOrder = (lastStoreDeliveryManagerFroArrivalHub.getDeliveryOrder() % 10) + 1;
+                // 조회해온 업체 배송 담당자의 (배송 순번 % 10) + 1에 해당하는 배송순번을 구한 후 배송담당자 테이블에서 도착허브 ID와 배송순번을 조건으로 하여 다음 업체 배송 담당자 정보를 불러온다.
                 DeliveryManager nextStoreDeliveryManager = deliveryManagerRepository.findByHubIdAndDeliveryOrder(lastStoreDeliveryManagerFroArrivalHub.getHubId(), nextStoreDeliveryManagersDeliveryOrder)
                         .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
                 // 배송 데이터를 생성한다.
                 Delivery delivery = Delivery.createDelivery(message.getOrderId(), deliveryRoads, message.getDepartureHubId(), message.getArrivalHubId(), message.getDeliveryAddress(),
-                        message.getRecipient(), "exampleValue", nextStoreDeliveryManager.getId());
+                        message.getRecipient(), slackId, nextStoreDeliveryManager.getId());
                 Delivery savedDelivery = deliveryRepository.save(delivery);
 
-                DeliveryRoad deliveryRoad = delivery.getDeliveryRoads()
-                        .stream().findFirst()
-                        .get();
-                // 배송담당자 정보
-                DeliveryManager deliveryPerson = deliveryManagerRepository.findById(deliveryRoad.getDeliveryManagerId())
+                // 슬랙 메시지에 담아줄 배송담당자의 정보를 조회
+                DeliveryManager deliveryPerson = deliveryManagerRepository.findById(savedDelivery.getStoreDeliveryManagerId())
                         .get();
 
                 // 경유허브 Id를 허브 클라이언트에 넘기고 경유 허브 정보를 받아온다.
                 List<Long> stopOverIds = delivery.getDeliveryRoads()
                         .stream()
-                        .mapToLong(DeliveryRoad::getDepartureHubId)
-                        .filter(departureHubId -> departureHubId != message.getArrivalHubId())
+                        .mapToLong(DeliveryRoad::getArrivalHubId)
+                        .filter(arrivalHubId -> message.getArrivalHubId() != arrivalHubId)
                         .boxed()
                         .toList();
-                // 경유지 주소 정보를 담는다.
+
+                // 경유지 주소 정보를 담을 목록
                 List<String> stopOverAddress = new ArrayList<>();
 
+                // 허브 클라이언트로부터 경유하는 허브에 대한 정보들을 조회해온 후 stopOverAddress에 하나씩 담는다.
                 for (int i = 0; i < stopOverIds.size(); i++) {
                     ResponseEntity<SingleResponse<HubFindResponseDto>> hubById = hubClient.getHubById(stopOverIds.get(i));
                     stopOverAddress.add(hubById.getBody().getData().getAddress().getAddress());
@@ -146,16 +155,17 @@ public class DeliveryService {
                         .deliveryPerson(deliveryPerson.getName())
                         .orderId(message.getOrderId())
                         .orderNickName(message.getOrdererName())
-                        .orderSlackId(UserContext.getUserContext().getSlackId())
+                        .orderSlackId(slackId)
                         .itemInfo(itemInfo)
                         .request(message.getRequest())
                         .destination(message.getDeliveryAddress())
-                        .deliveryPersonSlackId(UserContext.getUserContext().getSlackId())
+                        .deliveryPersonSlackId(slackId)
                         .stopOver(stopOverAddress.toString())
                         .shippingAddress(departureHubAddress)
                         .build();
 
-                aiClient.sendMessage(messageForAiService);
+//                aiClient.sendMessage(messageForAiService);
+                UserContext.clear();
 
                 return CreateDeliveryResponseDto.from(savedDelivery.getId());
             }
@@ -163,8 +173,54 @@ public class DeliveryService {
             DeliveryManager deliveryManager = deliveryManagerRepository.findFirstByHubIdOrderByIdAsc(message.getArrivalHubId())
                     .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
             Delivery delivery = Delivery.createDelivery(message.getOrderId(), deliveryRoads, message.getDepartureHubId(), message.getArrivalHubId(),
-                    message.getDeliveryAddress(), message.getRecipient(), "exampleValue", deliveryManager.getId());
+                    message.getDeliveryAddress(), message.getRecipient(), slackId, deliveryManager.getId());
             Delivery savedDelivery = deliveryRepository.save(delivery);
+            // 슬랙 메시지에 담아줄 배송담당자의 정보를 조회
+            DeliveryManager deliveryPerson = deliveryManagerRepository.findById(savedDelivery.getStoreDeliveryManagerId())
+                    .get();
+
+            // 경유허브 Id를 허브 클라이언트에 넘기고 경유 허브 정보를 받아온다.
+            List<Long> stopOverIds = delivery.getDeliveryRoads()
+                    .stream()
+                    .mapToLong(DeliveryRoad::getArrivalHubId)
+                    .filter(arrivalHubId -> message.getArrivalHubId() != arrivalHubId)
+                    .boxed()
+                    .toList();
+
+            // 경유지 주소 정보를 담을 목록
+            List<String> stopOverAddress = new ArrayList<>();
+
+            // 허브 클라이언트로부터 경유하는 허브에 대한 정보들을 조회해온 후 stopOverAddress에 하나씩 담는다.
+            for (int i = 0; i < stopOverIds.size(); i++) {
+                ResponseEntity<SingleResponse<HubFindResponseDto>> hubById = hubClient.getHubById(stopOverIds.get(i));
+                stopOverAddress.add(hubById.getBody().getData().getAddress().getAddress());
+            }
+
+            // 발송 허브 정보를 받아온다.
+            String departureHubAddress = hubClient.getHubById(message.getDepartureHubId()).getBody().getData().getAddress().getAddress();
+
+
+            String itemInfo = message.getItems().stream()
+                    .map(item -> String.format("상품 정보 : %s %d박스", item.getItemName(), item.getQuantity()))
+                    .toList()
+                    .toString()
+                    .replaceAll("(^\\[|\\]$)", "");
+
+            RequestCreateMessageDto messageForAiService = RequestCreateMessageDto.builder()
+                    .deliveryPerson(deliveryPerson.getName())
+                    .orderId(message.getOrderId())
+                    .orderNickName(message.getOrdererName())
+                    .orderSlackId(slackId)
+                    .itemInfo(itemInfo)
+                    .request(message.getRequest())
+                    .destination(message.getDeliveryAddress())
+                    .deliveryPersonSlackId(slackId)
+                    .stopOver(stopOverAddress.toString())
+                    .shippingAddress(departureHubAddress)
+                    .build();
+
+//                aiClient.sendMessage(messageForAiService);
+            UserContext.clear();
             return CreateDeliveryResponseDto.from(savedDelivery.getId());
         }
         // 가장 최근의 배송 데이터가 존재하지 않는 경우
@@ -192,16 +248,110 @@ public class DeliveryService {
                     .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
             // 배송 데이터를 생성한다.
             Delivery delivery = Delivery.createDelivery(message.getOrderId(), deliveryRoads, message.getDepartureHubId(), message.getArrivalHubId(), message.getDeliveryAddress(),
-                    message.getRecipient(), "exampleValue", nextStoreDeliveryManager.getId());
+                    message.getRecipient(), slackId, nextStoreDeliveryManager.getId());
             Delivery savedDelivery = deliveryRepository.save(delivery);
+
+            // 슬랙 메시지에 담아줄 배송담당자의 정보를 조회
+            DeliveryManager deliveryPerson = deliveryManagerRepository.findById(savedDelivery.getStoreDeliveryManagerId())
+                    .get();
+
+            // 경유허브 Id를 허브 클라이언트에 넘기고 경유 허브 정보를 받아온다.
+            List<Long> stopOverIds = delivery.getDeliveryRoads()
+                    .stream()
+                    .mapToLong(DeliveryRoad::getArrivalHubId)
+                    .filter(arrivalHubId -> message.getArrivalHubId() != arrivalHubId)
+                    .boxed()
+                    .toList();
+
+            // 경유지 주소 정보를 담을 목록
+            List<String> stopOverAddress = new ArrayList<>();
+
+            // 허브 클라이언트로부터 경유하는 허브에 대한 정보들을 조회해온 후 stopOverAddress에 하나씩 담는다.
+            for (int i = 0; i < stopOverIds.size(); i++) {
+                ResponseEntity<SingleResponse<HubFindResponseDto>> hubById = hubClient.getHubById(stopOverIds.get(i));
+                stopOverAddress.add(hubById.getBody().getData().getAddress().getAddress());
+            }
+
+            // 발송 허브 정보를 받아온다.
+            String departureHubAddress = hubClient.getHubById(message.getDepartureHubId()).getBody().getData().getAddress().getAddress();
+
+
+            String itemInfo = message.getItems().stream()
+                    .map(item -> String.format("상품 정보 : %s %d박스", item.getItemName(), item.getQuantity()))
+                    .toList()
+                    .toString()
+                    .replaceAll("(^\\[|\\]$)", "");
+
+            RequestCreateMessageDto messageForAiService = RequestCreateMessageDto.builder()
+                    .deliveryPerson(deliveryPerson.getName())
+                    .orderId(message.getOrderId())
+                    .orderNickName(message.getOrdererName())
+                    .orderSlackId(slackId)
+                    .itemInfo(itemInfo)
+                    .request(message.getRequest())
+                    .destination(message.getDeliveryAddress())
+                    .deliveryPersonSlackId(slackId)
+                    .stopOver(stopOverAddress.toString())
+                    .shippingAddress(departureHubAddress)
+                    .build();
+
+//                aiClient.sendMessage(messageForAiService);
+            UserContext.clear();
             return CreateDeliveryResponseDto.from(savedDelivery.getId());
         }
         // 배송 테이블에 도착허브 ID = 매개변수로 주어진 도착허브 ID 조건을 만족하는 행이 없는 경우
         DeliveryManager deliveryManager = deliveryManagerRepository.findFirstByHubIdOrderByIdAsc(message.getArrivalHubId())
                 .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
         Delivery delivery = Delivery.createDelivery(message.getOrderId(), deliveryRoads, message.getDepartureHubId(), message.getArrivalHubId(),
-                message.getDeliveryAddress(), message.getRecipient(), "exampleValue", deliveryManager.getId());
+                message.getDeliveryAddress(), message.getRecipient(), slackId, deliveryManager.getId());
         Delivery savedDelivery = deliveryRepository.save(delivery);
+
+        // 슬랙 메시지에 담아줄 배송담당자의 정보를 조회
+        DeliveryManager deliveryPerson = deliveryManagerRepository.findById(savedDelivery.getStoreDeliveryManagerId())
+                .get();
+
+        // 경유허브 Id를 허브 클라이언트에 넘기고 경유 허브 정보를 받아온다.
+        List<Long> stopOverIds = delivery.getDeliveryRoads()
+                .stream()
+                .mapToLong(DeliveryRoad::getArrivalHubId)
+                .filter(arrivalHubId -> message.getArrivalHubId() != arrivalHubId)
+                .boxed()
+                .toList();
+
+        // 경유지 주소 정보를 담을 목록
+        List<String> stopOverAddress = new ArrayList<>();
+
+        // 허브 클라이언트로부터 경유하는 허브에 대한 정보들을 조회해온 후 stopOverAddress에 하나씩 담는다.
+        for (int i = 0; i < stopOverIds.size(); i++) {
+            ResponseEntity<SingleResponse<HubFindResponseDto>> hubById = hubClient.getHubById(stopOverIds.get(i));
+            stopOverAddress.add(hubById.getBody().getData().getAddress().getAddress());
+        }
+
+        // 발송 허브 정보를 받아온다.
+        String departureHubAddress = hubClient.getHubById(message.getDepartureHubId()).getBody().getData().getAddress().getAddress();
+
+
+        String itemInfo = message.getItems().stream()
+                .map(item -> String.format("상품 정보 : %s %d박스", item.getItemName(), item.getQuantity()))
+                .toList()
+                .toString()
+                .replaceAll("(^\\[|\\]$)", "");
+
+        RequestCreateMessageDto messageForAiService = RequestCreateMessageDto.builder()
+                .deliveryPerson(deliveryPerson.getName())
+                .orderId(message.getOrderId())
+                .orderNickName(message.getOrdererName())
+                .orderSlackId(slackId)
+                .itemInfo(itemInfo)
+                .request(message.getRequest())
+                .destination(message.getDeliveryAddress())
+                .deliveryPersonSlackId(slackId)
+                .stopOver(stopOverAddress.toString())
+                .shippingAddress(departureHubAddress)
+                .build();
+
+//                aiClient.sendMessage(messageForAiService);
+
         return CreateDeliveryResponseDto.from(savedDelivery.getId());
     }
 

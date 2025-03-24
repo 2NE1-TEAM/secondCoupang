@@ -39,6 +39,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
 //    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 //    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+//    implementation 'io.github.openfeign:feign-micrometer'
+    implementation("io.github.openfeign:feign-micrometer:13.5")
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.2.0'
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-validation'

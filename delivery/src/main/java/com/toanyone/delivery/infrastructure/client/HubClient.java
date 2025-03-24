@@ -1,5 +1,6 @@
 package com.toanyone.delivery.infrastructure.client;
 
+import com.toanyone.delivery.common.config.FeignConfig;
 import com.toanyone.delivery.common.utils.SingleResponse;
 import com.toanyone.delivery.infrastructure.client.dto.HubFindResponseDto;
 import com.toanyone.delivery.infrastructure.client.dto.RouteSegmentDto;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@FeignClient(name = "hub-service")
+@FeignClient(name = "hub-service", configuration = FeignConfig.class)
 public interface HubClient {
 
     @GetMapping("/hubs/route")
