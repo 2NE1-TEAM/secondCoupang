@@ -28,6 +28,7 @@ ext {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     implementation 'com.querydsl:querydsl-core'
     implementation 'org.springframework.kafka:spring-kafka'
@@ -58,6 +59,17 @@ dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
+}
+
+// QueryDSL 빌드 경로 설정 추가 (QClass 파일을 build/generated에 생성)
+def generated = layout.buildDirectory.dir("generated")
+
+sourceSets {
+    main.java.srcDirs += generated
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorGeneratedSourcesDirectory = generated.get().asFile
 }
 
 tasks.named('test') {
