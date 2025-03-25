@@ -107,18 +107,18 @@ public class HubServiceImpl implements HubService {
             @CacheEvict(cacheNames = "hubFindOne", key = "#hubId"),
             @CacheEvict(cacheNames = "hubSearchCache", allEntries = true)
     })
-    public void deleteHub(Long hubId) {
+    public void deleteHub(Long hubId, Long userId) {
         log.info("HubServiceImpl :: deleteHub :: hubId:{}", hubId);
         Hub findHub = validateExistHub(hubId); // 존재하는 허브인지 체크
 
         //허브간 거리 삭제
         if(!findHub.getHubDistances().isEmpty()) {
             for (HubDistance hubDistance : findHub.getHubDistances()) {
-                hubDistance.delete(userContext.getUser().getUserId());
+                hubDistance.delete(userId);
             }
         }
         // 허브 삭제
-        findHub.delete(userContext.getUser().getUserId());
+        findHub.delete(userId);
     }
 
     @Override

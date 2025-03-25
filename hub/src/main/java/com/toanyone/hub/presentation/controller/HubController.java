@@ -1,6 +1,7 @@
 package com.toanyone.hub.presentation.controller;
 
 import com.toanyone.hub.common.config.annotation.RequireRole;
+import com.toanyone.hub.common.filter.UserContext;
 import com.toanyone.hub.domain.service.HubService;
 import com.toanyone.hub.domain.service.RouteService;
 import com.toanyone.hub.presentation.dto.*;
@@ -20,6 +21,7 @@ public class HubController {
 
     private final HubService hubService;
     private final RouteService routeService;
+    private final UserContext userContext;
 
     /**
      * 허브 생성 및 생성 후 HubDistance에 경로 추가 비동기로 실행.
@@ -72,7 +74,7 @@ public class HubController {
     @DeleteMapping("/{hubId}")
     public ResponseEntity deleteHub(@PathVariable Long hubId) {
         log.info("deleteHub:{}", hubId);
-        hubService.deleteHub(hubId);
+        hubService.deleteHub(hubId, userContext.getUser().getUserId());
         return ResponseEntity.noContent().build();
     }
 
