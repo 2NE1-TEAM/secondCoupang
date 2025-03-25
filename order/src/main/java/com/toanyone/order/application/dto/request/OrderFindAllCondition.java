@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class OrderFindAllCondition {
     private int size;
-    private Long cursorId;
+    private Long nextCursorOrderId;
     private LocalDateTime timestamp;
     private SortType sortType;
 }

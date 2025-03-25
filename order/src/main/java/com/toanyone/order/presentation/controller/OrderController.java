@@ -62,7 +62,7 @@ public class OrderController {
     ) {
 
         log.info("searchOrders: keyword={}, userId={}, hubId={}, cursorId={}, timestamp={}, sortType={}, size={}",
-                request.getKeyword(), request.getUserId(), request.getHubId(), request.getCursorId(),
+                request.getKeyword(), request.getUserId(), request.getHubId(), request.getNextCursorOrderId(),
                 request.getTimestamp(), request.getSortType(), request.getSize());
         OrderSearchCondition condition = orderMapper.toOrderSearchCondition(request);
         CursorPage<OrderSearchResponseDto> response = orderService.searchOrders(condition);

@@ -32,6 +32,9 @@ public class OrderFindResponseDto {
     @NotNull
     private int totalPrice;
 
+    @NotNull
+    private String status;
+
     public static OrderFindResponseDto fromOrder(Order order) {
         OrderFindResponseDto responseDto = new OrderFindResponseDto();
         responseDto.orderId = order.getId();
@@ -48,6 +51,7 @@ public class OrderFindResponseDto {
                         .build())
                 .collect(Collectors.toList());
         responseDto.totalPrice = order.getTotalPrice();
+        responseDto.status = order.getStatus().getDescription();
         return responseDto;
     }
 

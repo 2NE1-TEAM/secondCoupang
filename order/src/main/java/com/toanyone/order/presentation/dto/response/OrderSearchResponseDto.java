@@ -17,6 +17,7 @@ public class OrderSearchResponseDto {
     private Long receiveStoreId;
     private List<OrderItemSearchResponseDto> orderItems;
     private int totalPrice;
+    private String status;
 
     public static OrderSearchResponseDto fromOrder(Order order) {
         return new OrderSearchResponseDto(
@@ -33,7 +34,8 @@ public class OrderSearchResponseDto {
                                 .price(item.getPrice())
                                 .build())
                         .collect(Collectors.toList()),
-                order.getTotalPrice()
+                order.getTotalPrice(),
+                order.getStatus().getDescription()
         );
     }
 
