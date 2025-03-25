@@ -57,6 +57,7 @@ public class OrderKafkaConsumer {
             aiService.sendSlackMessage(slackMessage);
 
         } catch (Exception e) {
+            log.error("PAYMENT SUCCESS EXCEPTION", e);
             throw new OrderException.DeliveryRequestFailedException();
         }
 
@@ -89,6 +90,7 @@ public class OrderKafkaConsumer {
             aiService.sendSlackMessage(slackMessage);
 
         } catch (Exception e) {
+            log.error("PAYMENT FAILED EXCEPTION", e);
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -105,6 +107,7 @@ public class OrderKafkaConsumer {
             log.info("PAYMENT CANCEL SUCCESS MESSAGE : {}, {}", message.getPaymentId(), message.getPaymentStatus());
             orderService.processOrderCancellation(message.getOrderId(), message.getPaymentStatus());
         } catch (Exception e) {
+            log.error("PAYMENT CANCEL SUCCESS EXCEPTION", e);
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -120,6 +123,7 @@ public class OrderKafkaConsumer {
             log.info("PAYMENT CANCEL FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
 
         } catch (Exception e) {
+            log.error("PAYMENT CANCEL FAILED EXCEPTION", e);
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -142,7 +146,7 @@ public class OrderKafkaConsumer {
         } catch (OrderException.OrderNotFoundException e) {
             log.error("OrderNotFoundException : {}", e.getMessage());
         } catch (Exception e) {
-            log.error("Exception : {}", e.getMessage());
+            log.error("DELIVERY SUCCESS EXCEPTION", e);
             throw new OrderException.DeliveryStatusUpdateFailedException();
         }
     }
@@ -176,6 +180,7 @@ public class OrderKafkaConsumer {
 
 
         } catch (Exception e) {
+            log.error("DELIVERY FAILED EXCEPTION", e);
             throw new OrderException.PaymentRequestFailedException();
         }
     }
@@ -194,6 +199,7 @@ public class OrderKafkaConsumer {
             orderService.processDeliveryUpdatedRequest(message.getOrderId(), message.getDeliveryStatus());
 
         } catch (Exception e) {
+            log.error("DELIVERY STATUS UPDATED EXCEPTION", e);
             throw new OrderException.DeliveryStatusUpdateFailedException();
         }
 
@@ -211,6 +217,7 @@ public class OrderKafkaConsumer {
             orderService.processDeliveryUpdatedRequest(message.getOrderId(), message.getDeliveryStatus());
 
         } catch (Exception e) {
+            log.error("DELIVERY COMPLETED EXCEPTION", e);
             throw new OrderException.DeliveryStatusUpdateFailedException();
         }
 
