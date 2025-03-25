@@ -233,6 +233,7 @@ public class OrderService {
         Order order = validateOrderWithItemsExists(orderId);
         updateOrderStatus(order, status);
         restoreInventory(order);
+        log.info("restore success");
         validateOrderItemsStatus(order.getItems());
         orderItemRepository.bulkUpdateOrderItemsStatus(order.getId(), OrderItem.OrderItemStatus.CANCELED);
     }

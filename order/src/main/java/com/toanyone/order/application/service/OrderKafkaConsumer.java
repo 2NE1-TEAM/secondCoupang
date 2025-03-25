@@ -1,9 +1,11 @@
 package com.toanyone.order.application.service;
 
+import com.toanyone.delivery.message.DeliveryCompletedMessage;
 import com.toanyone.delivery.message.DeliveryFailedMessage;
 import com.toanyone.delivery.message.DeliveryStatusUpdatedMessage;
 import com.toanyone.delivery.message.DeliverySuccessMessage;
 import com.toanyone.order.application.dto.SlackMessageRequestDto;
+import com.toanyone.order.common.config.UserContext;
 import com.toanyone.order.common.exception.OrderException;
 import com.toanyone.order.message.DeliveryRequestMessage;
 import com.toanyone.order.message.PaymentCancelMessage;
@@ -39,6 +41,14 @@ public class OrderKafkaConsumer {
             DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus());
             orderKafkaProducer.sendDeliveryRequestMessage(deliveryMessage, userId, role, slackId);
 
+            UserContext context = UserContext.builder()
+                    .userId(userId)
+                    .role(role)
+                    .slackId(slackId)
+                    .build();
+
+            UserContext.setUserContext(context);
+
             SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
                     .slackId(slackId)
                     .orderId(message.getOrderId())
@@ -47,6 +57,7 @@ public class OrderKafkaConsumer {
             aiService.sendSlackMessage(slackMessage);
 
         } catch (Exception e) {
+            log.error("PAYMENT SUCCESS EXCEPTION", e);
             throw new OrderException.DeliveryRequestFailedException();
         }
 
@@ -63,6 +74,14 @@ public class OrderKafkaConsumer {
             log.info("PAYMENT FAILED MESSAGE : {}, {}", message.getPaymentStatus(), message.getErrorMessage());
             orderService.processOrderCancellation(message.getOrderId(),message.getPaymentStatus());
 
+            UserContext context = UserContext.builder()
+                    .userId(userId)
+                    .role(role)
+                    .slackId(slackId)
+                    .build();
+
+            UserContext.setUserContext(context);
+
             SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
                     .slackId(slackId)
                     .orderId(message.getOrderId())
@@ -71,6 +90,7 @@ public class OrderKafkaConsumer {
             aiService.sendSlackMessage(slackMessage);
 
         } catch (Exception e) {
+            log.error("PAYMENT FAILED EXCEPTION", e);
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -87,6 +107,7 @@ public class OrderKafkaConsumer {
             log.info("PAYMENT CANCEL SUCCESS MESSAGE : {}, {}", message.getPaymentId(), message.getPaymentStatus());
             orderService.processOrderCancellation(message.getOrderId(), message.getPaymentStatus());
         } catch (Exception e) {
+            log.error("PAYMENT CANCEL SUCCESS EXCEPTION", e);
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -99,10 +120,10 @@ public class OrderKafkaConsumer {
                                                    @Header("X-Slack-Id") String slackId) throws IOException {
         try {
             PaymentCancelFailedMessage message = record.value();
-
             log.info("PAYMENT CANCEL FAILED MESSAGE : {}, {}", message.getPaymentId(), message.getErrorMessage());
 
         } catch (Exception e) {
+            log.error("PAYMENT CANCEL FAILED EXCEPTION", e);
             throw new OrderException.OrderCancelFailedException();
         }
 
@@ -125,7 +146,7 @@ public class OrderKafkaConsumer {
         } catch (OrderException.OrderNotFoundException e) {
             log.error("OrderNotFoundException : {}", e.getMessage());
         } catch (Exception e) {
-            log.error("Exception : {}", e.getMessage());
+            log.error("DELIVERY SUCCESS EXCEPTION", e);
             throw new OrderException.DeliveryStatusUpdateFailedException();
         }
     }
@@ -142,6 +163,14 @@ public class OrderKafkaConsumer {
             PaymentCancelMessage paymentMessage = orderService.processDeliveryFailedRequest(message.getOrderId(), message.getDeliveryStatus());
             orderKafkaProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
 
+            UserContext context = UserContext.builder()
+                    .userId(userId)
+                    .role(role)
+                    .slackId(slackId)
+                    .build();
+
+            UserContext.setUserContext(context);
+
             SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
                     .slackId(slackId)
                     .orderId(message.getOrderId())
@@ -151,6 +180,7 @@ public class OrderKafkaConsumer {
 
 
         } catch (Exception e) {
+            log.error("DELIVERY FAILED EXCEPTION", e);
             throw new OrderException.PaymentRequestFailedException();
         }
     }
@@ -169,6 +199,25 @@ public class OrderKafkaConsumer {
             orderService.processDeliveryUpdatedRequest(message.getOrderId(), message.getDeliveryStatus());
 
         } catch (Exception e) {
+            log.error("DELIVERY STATUS UPDATED EXCEPTION", e);
+            throw new OrderException.DeliveryStatusUpdateFailedException();
+        }
+
+    }
+
+    @KafkaListener(topics = "delivery.completed", groupId = "delivery")
+    public void consumeDeliveryCompletedMessage(ConsumerRecord<String, DeliveryCompletedMessage> record,
+                                                    @Header("X-User-Id") Long userId,
+                                                    @Header("X-User-Roles") String role,
+                                                    @Header("X-Slack-Id") String slackId) throws IOException {
+
+        try {
+            DeliveryCompletedMessage message = record.value();
+            log.info("DELIVERY COMPLETED MESSAGE : {}, {}", message.getOrderId(),message.getDeliveryStatus());
+            orderService.processDeliveryUpdatedRequest(message.getOrderId(), message.getDeliveryStatus());
+
+        } catch (Exception e) {
+            log.error("DELIVERY COMPLETED EXCEPTION", e);
             throw new OrderException.DeliveryStatusUpdateFailedException();
         }
 
