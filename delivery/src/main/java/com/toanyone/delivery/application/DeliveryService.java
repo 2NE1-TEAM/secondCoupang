@@ -628,8 +628,8 @@ public class DeliveryService {
 
     private void sendDeliveryCompletedMessage(Delivery updatedDelivery) {
         DeliveryCompletedMessage message = DeliveryCompletedMessage.builder()
-                .completedDeliveryId(updatedDelivery.getId())
-                .message("배송이 완료되었습니다.")
+                .orderId(updatedDelivery.getOrderId())
+                .deliveryStatus(Delivery.DeliveryStatus.DELIVERY_COMPLETED.toString())
                 .build();
         Message<DeliveryCompletedMessage> kafkaMessage = MessageBuilder.withPayload(message)
                 .setHeader(KafkaHeaders.TOPIC, "delivery.completed")
