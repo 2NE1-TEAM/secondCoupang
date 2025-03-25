@@ -49,7 +49,7 @@ public class KafkaConsumerService {
         log.info("허브간 거리 데이터 생성 실패 리스너 :: KafkaConsumerService :: consumeHubCreateFailureMessage :: {}" , hubCreateMessage);
         Hub findHub = hubRepository.findById(hubCreateMessage.getHubId()).orElseThrow(()->
                 new HubException.HubNotFoundException("허브가 존재하지 않습니다."));
-        hubService.deleteHub(findHub.getId()); // 비동기라서 이미 생성된 허브 삭제
+        hubService.deleteHub(findHub.getId(), hubCreateMessage.getUserId()); // 비동기라서 이미 생성된 허브 삭제
         // 사용자에게 허브 생성 실패했다고 슬랙 보내기 - to do
         slackClient.sendSlackMessage(hubCreateMessage.getRole(), hubCreateMessage.getSlackId(), hubCreateMessage.getUserId(),  new RequestCreateMessageDto(hubCreateMessage.getSlackId(), "허브 생성에 실패했습니다. 다시 시도해 주세요."));
 

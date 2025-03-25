@@ -10,7 +10,7 @@ public interface HubService {
 
     HubFindResponseDto findOne(Long hubId);
 
-    void deleteHub(Long hubId);
+    void deleteHub(Long hubId, Long userId);
 
     HubUpdateResponseDto updateHub(Long hubId, HubUpdateRequestDto requestDto);
 }
