@@ -25,6 +25,8 @@ public class OrderFindAllResponseDto {
     private List<Long> orderItemIds;
     @NotNull
     private int totalPrice;
+    @NotNull
+    private String status;
 
     public static OrderFindAllResponseDto fromOrder(Order order) {
         OrderFindAllResponseDto responseDto = new OrderFindAllResponseDto();
@@ -33,6 +35,7 @@ public class OrderFindAllResponseDto {
         responseDto.receiveStoreId = order.getReceiveStoreId();
         responseDto.orderItemIds = order.getItems().stream().map(OrderItem::getItemId).collect(Collectors.toList());
         responseDto.totalPrice = order.getTotalPrice();
+        responseDto.status = order.getStatus().getDescription();
         return responseDto;
     }
 

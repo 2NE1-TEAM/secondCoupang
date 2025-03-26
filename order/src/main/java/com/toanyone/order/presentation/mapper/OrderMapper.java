@@ -48,7 +48,7 @@ public class OrderMapper {
                 .size(request.getSize())
                 .hubId(request.getHubId())
                 .userId(request.getUserId())
-                .cursorId(request.getCursorId())
+                .nextCursorOrderId(request.getNextCursorOrderId())
                 .keyword(request.getKeyword())
                 .sortType(request.getSortType())
                 .storeId(request.getStoreId())
@@ -59,7 +59,7 @@ public class OrderMapper {
     public OrderFindAllCondition toOrderFindAllCondition(OrderFindAllRequestDto request) {
         return OrderFindAllCondition.builder()
                 .size(request.getSize())
-                .cursorId(request.getCursorId())
+                .nextCursorOrderId(request.getNextCursorOrderId())
                 .sortType(request.getSortType())
                 .timestamp(request.getTimestamp())
                 .build();

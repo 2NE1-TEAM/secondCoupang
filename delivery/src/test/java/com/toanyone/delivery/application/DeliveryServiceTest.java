@@ -19,6 +19,7 @@ import com.toanyone.delivery.domain.repository.DeliveryRepository;
 import com.toanyone.delivery.infrastructure.client.AiClient;
 import com.toanyone.delivery.infrastructure.client.HubClient;
 import com.toanyone.delivery.infrastructure.client.dto.HubFindResponseDto;
+import com.toanyone.delivery.message.DeliveryCompletedMessage;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -316,8 +317,8 @@ class DeliveryServiceTest {
             ReflectionTestUtils.setField(updatedDelivery, "deliveryStatus", Delivery.DeliveryStatus.DELIVERY_COMPLETED);
 
             DeliveryCompletedMessage message = DeliveryCompletedMessage.builder()
-                    .completedDeliveryId(toBeUpdatedDeliveryId)
-                    .message("배송완료")
+                    .orderId(updatedDelivery.getOrderId())
+                    .deliveryStatus(Delivery.DeliveryStatus.DELIVERY_COMPLETED.toString())
                     .build();
 
             Message<DeliveryCompletedMessage> kafkaMesage = MessageBuilder.withPayload(message)
@@ -368,8 +369,8 @@ class DeliveryServiceTest {
             ReflectionTestUtils.setField(updatedDelivery, "deliveryStatus", Delivery.DeliveryStatus.DELIVERY_COMPLETED);
 
             DeliveryCompletedMessage message = DeliveryCompletedMessage.builder()
-                    .completedDeliveryId(toBeUpdatedDeliveryId)
-                    .message("배송완료")
+                    .orderId(updatedDelivery.getOrderId())
+                    .deliveryStatus(Delivery.DeliveryStatus.DELIVERY_COMPLETED.toString())
                     .build();
 
             Message<DeliveryCompletedMessage> kafkaMessage = MessageBuilder.withPayload(message)
@@ -426,8 +427,8 @@ class DeliveryServiceTest {
             DeliveryManager storeDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 0L, 1L, "업체");
 
             DeliveryCompletedMessage message = DeliveryCompletedMessage.builder()
-                    .completedDeliveryId(toBeUpdatedDeliveryId)
-                    .message("배송완료")
+                    .orderId(updatedDelivery.getOrderId())
+                    .deliveryStatus(Delivery.DeliveryStatus.DELIVERY_COMPLETED.toString())
                     .build();
 
             Message<DeliveryCompletedMessage> kafkaMesage = MessageBuilder.withPayload(message)
@@ -485,8 +486,8 @@ class DeliveryServiceTest {
             DeliveryManager storeDeliveryManager = DeliveryManager.createDeliveryManager(1L, DeliveryManagerType.STORE_DELIVERY_MANAGER, 0L, 1L, "업체");
 
             DeliveryCompletedMessage message = DeliveryCompletedMessage.builder()
-                    .completedDeliveryId(toBeUpdatedDeliveryId)
-                    .message("배송완료")
+                    .orderId(updatedDelivery.getOrderId())
+                    .deliveryStatus(Delivery.DeliveryStatus.DELIVERY_COMPLETED.toString())
                     .build();
 
             Message<DeliveryCompletedMessage> kafkaMesage = MessageBuilder.withPayload(message)

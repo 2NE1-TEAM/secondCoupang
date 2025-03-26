@@ -20,7 +20,7 @@ public class CustomFilter implements Filter {
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String SLACK_ID_HEADER = "X-Slack-Id";
     private static final String HUB_ID_HEADER = "X-Hub-Id";
-    private static final String DELIVERY_MANAGER_PATH = "/deliveries/delivery-manager/";
+    private static final String DELIVERY_MANAGER_PATH = "/deliveries/delivery-manager";
     private static final String DELIVERY_PATH = "/deliveries/";
 
 
@@ -55,15 +55,17 @@ public class CustomFilter implements Filter {
         if (requestURI.startsWith(DELIVERY_MANAGER_PATH) && (request.getMethod().equals("PUT") || request.getMethod().equals("DELETE") || request.getMethod().equals("POST"))) {
             if (role.get().equals("MASTER") || role.get().equals("HUB")) {
                 filterChain.doFilter(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
             }
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
 
         if (requestURI.startsWith(DELIVERY_MANAGER_PATH) && (request.getMethod().equals("GET"))) {
             if (role.get().equals("MASTER") || role.get().equals("HUB") || role.get().equals("DELIVERY")) {
                 filterChain.doFilter(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
             }
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
 
         if (requestURI.startsWith(DELIVERY_PATH) && (request.getMethod().equals("DELETE"))) {

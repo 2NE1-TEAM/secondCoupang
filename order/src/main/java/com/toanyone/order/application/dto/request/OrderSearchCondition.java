@@ -14,7 +14,7 @@ public class OrderSearchCondition {
     private Long storeId;
     private Long hubId;
     private int size;
-    private Long cursorId;
+    private Long nextCursorOrderId;
     private LocalDateTime timestamp;
     private SortType sortType;
 }
