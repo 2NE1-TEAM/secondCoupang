@@ -15,14 +15,14 @@ import static com.toanyone.order.common.dto.CursorConstants.DEFAULT_SORT_TYPE;
 public class OrderFindAllRequestDto {
 
     private int size;
-    private Long cursorId;
+    private Long nextCursorOrderId;
     private LocalDateTime timestamp;
     private SortType sortType;
 
     @Builder
-    public OrderFindAllRequestDto(Integer size, Long cursorId, LocalDateTime timestamp, SortType sortType) {
+    public OrderFindAllRequestDto(Integer size, Long nextCursorOrderId, LocalDateTime timestamp, SortType sortType) {
         this.size = (size != null) ? size : DEFAULT_SIZE;
-        this.cursorId = cursorId;
+        this.nextCursorOrderId = nextCursorOrderId;
         this.timestamp = timestamp;
         this.sortType = (sortType != null) ? sortType : DEFAULT_SORT_TYPE;
     }

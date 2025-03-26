@@ -31,7 +31,7 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
     public CursorPage<Order> search(OrderSearchCondition request) {
 
         log.info("search");
-        log.info("getCursorId : {}", request.getCursorId());
+        log.info("getCursorId : {}", request.getNextCursorOrderId());
 
         List<Long> orderIds = queryFactory
                 .select(orderItem.order.id)
@@ -44,8 +44,8 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
                 .where(
                         isUserEqualTo(request.getUserId()),
                         order.id.in(orderIds),
-                        cursorId(request.getCursorId()),
-                        cursorIdAndTimestamp(request.getCursorId(), request.getTimestamp(), request.getSortType())
+                        cursorId(request.getNextCursorOrderId()),
+                        cursorIdAndTimestamp(request.getNextCursorOrderId(), request.getTimestamp(), request.getSortType())
                 )
                 .orderBy(createOrderSpecifier(request.getSortType()))
                 .limit(request.getSize() + 1)
@@ -72,8 +72,8 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
                 .selectFrom(order)
                 .where(
                         isUserEqualTo(userId),
-                        cursorId(request.getCursorId()),
-                        cursorIdAndTimestamp(request.getCursorId(), request.getTimestamp(), request.getSortType())
+                        cursorId(request.getNextCursorOrderId()),
+                        cursorIdAndTimestamp(request.getNextCursorOrderId(), request.getTimestamp(), request.getSortType())
                 )
                 .orderBy(createOrderSpecifier(request.getSortType()))
                 .limit(request.getSize() + 1)
@@ -96,7 +96,7 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
     }
 
     private BooleanExpression cursorId(Long cursorId) {
-        return cursorId != null ? order.id.lt(cursorId) : null;
+        return cursorId != null ? order.id.loe(cursorId) : null;
     }
 
     private BooleanExpression containsKeyword(String keyword) {
@@ -111,11 +111,11 @@ public class OrderQueryDslRepositoryImpl implements OrderQueryDslRepository {
                 case CREATED_AT_DESC ->
                         order.createdAt.lt(timestamp)
                                 .or(order.createdAt.eq(timestamp)
-                                        .and(order.id.lt(cursorId)));
+                                        .and(order.id.loe(cursorId)));
                 case UPDATED_AT_DESC ->
                         order.updatedAt.lt(timestamp)
                                 .or(order.updatedAt.eq(timestamp)
-                                        .and(order.id.lt(cursorId)));
+                                        .and(order.id.loe(cursorId)));
             };
         }
     }
