@@ -133,12 +133,10 @@
 ####  다익스트라 알고리즘으로 허브간 배송 경로 최적화 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/%EB%8B%A4%EC%9D%B5%EC%8A%A4%ED%8A%B8%EB%9D%BC-%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9C%BC%EB%A1%9C-%ED%97%88%EB%B8%8C%EA%B0%84-%EB%B0%B0%EC%86%A1-%EA%B2%BD%EB%A1%9C-%EC%B5%9C%EC%A0%81%ED%99%94)
 ####  Redis cachemanager 사용 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/Redis-cacheManager-%EC%82%AC%EC%9A%A9)
 ####  카카오 API를 이용해서 실시간 거리 계산 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/%EC%B9%B4%EC%B9%B4%EC%98%A4-API%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%B4%EC%84%9C-%EC%8B%A4%EC%8B%9C%EA%B0%84-%EA%B1%B0%EB%A6%AC-%EA%B3%84%EC%82%B0)
-####  카카오 API를 이용해서 실시간 거리 계산 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/%EC%B9%B4%EC%B9%B4%EC%98%A4-API%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%B4%EC%84%9C-%EC%8B%A4%EC%8B%9C%EA%B0%84-%EA%B1%B0%EB%A6%AC-%EA%B3%84%EC%82%B0)
 ####  커서페이징 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/%EC%BB%A4%EC%84%9C-%ED%8E%98%EC%9D%B4%EC%A7%95-%EA%B5%AC%ED%98%84)
 ####  ErrorDecoder 사용 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/FeignClient-ErrorDecoder---@RestControllerAdvice-%EC%82%AC%EC%9A%A9)
 ####  전화번호 통일 유틸 사용 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/%EC%A0%84%ED%99%94%EB%B2%88%ED%98%B8-%ED%86%B5%EC%9D%BC-%EC%9C%A0%ED%8B%B8-%EC%82%AC%EC%9A%A9)
 ####  주문 동기/비동기 프로세스 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/%EC%A3%BC%EB%AC%B8-%EB%8F%99%EA%B8%B0-%EB%B9%84%EB%8F%99%EA%B8%B0-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4)
-####  Redis cachemanager 사용 [WIKI보기](https://github.com/2NE1-TEAM/secondCoupang/wiki/Redis-cacheManager-%EC%82%AC%EC%9A%A9)
 
 <br><br>
 
