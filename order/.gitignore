@@ -182,3 +182,5 @@ replay_pid*
 application-dev.yml
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij
+
+!**/src/main/java/com/toanyone/order/application/port/out/
