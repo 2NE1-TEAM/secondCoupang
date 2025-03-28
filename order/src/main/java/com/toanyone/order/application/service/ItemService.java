@@ -1,7 +1,6 @@
 package com.toanyone.order.application.service;
 
-import com.toanyone.order.application.dto.ItemRestoreRequestDto;
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
+import com.toanyone.order.application.dto.service.request.ItemValidationRequestDto;
 import org.springframework.http.ResponseEntity;
 
 public interface ItemService {

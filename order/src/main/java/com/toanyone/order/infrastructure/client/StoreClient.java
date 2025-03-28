@@ -1,7 +1,7 @@
 package com.toanyone.order.infrastructure.client;
 
 import com.toanyone.order.application.service.StoreService;
-import com.toanyone.order.application.dto.StoreFindResponseDto;
+import com.toanyone.order.application.dto.service.response.StoreFindResponseDto;
 import com.toanyone.order.common.config.FeignConfig;
 import com.toanyone.order.common.dto.SingleResponse;
 import org.springframework.cloud.openfeign.FeignClient;

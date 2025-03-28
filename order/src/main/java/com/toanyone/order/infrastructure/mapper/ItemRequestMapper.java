@@ -1,8 +1,7 @@
 package com.toanyone.order.infrastructure.mapper;
 
-import com.toanyone.order.application.dto.ItemRestoreRequestDto;
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
-import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
+import com.toanyone.order.application.dto.service.request.ItemValidationRequestDto;
+import com.toanyone.order.application.dto.service.request.OrderCreateServiceDto;
 import com.toanyone.order.domain.model.Order;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
 package com.toanyone.order.infrastructure.client;
 
 import com.toanyone.order.application.service.AiService;
-import com.toanyone.order.application.dto.SlackMessageRequestDto;
+import com.toanyone.order.application.dto.service.request.SlackMessageRequestDto;
 import com.toanyone.order.common.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
