@@ -66,10 +66,7 @@ public class OrderService {
             throw new OrderException.OrderBadRequestException();
         }
 
-        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
-        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
-            throw new OrderException.InsufficientStockException();
-        }
+        validateStock(request);
 
         Order order = Order.create(userId, request.getOrdererName(), request.getRequest(),
                 request.getSupplyStoreId(), request.getReceiveStoreId());
@@ -95,6 +92,13 @@ public class OrderService {
         orderMessageProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
+    }
+
+    private void validateStock(OrderCreateServiceDto request) {
+        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
+        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
+            throw new OrderException.InsufficientStockException();
+        }
     }
 
     @Transactional(readOnly = true)

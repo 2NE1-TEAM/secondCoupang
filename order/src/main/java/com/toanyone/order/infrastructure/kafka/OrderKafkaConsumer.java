@@ -213,10 +213,7 @@ public class OrderKafkaConsumer implements OrderMessageConsumer {
     @Override
     public void processPaymentFailed(PaymentFailedMessage message, Long userId, String role, String slackId) {
         orderService.processOrderCancellation(message.getOrderId(), message.getPaymentStatus());
-        initializeUserContext(userId, role, slackId);
         sendSlackMessageAfterProcess(userId, role, message.getOrderId(), slackId, "주문의 결제가 실패했습니다.");
-
-        clearUserContext();
     }
 
     @Override
