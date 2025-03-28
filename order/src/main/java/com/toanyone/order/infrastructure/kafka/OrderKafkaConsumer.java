@@ -1,12 +1,16 @@
-package com.toanyone.order.application.service;
+package com.toanyone.order.infrastructure.kafka;
 
 import com.toanyone.delivery.message.DeliveryCompletedMessage;
 import com.toanyone.delivery.message.DeliveryFailedMessage;
 import com.toanyone.delivery.message.DeliveryStatusUpdatedMessage;
 import com.toanyone.delivery.message.DeliverySuccessMessage;
 import com.toanyone.order.application.dto.SlackMessageRequestDto;
+import com.toanyone.order.application.service.AiService;
+import com.toanyone.order.application.service.OrderMessageConsumer;
+import com.toanyone.order.application.service.OrderService;
 import com.toanyone.order.common.config.UserContext;
 import com.toanyone.order.common.exception.OrderException;
+import com.toanyone.order.infrastructure.kafka.OrderKafkaProducer;
 import com.toanyone.order.message.DeliveryRequestMessage;
 import com.toanyone.order.message.PaymentCancelMessage;
 import com.toanyone.payment.message.PaymentCancelFailedMessage;
@@ -26,6 +30,7 @@ import java.io.IOException;
 @Service
 @RequiredArgsConstructor
 public class OrderKafkaConsumer {
+// implements OrderMessageConsumer
 
     private final OrderKafkaProducer orderKafkaProducer;
     private final OrderService orderService;
@@ -37,9 +42,10 @@ public class OrderKafkaConsumer {
                                        @Header("X-User-Roles") String role,
                                        @Header("X-Slack-Id") String slackId) throws IOException {
         try {
+
             PaymentSuccessMessage message = record.value();
-            DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus());
-            orderKafkaProducer.sendDeliveryRequestMessage(deliveryMessage, userId, role, slackId);
+
+            sendDeliveryRequestAfterPayment(message, userId, role, slackId);
 
             UserContext context = UserContext.builder()
                     .userId(userId)
@@ -49,18 +55,29 @@ public class OrderKafkaConsumer {
 
             UserContext.setUserContext(context);
 
-            SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
-                    .slackId(slackId)
-                    .orderId(message.getOrderId())
-                    .message("주문의 결제가 완료되었습니다.").build();
+            sendSlackMessageAfterProcessDeliveryRequest(message, slackId);
 
-            aiService.sendSlackMessage(slackMessage);
+            UserContext.clear();
 
         } catch (Exception e) {
             log.error("PAYMENT SUCCESS EXCEPTION", e);
             throw new OrderException.DeliveryRequestFailedException();
         }
 
+    }
+
+    private void sendSlackMessageAfterProcessDeliveryRequest(PaymentSuccessMessage message, String slackId) {
+        SlackMessageRequestDto slackMessage = SlackMessageRequestDto.builder()
+                .slackId(slackId)
+                .orderId(message.getOrderId())
+                .message("주문의 결제가 완료되었습니다.").build();
+
+        aiService.sendSlackMessage(slackMessage);
+    }
+
+    private void sendDeliveryRequestAfterPayment(PaymentSuccessMessage message, Long userId, String role, String slackId) {
+        DeliveryRequestMessage deliveryMessage = orderService.processDeliveryRequest(message.getOrderId(), message.getPaymentStatus());
+        orderKafkaProducer.sendDeliveryRequestMessage(deliveryMessage, userId, role, slackId);
     }
 
 

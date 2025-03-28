@@ -3,8 +3,9 @@ package com.toanyone.order.application;
 import com.toanyone.order.application.dto.*;
 import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
 import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
-import com.toanyone.order.application.mapper.ItemRequestMapper;
-import com.toanyone.order.application.mapper.MessageConverter;
+import com.toanyone.order.infrastructure.kafka.OrderKafkaProducer;
+import com.toanyone.order.infrastructure.mapper.ItemRequestMapper;
+import com.toanyone.order.infrastructure.converter.OrderMessageConverter;
 import com.toanyone.order.application.service.*;
 import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
@@ -57,7 +58,7 @@ class OrderServiceTest {
     private ItemRequestMapper itemRequestMapper;
 
     @Mock
-    private MessageConverter messageConverter;
+    private OrderMessageConverter orderMessageConverter;
 
     @Mock
     private OrderKafkaProducer orderKafkaProducer;
@@ -169,7 +170,6 @@ class OrderServiceTest {
         //주문 취소 요청 데이터
         cancelRequestDto = OrderCancelServiceDto.builder()
                 .orderId(1L)
-                .deliveryId(1L)
                 .build();
 
     }
@@ -193,8 +193,8 @@ class OrderServiceTest {
         });
 
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(messageConverter.toOrderDeliveryMessage(any(), anyLong(), anyLong(), anyLong())).thenReturn(new DeliveryRequestMessage());
-        when(messageConverter.toOrderPaymentMessage(anyLong(), anyInt())).thenReturn(new PaymentRequestMessage());
+        when(orderMessageConverter.toOrderDeliveryMessage(any(), anyLong(), anyLong(), anyLong())).thenReturn(new DeliveryRequestMessage());
+        when(orderMessageConverter.toOrderPaymentMessage(anyLong(), anyInt())).thenReturn(new PaymentRequestMessage());
 
         //when
         OrderCreateResponseDto responseDto = orderService.createOrder(1L, "MASTER", "slackId", orderRequestDto);

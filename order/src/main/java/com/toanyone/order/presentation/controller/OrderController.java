@@ -9,12 +9,11 @@ import com.toanyone.order.common.dto.CursorPage;
 import com.toanyone.order.common.dto.MultiResponse;
 import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.config.UserContext;
-import com.toanyone.order.presentation.dto.request.OrderCancelRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderCreateRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderFindAllRequestDto;
 import com.toanyone.order.presentation.dto.request.OrderSearchRequestDto;
 import com.toanyone.order.presentation.dto.response.*;
-import com.toanyone.order.presentation.mapper.OrderMapper;
+import com.toanyone.order.presentation.mapper.OrderApplicationToServiceDtoMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +28,11 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
-    private final OrderMapper orderMapper;
+    private final OrderApplicationToServiceDtoMapper orderApplicationToServiceDtoMapper;
 
     @PostMapping
     public ResponseEntity<SingleResponse<OrderCreateResponseDto>> createOrder(@RequestBody @Valid OrderCreateRequestDto request) {
-        OrderCreateServiceDto serviceDto = orderMapper.toOrderCreateServiceDto(request);
+        OrderCreateServiceDto serviceDto = orderApplicationToServiceDtoMapper.toOrderCreateServiceDto(request);
         UserContext userContext = UserContext.getUserContext();
         return ResponseEntity.status(HttpStatus.CREATED).body(SingleResponse.success(orderService.createOrder(userContext.getUserId(),userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
@@ -50,7 +49,7 @@ public class OrderController {
     ) {
         log.info("findOrders");
         UserContext userContext = UserContext.getUserContext();
-        OrderFindAllCondition condition = orderMapper.toOrderFindAllCondition(request);
+        OrderFindAllCondition condition = orderApplicationToServiceDtoMapper.toOrderFindAllCondition(request);
         CursorPage<OrderFindAllResponseDto> response = orderService.findOrders(userContext.getUserId(), condition);
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
@@ -64,7 +63,7 @@ public class OrderController {
         log.info("searchOrders: keyword={}, userId={}, hubId={}, cursorId={}, timestamp={}, sortType={}, size={}",
                 request.getKeyword(), request.getUserId(), request.getHubId(), request.getNextCursorOrderId(),
                 request.getTimestamp(), request.getSortType(), request.getSize());
-        OrderSearchCondition condition = orderMapper.toOrderSearchCondition(request);
+        OrderSearchCondition condition = orderApplicationToServiceDtoMapper.toOrderSearchCondition(request);
         CursorPage<OrderSearchResponseDto> response = orderService.searchOrders(condition);
 
         return ResponseEntity.ok().body(MultiResponse.success(response));
@@ -74,7 +73,7 @@ public class OrderController {
     @PatchMapping("/{orderId}/cancel")
     public ResponseEntity<SingleResponse<OrderCancelResponseDto>> cancelOrder(
             @PathVariable("orderId") Long orderId) {
-        OrderCancelServiceDto serviceDto = orderMapper.toOrderCancelServiceDto(orderId);
+        OrderCancelServiceDto serviceDto = orderApplicationToServiceDtoMapper.toOrderCancelServiceDto(orderId);
         UserContext userContext = UserContext.getUserContext();
         return ResponseEntity.ok().body(SingleResponse.success(orderService.cancelOrder(userContext.getUserId(), userContext.getRole(), userContext.getSlackId(), serviceDto)));
     }
