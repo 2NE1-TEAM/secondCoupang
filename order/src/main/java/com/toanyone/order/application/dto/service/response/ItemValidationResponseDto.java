@@ -1,4 +1,4 @@
-package com.toanyone.order.application.dto;
+package com.toanyone.order.application.dto.service.response;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

@@ -1,10 +1,14 @@
 package com.toanyone.order.application;
 
-import com.toanyone.order.application.dto.*;
-import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
-import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
-import com.toanyone.order.application.mapper.ItemRequestMapper;
-import com.toanyone.order.application.mapper.MessageConverter;
+import com.toanyone.order.application.dto.service.request.OrderCancelServiceDto;
+import com.toanyone.order.application.dto.service.request.OrderCreateServiceDto;
+import com.toanyone.order.application.dto.service.request.ItemRestoreRequestDto;
+import com.toanyone.order.application.dto.service.request.ItemValidationRequestDto;
+import com.toanyone.order.application.dto.service.response.HubFindResponseDto;
+import com.toanyone.order.application.dto.service.response.StoreFindResponseDto;
+import com.toanyone.order.infrastructure.adapter.kafka.OrderKafkaProducer;
+import com.toanyone.order.infrastructure.mapper.ItemRequestMapper;
+import com.toanyone.order.infrastructure.converter.OrderMessageConverter;
 import com.toanyone.order.application.service.*;
 import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
@@ -12,9 +16,9 @@ import com.toanyone.order.domain.model.Order;
 import com.toanyone.order.domain.model.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
-import com.toanyone.order.message.DeliveryRequestMessage;
-import com.toanyone.order.message.PaymentCancelMessage;
-import com.toanyone.order.message.PaymentRequestMessage;
+import com.toanyone.order.application.dto.message.DeliveryRequestMessage;
+import com.toanyone.order.application.dto.message.PaymentCancelMessage;
+import com.toanyone.order.application.dto.message.PaymentRequestMessage;
 import com.toanyone.order.presentation.dto.response.OrderCancelResponseDto;
 import com.toanyone.order.presentation.dto.response.OrderCreateResponseDto;
 import org.junit.jupiter.api.*;
@@ -57,7 +61,7 @@ class OrderServiceTest {
     private ItemRequestMapper itemRequestMapper;
 
     @Mock
-    private MessageConverter messageConverter;
+    private OrderMessageConverter orderMessageConverter;
 
     @Mock
     private OrderKafkaProducer orderKafkaProducer;
@@ -169,7 +173,6 @@ class OrderServiceTest {
         //주문 취소 요청 데이터
         cancelRequestDto = OrderCancelServiceDto.builder()
                 .orderId(1L)
-                .deliveryId(1L)
                 .build();
 
     }
@@ -193,8 +196,8 @@ class OrderServiceTest {
         });
 
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(messageConverter.toOrderDeliveryMessage(any(), anyLong(), anyLong(), anyLong())).thenReturn(new DeliveryRequestMessage());
-        when(messageConverter.toOrderPaymentMessage(anyLong(), anyInt())).thenReturn(new PaymentRequestMessage());
+        when(orderMessageConverter.toOrderDeliveryMessage(any(), anyLong(), anyLong(), anyLong())).thenReturn(new DeliveryRequestMessage());
+        when(orderMessageConverter.toOrderPaymentMessage(anyLong(), anyInt())).thenReturn(new PaymentRequestMessage());
 
         //when
         OrderCreateResponseDto responseDto = orderService.createOrder(1L, "MASTER", "slackId", orderRequestDto);

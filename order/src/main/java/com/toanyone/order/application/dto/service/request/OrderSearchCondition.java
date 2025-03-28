@@ -1,4 +1,4 @@
-package com.toanyone.order.application.dto.request;
+package com.toanyone.order.application.dto.service.request;
 
 import com.toanyone.order.common.dto.SortType;
 import lombok.Builder;
@@ -8,7 +8,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class OrderFindAllCondition {
+public class OrderSearchCondition {
+    private String keyword;
+    private Long userId;
+    private Long storeId;
+    private Long hubId;
     private int size;
     private Long nextCursorOrderId;
     private LocalDateTime timestamp;

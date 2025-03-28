@@ -1,6 +1,5 @@
-package com.toanyone.order.application.dto.request;
+package com.toanyone.order.application.dto.message;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-public class OrderCancelServiceDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentRequestMessage {
     private Long orderId;
+    private int amount;
 }

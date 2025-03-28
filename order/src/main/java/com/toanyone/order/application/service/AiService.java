@@ -1,7 +1,6 @@
 package com.toanyone.order.application.service;
 
-import com.toanyone.order.application.dto.SlackMessageRequestDto;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.toanyone.order.application.dto.service.request.SlackMessageRequestDto;
 
 public interface AiService {
 

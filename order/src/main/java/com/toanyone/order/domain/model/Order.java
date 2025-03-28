@@ -92,18 +92,18 @@ public class Order extends BaseEntity {
     }
 
     public void startDelivery() {
-//        if (this.status != OrderStatus.PREPARING) {
-//            log.info("PREPARING -> DELIVERING");
-//            throw new OrderException.OrderStatusIllegalException();
-//        }
+        if (this.status != OrderStatus.PREPARING) {
+            log.info("PREPARING -> DELIVERING");
+            throw new OrderException.OrderStatusIllegalException();
+        }
         this.status = OrderStatus.DELIVERING;
     }
 
     public void completedDelivery() {
-//        if (this.status != OrderStatus.DELIVERING) {
-//            log.info("DELIVERING -> DELIVERY_COMPLETED");
-//            throw new OrderException.OrderStatusIllegalException();
-//        }
+        if (this.status != OrderStatus.DELIVERING) {
+            log.info("DELIVERING -> DELIVERY_COMPLETED");
+            throw new OrderException.OrderStatusIllegalException();
+        }
         this.status = OrderStatus.DELIVERY_COMPLETED;
     }
 

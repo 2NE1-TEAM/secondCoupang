@@ -1,4 +1,4 @@
-package com.toanyone.order.application.dto;
+package com.toanyone.order.application.dto.service.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ItemRestoreRequestDto {
+public class ItemValidationRequestDto {
+
+    private String type; //INCREASE, DECREASE
 
     @NotNull
     private List<ItemRequestDto> items;

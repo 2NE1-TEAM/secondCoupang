@@ -1,6 +1,6 @@
 package com.toanyone.order.infrastructure.client;
 
-import com.toanyone.order.application.dto.ItemValidationRequestDto;
+import com.toanyone.order.application.dto.service.request.ItemValidationRequestDto;
 import com.toanyone.order.application.service.ItemService;
 import com.toanyone.order.common.config.FeignConfig;
 import jakarta.validation.Valid;

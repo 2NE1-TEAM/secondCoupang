@@ -1,14 +1,14 @@
 package com.toanyone.order.application.service;
 
-import com.toanyone.order.application.dto.HubFindResponseDto;
-import com.toanyone.order.application.dto.SlackMessageRequestDto;
-import com.toanyone.order.application.dto.StoreFindResponseDto;
-import com.toanyone.order.application.dto.request.OrderCancelServiceDto;
-import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
-import com.toanyone.order.application.dto.request.OrderFindAllCondition;
-import com.toanyone.order.application.dto.request.OrderSearchCondition;
-import com.toanyone.order.application.mapper.ItemRequestMapper;
-import com.toanyone.order.application.mapper.MessageConverter;
+import com.toanyone.order.application.dto.service.response.HubFindResponseDto;
+import com.toanyone.order.application.dto.service.response.StoreFindResponseDto;
+import com.toanyone.order.application.dto.service.request.OrderCancelServiceDto;
+import com.toanyone.order.application.dto.service.request.OrderCreateServiceDto;
+import com.toanyone.order.application.dto.service.request.OrderFindAllCondition;
+import com.toanyone.order.application.dto.service.request.OrderSearchCondition;
+import com.toanyone.order.application.port.out.OrderMessageProducer;
+import com.toanyone.order.infrastructure.mapper.ItemRequestMapper;
+import com.toanyone.order.infrastructure.converter.OrderMessageConverter;
 import com.toanyone.order.common.dto.CursorPage;
 import com.toanyone.order.common.dto.SingleResponse;
 import com.toanyone.order.common.exception.OrderException;
@@ -16,9 +16,9 @@ import com.toanyone.order.domain.model.Order;
 import com.toanyone.order.domain.model.OrderItem;
 import com.toanyone.order.domain.repository.OrderItemRepository;
 import com.toanyone.order.domain.repository.OrderRepository;
-import com.toanyone.order.message.DeliveryRequestMessage;
-import com.toanyone.order.message.PaymentCancelMessage;
-import com.toanyone.order.message.PaymentRequestMessage;
+import com.toanyone.order.application.dto.message.DeliveryRequestMessage;
+import com.toanyone.order.application.dto.message.PaymentCancelMessage;
+import com.toanyone.order.application.dto.message.PaymentRequestMessage;
 import com.toanyone.order.presentation.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,8 +48,8 @@ public class OrderService {
     private final StoreService storeService;
     private final HubService hubService;
     private final ItemRequestMapper itemRequestMapper;
-    private final MessageConverter messageConverter;
-    private final OrderKafkaProducer orderKafkaProducer;
+    private final OrderMessageConverter orderMessageConverter;
+    private final OrderMessageProducer orderMessageProducer;
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
@@ -66,10 +66,7 @@ public class OrderService {
             throw new OrderException.OrderBadRequestException();
         }
 
-        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
-        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
-            throw new OrderException.InsufficientStockException();
-        }
+        validateStock(request);
 
         Order order = Order.create(userId, request.getOrdererName(), request.getRequest(),
                 request.getSupplyStoreId(), request.getReceiveStoreId());
@@ -87,14 +84,21 @@ public class OrderService {
 
         log.info("orderId: {}, userId: {}, totalPrice: {}", order.getId(), order.getUserId(), order.getTotalPrice());
 
-        DeliveryRequestMessage deliveryMessage = messageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getBody().getData().getHubId(), supplyStore.getBody().getData().getHubId());
+        DeliveryRequestMessage deliveryMessage = orderMessageConverter.toOrderDeliveryMessage(request, order.getId(), receiveStore.getBody().getData().getHubId(), supplyStore.getBody().getData().getHubId());
 
         redisTemplate.opsForValue().set(order.getId().toString(), deliveryMessage, Duration.ofMinutes(DELIVERY_REQUEST_EXPIRATION_MINUTES));
 
-        PaymentRequestMessage paymentMessage = messageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
-        orderKafkaProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
+        PaymentRequestMessage paymentMessage = orderMessageConverter.toOrderPaymentMessage(order.getId(), order.getTotalPrice());
+        orderMessageProducer.sendPaymentRequestMessage(paymentMessage, userId, role, slackId);
 
         return OrderCreateResponseDto.fromOrder(order);
+    }
+
+    private void validateStock(OrderCreateServiceDto request) {
+        ResponseEntity<Void> itemResponse = itemService.validateItems(itemRequestMapper.toItemValidationRequestDto(request, "DECREASE"));
+        if (itemResponse.getStatusCode() == HttpStatus.BAD_REQUEST){
+            throw new OrderException.InsufficientStockException();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -181,7 +185,7 @@ public class OrderService {
     private void cancelOrderAndSendPaymentCancelMessage(Order order, Long userId, String role, String slackId) {
         order.paymentCancelRequested();
         PaymentCancelMessage paymentMessage = PaymentCancelMessage.builder().orderId(order.getId()).build();
-        orderKafkaProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
+        orderMessageProducer.sendPaymentCancelMessage(paymentMessage, userId, role, slackId);
     }
 
 

@@ -1,4 +1,4 @@
-package com.toanyone.order.message;
+package com.toanyone.order.application.dto.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,14 +1,14 @@
-package com.toanyone.order.application.mapper;
+package com.toanyone.order.infrastructure.converter;
 
-import com.toanyone.order.application.dto.request.OrderCreateServiceDto;
-import com.toanyone.order.message.DeliveryRequestMessage;
-import com.toanyone.order.message.PaymentRequestMessage;
+import com.toanyone.order.application.dto.service.request.OrderCreateServiceDto;
+import com.toanyone.order.application.dto.message.DeliveryRequestMessage;
+import com.toanyone.order.application.dto.message.PaymentRequestMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
 @Component
-public class MessageConverter {
+public class OrderMessageConverter {
 
     public DeliveryRequestMessage toOrderDeliveryMessage(OrderCreateServiceDto orderCreateRequest, Long orderId, Long arrivalHubId, Long departureHubId) {
 
