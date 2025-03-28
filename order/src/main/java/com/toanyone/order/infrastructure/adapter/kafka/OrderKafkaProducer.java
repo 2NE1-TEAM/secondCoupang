@@ -1,17 +1,15 @@
-package com.toanyone.order.infrastructure.kafka;
+package com.toanyone.order.infrastructure.adapter.kafka;
 
-import com.toanyone.order.application.service.OrderMessageProducer;
-import com.toanyone.order.message.DeliveryRequestMessage;
-import com.toanyone.order.message.PaymentCancelMessage;
-import com.toanyone.order.message.PaymentRequestMessage;
+import com.toanyone.order.application.port.out.OrderMessageProducer;
+import com.toanyone.order.application.dto.message.DeliveryRequestMessage;
+import com.toanyone.order.application.dto.message.PaymentCancelMessage;
+import com.toanyone.order.application.dto.message.PaymentRequestMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 @RequiredArgsConstructor

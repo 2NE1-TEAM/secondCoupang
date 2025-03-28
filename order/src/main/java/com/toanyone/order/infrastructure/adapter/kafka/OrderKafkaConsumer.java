@@ -1,4 +1,4 @@
-package com.toanyone.order.infrastructure.kafka;
+package com.toanyone.order.infrastructure.adapter.kafka;
 
 import com.toanyone.delivery.message.DeliveryCompletedMessage;
 import com.toanyone.delivery.message.DeliveryFailedMessage;
@@ -6,12 +6,12 @@ import com.toanyone.delivery.message.DeliveryStatusUpdatedMessage;
 import com.toanyone.delivery.message.DeliverySuccessMessage;
 import com.toanyone.order.application.dto.service.request.SlackMessageRequestDto;
 import com.toanyone.order.application.service.AiService;
-import com.toanyone.order.application.service.OrderMessageConsumer;
+import com.toanyone.order.application.port.in.OrderMessageConsumer;
 import com.toanyone.order.application.service.OrderService;
 import com.toanyone.order.common.config.UserContext;
 import com.toanyone.order.common.exception.OrderException;
-import com.toanyone.order.message.DeliveryRequestMessage;
-import com.toanyone.order.message.PaymentCancelMessage;
+import com.toanyone.order.application.dto.message.DeliveryRequestMessage;
+import com.toanyone.order.application.dto.message.PaymentCancelMessage;
 import com.toanyone.payment.message.PaymentCancelFailedMessage;
 import com.toanyone.payment.message.PaymentCancelSuccessMessage;
 import com.toanyone.payment.message.PaymentFailedMessage;
