@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-@KafkaListener(topics = "delivery.requested", groupId = "delivery")
 @RequiredArgsConstructor
 public class DeliveryKafkaConsumer {
     private final DeliveryService deliveryService;
 
+    @KafkaListener(topics = "delivery.requested", groupId = "delivery")
     public void consume(DeliveryRequestMessage message,
                         @Header("X-User-Id") Long userId,
                         @Header("X-User-Roles") String userRole,

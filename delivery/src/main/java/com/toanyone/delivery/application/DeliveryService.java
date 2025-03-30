@@ -85,9 +85,11 @@ public class DeliveryService {
             // 목적지 허브 정보가 최근 배송 정보에 포함되어 있을 경우
             if (validateLastDeliveryForArrivalHubExists(lastDeliveryForArrivalHub)) {
                 createDeliveryResponseDtoIfLastDeliveryForArrivalHubExists(slackId, lastDeliveryForArrivalHub, message, deliveryRoads);
+                return;
             }
             // 목적지 허브가 최근 배송 경로에 포함되어 있지 않을 경우
             createDeliveryResponseDtoIfLastDeliveryForArrivalHubNotExists(slackId, message, deliveryRoads);
+            return;
         }
         // 최근 배송 정보가 존재하지 않을 경우
         createDeliveryResponseDtoIfLastDeliveryNotExists(slackId, neededDeliveryManagerCount, response, message);
@@ -165,7 +167,7 @@ public class DeliveryService {
 
     private List<DeliveryRoad> setUpDeliveryRoadsIfLastDeliveryNotExists(int neededDeliveryManagerCount, List<RouteSegmentDto> response) {
         List<DeliveryRoad> deliveryRoads = new ArrayList<>();
-        for (int sequence = 1; sequence < neededDeliveryManagerCount; sequence++) {
+        for (int sequence = 1; sequence <= neededDeliveryManagerCount; sequence++) {
 //            DeliveryManager hubDeliveryManager = hubDeliveryManagers.get(sequence);
             RouteSegmentDto routeSegmentDto = response.get(sequence - 1);
             deliveryRoads.add(DeliveryRoad.createDeliveryRoad((long) sequence, sequence + 1, routeSegmentDto.getStartHub().getId(),
@@ -205,8 +207,8 @@ public class DeliveryService {
 
     private List<DeliveryRoad> setUPDeliveryRoadsIfLastDeliveryExists(int neededDeliveryManagerCount, List<RouteSegmentDto> response, Long lastOrderedHubDeliveryManagerId) {
         List<DeliveryRoad> deliveryRoads = new ArrayList<>();
-        for (int sequence = 1; sequence < neededDeliveryManagerCount; sequence++) {
-//                DeliveryManager nextHubDeliveryManager = nextHubDeliveryManagers.get(sequence-1);
+        for (int sequence = 1; sequence <= neededDeliveryManagerCount; sequence++) {
+////                DeliveryManager nextHubDeliveryManager = nextHubDeliveryManagers.get(sequence-1);
             RouteSegmentDto routeSegmentDto = response.get(sequence - 1);
             // 조회해온 허브 배송 담당자들의 ID를 새로 생성하게 될 배송경로에 순차적으로 매핑해준다.
             deliveryRoads.add(DeliveryRoad.createDeliveryRoad((lastOrderedHubDeliveryManagerId + sequence) % 10, sequence, routeSegmentDto.getStartHub().getId(),
