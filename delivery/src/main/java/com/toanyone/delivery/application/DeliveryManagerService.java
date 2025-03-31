@@ -32,7 +32,7 @@ public class DeliveryManagerService {
     private final CustomDeliveryMangerRepository customDeliveryMangerRepository;
     private final HubClient hubClient;
 
-
+    
     public Long createDeliveryManager(CreateDeliveryManagerRequestDto request) {
         final Long hubDeliveryManagersHubId = 0L;
 
@@ -133,9 +133,5 @@ public class DeliveryManagerService {
                 .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
     }
 
-    public DeliveryManager getDeliveryPerson(Long savedDeliveryId) {
-        return deliveryManagerRepository.findById(savedDeliveryId)
-                .orElseThrow(DeliveryManagerException.NotFoundManagerException::new);
-    }
 
 }

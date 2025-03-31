@@ -23,6 +23,8 @@ import com.toanyone.delivery.infrastructure.client.dto.HubFindResponseDto;
 import com.toanyone.delivery.infrastructure.client.dto.RouteSegmentDto;
 import com.toanyone.delivery.message.DeliveryCompletedMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -56,6 +58,7 @@ public class DeliveryService {
                 .build());
     }
 
+
     public void createDelivery(DeliveryRequestMessage message,
                                Long userId,
                                String userRole,
@@ -83,11 +86,10 @@ public class DeliveryService {
         List<DeliveryRoad> deliveryRoads = setUpDeliveryRoadsIfLastDeliveryNotExists(neededDeliveryManagerCount, response);
         DeliveryManager deliveryManager = deliveryManagerService.getFirstStoreDeliveryManager(message.getArrivalHubId());
         Delivery delivery = createDelivery(slackId, message, deliveryRoads, deliveryManager.getId());
-        Delivery savedDelivery = deliveryRepository.save(delivery);
-        DeliveryManager deliveryPerson = deliveryManagerService.getDeliveryPerson(savedDelivery.getId());
+        deliveryRepository.save(delivery);
         List<Long> stopOverIds = getStopOverHubIds(delivery, message);
         List<String> stopOverAddress = addStopOverAddress(stopOverIds);
-        RequestCreateMessageDto messageForAiService = createRequestMessageDto(slackId, deliveryPerson, message, stopOverAddress);
+        RequestCreateMessageDto messageForAiService = createRequestMessageDto(slackId, deliveryManager.getName(), message, stopOverAddress);
         aiClient.sendMessage(messageForAiService);
     }
 
@@ -102,11 +104,10 @@ public class DeliveryService {
     private void createDeliveryResponseDtoIfLastDeliveryForArrivalHubNotExists(String slackId, DeliveryRequestMessage message, List<DeliveryRoad> deliveryRoads) {
         DeliveryManager deliveryManager = deliveryManagerService.getFirstStoreDeliveryManager(message.getArrivalHubId());
         Delivery delivery = createDelivery(slackId, message, deliveryRoads, deliveryManager.getId());
-        Delivery savedDelivery = deliveryRepository.save(delivery);
-        DeliveryManager deliveryPerson = deliveryManagerService.getDeliveryPerson(savedDelivery.getId());
+        deliveryRepository.save(delivery);
         List<Long> stopOverIds = getStopOverHubIds(delivery, message);
         List<String> stopOverAddress = addStopOverAddress(stopOverIds);
-        RequestCreateMessageDto messageForAiService = createRequestMessageDto(slackId, deliveryPerson, message, stopOverAddress);
+        RequestCreateMessageDto messageForAiService = createRequestMessageDto(slackId, deliveryManager.getName(), message, stopOverAddress);
         aiClient.sendMessage(messageForAiService);
         UserContext.clear();
     }
@@ -115,11 +116,11 @@ public class DeliveryService {
         Long storeDeliveryManagerId = lastDeliveryForArrivalHub.getStoreDeliveryManagerId();
         long nextStoreDeliveryManagersDeliveryOrder = getNextStoreDeliveryManagersDeliveryOrder(storeDeliveryManagerId);
         Delivery delivery = createDelivery(slackId, message, deliveryRoads, nextStoreDeliveryManagersDeliveryOrder);
-        Delivery savedDelivery = deliveryRepository.save(delivery);
-        DeliveryManager deliveryPerson = deliveryManagerService.getDeliveryPerson(savedDelivery.getId());
+        deliveryRepository.save(delivery);
+        GetDeliveryManagerResponseDto storeDeliveryManager = deliveryManagerService.getDeliveryManager(delivery.getStoreDeliveryManagerId());
         List<Long> stopOverIds = getStopOverHubIds(delivery, message);
         List<String> stopOverAddress = addStopOverAddress(stopOverIds);
-        RequestCreateMessageDto messageForAiService = createRequestMessageDto(slackId, deliveryPerson, message, stopOverAddress);
+        RequestCreateMessageDto messageForAiService = createRequestMessageDto(slackId, storeDeliveryManager.getName(), message, stopOverAddress);
         aiClient.sendMessage(messageForAiService);
         UserContext.clear();
     }
@@ -188,9 +189,9 @@ public class DeliveryService {
                 .getData();
     }
 
-    private RequestCreateMessageDto createRequestMessageDto(String slackId, DeliveryManager deliveryPerson, DeliveryRequestMessage message, List<String> stopOverAddress) {
+    private RequestCreateMessageDto createRequestMessageDto(String slackId, String deliveryPerson, DeliveryRequestMessage message, List<String> stopOverAddress) {
         return RequestCreateMessageDto.builder()
-                .deliveryPerson(deliveryPerson.getName())
+                .deliveryPerson(deliveryPerson)
                 .orderId(message.getOrderId())
                 .orderNickName(message.getOrdererName())
                 .orderSlackId(slackId)
@@ -244,6 +245,7 @@ public class DeliveryService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "deliveryCache", key = "#deliveryId")
     public GetDeliveryResponseDto getDelivery(Long deliveryId) {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
@@ -252,6 +254,7 @@ public class DeliveryService {
         return response;
     }
 
+    @CacheEvict(cacheNames = "deliveryCache", key = "#deliveryId")
     public DeleteDeliveryResponseDto deleteDelivery(Long deliveryId) {
         UserContext userInfo = UserContext.getUserContext();
         Delivery delivery = deliveryRepository.findById(deliveryId)
@@ -273,6 +276,7 @@ public class DeliveryService {
         throw new DeliveryException.UnauthorizedDeliveryDeleteException();
     }
 
+    @Cacheable(cacheNames = "deliveryCache", key = "#deliveryId")
     public UpdateDeliveryResponseDto updateDelivery(Long deliveryId, UpdateDeliveryRequestDto request) {
 
         Delivery delivery = deliveryRepository.findById(deliveryId)

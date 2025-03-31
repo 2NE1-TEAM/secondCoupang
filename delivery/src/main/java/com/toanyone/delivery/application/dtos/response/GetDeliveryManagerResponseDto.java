@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.toanyone.delivery.domain.DeliveryManager;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
-public class GetDeliveryManagerResponseDto {
+public class GetDeliveryManagerResponseDto implements Serializable {
     @JsonProperty("delivery_manager_id")
     private Long deliveryManagerId;
 
