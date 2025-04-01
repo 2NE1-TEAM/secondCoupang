@@ -1,11 +1,11 @@
 package com.toanyone.delivery.application;
 
-import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.response.DeleteDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.request.CreateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dto.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dto.request.UpdateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dto.response.DeleteDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse;
 import com.toanyone.delivery.common.utils.SingleResponse;
@@ -25,14 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Transactional
 @Service
 public class DeliveryManagerService {
     private final DeliveryManagerRepository deliveryManagerRepository;
     private final CustomDeliveryMangerRepository customDeliveryMangerRepository;
     private final HubClient hubClient;
 
-    
+    @Transactional
     public Long createDeliveryManager(CreateDeliveryManagerRequestDto request) {
         final Long hubDeliveryManagersHubId = 0L;
 

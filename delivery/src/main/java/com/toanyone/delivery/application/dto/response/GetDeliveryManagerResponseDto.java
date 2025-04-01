@@ -1,4 +1,4 @@
-package com.toanyone.delivery.application.dtos.response;
+package com.toanyone.delivery.application.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.toanyone.delivery.domain.DeliveryManager;

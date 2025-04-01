@@ -1,4 +1,4 @@
-package com.toanyone.delivery.application.dtos.request;
+package com.toanyone.delivery.application.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;

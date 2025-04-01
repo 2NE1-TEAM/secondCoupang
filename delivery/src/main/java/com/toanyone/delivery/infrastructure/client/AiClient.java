@@ -1,6 +1,6 @@
 package com.toanyone.delivery.infrastructure.client;
 
-import com.toanyone.delivery.application.dtos.request.RequestCreateMessageDto;
+import com.toanyone.delivery.application.dto.request.RequestCreateMessageDto;
 import com.toanyone.delivery.common.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

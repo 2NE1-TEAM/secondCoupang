@@ -1,11 +1,11 @@
 package com.toanyone.delivery.application;
 
-import com.toanyone.delivery.application.dtos.request.CreateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.request.GetDeliveryManagerSearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.UpdateDeliveryManagerRequestDto;
-import com.toanyone.delivery.application.dtos.response.DeleteDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.UpdateDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.request.CreateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dto.request.GetDeliveryManagerSearchConditionRequestDto;
+import com.toanyone.delivery.application.dto.request.UpdateDeliveryManagerRequestDto;
+import com.toanyone.delivery.application.dto.response.DeleteDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.response.UpdateDeliveryManagerResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryManagerException;
 import com.toanyone.delivery.common.utils.MultiResponse;
 import com.toanyone.delivery.common.utils.SingleResponse;
@@ -30,21 +30,21 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-
 class DeliveryManagerServiceTest {
     @InjectMocks
     private DeliveryManagerService deliveryManagerService;
     @Mock
-    private  DeliveryManagerRepository deliveryManagerRepository;
+    private DeliveryManagerRepository deliveryManagerRepository;
     @Mock
-    private  CustomDeliveryMangerRepository customDeliveryMangerRepository;
+    private CustomDeliveryMangerRepository customDeliveryMangerRepository;
     @Mock
-    private  HubClient hubClient;
+    private HubClient hubClient;
 
     @Nested
     class DeliveryManagerTest {

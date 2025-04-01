@@ -1,15 +1,16 @@
-package com.toanyone.delivery.application.dtos.response;
+package com.toanyone.delivery.application.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.toanyone.delivery.domain.Delivery;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-public class GetDeliveryResponseDto {
+public class GetDeliveryResponseDto implements Serializable {
 
     @JsonProperty("delivery_id")
     private Long deliveryId;

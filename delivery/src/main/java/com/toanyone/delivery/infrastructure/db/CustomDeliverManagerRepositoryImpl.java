@@ -1,9 +1,9 @@
-package com.toanyone.delivery.infrastructure;
+package com.toanyone.delivery.infrastructure.db;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryManagerResponseDto;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorInfo;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.domain.DeliveryManager;

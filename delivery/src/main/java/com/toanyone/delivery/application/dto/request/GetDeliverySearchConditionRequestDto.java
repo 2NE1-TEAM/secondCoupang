@@ -1,4 +1,4 @@
-package com.toanyone.delivery.application.dtos.request;
+package com.toanyone.delivery.application.dto.request;
 
 import lombok.Builder;
 import lombok.Getter;

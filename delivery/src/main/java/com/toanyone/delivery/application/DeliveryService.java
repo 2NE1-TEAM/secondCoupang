@@ -1,14 +1,15 @@
 package com.toanyone.delivery.application;
 
-import com.toanyone.delivery.application.dtos.request.DeliveryRequestMessage;
-import com.toanyone.delivery.application.dtos.request.GetDeliverySearchConditionRequestDto;
-import com.toanyone.delivery.application.dtos.request.RequestCreateMessageDto;
-import com.toanyone.delivery.application.dtos.request.UpdateDeliveryRequestDto;
-import com.toanyone.delivery.application.dtos.response.DeleteDeliveryResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryManagerResponseDto;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
-import com.toanyone.delivery.application.dtos.response.UpdateDeliveryResponseDto;
+import com.toanyone.delivery.application.dto.request.DeliveryRequestMessage;
+import com.toanyone.delivery.application.dto.request.GetDeliverySearchConditionRequestDto;
+import com.toanyone.delivery.application.dto.request.RequestCreateMessageDto;
+import com.toanyone.delivery.application.dto.request.UpdateDeliveryRequestDto;
+import com.toanyone.delivery.application.dto.response.DeleteDeliveryResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryManagerResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.dto.response.UpdateDeliveryResponseDto;
 import com.toanyone.delivery.application.exception.DeliveryException;
+import com.toanyone.delivery.application.message.DeliveryCompletedMessage;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.common.utils.SingleResponse;
 import com.toanyone.delivery.common.utils.UserContext;
@@ -21,7 +22,6 @@ import com.toanyone.delivery.infrastructure.client.AiClient;
 import com.toanyone.delivery.infrastructure.client.HubClient;
 import com.toanyone.delivery.infrastructure.client.dto.HubFindResponseDto;
 import com.toanyone.delivery.infrastructure.client.dto.RouteSegmentDto;
-import com.toanyone.delivery.message.DeliveryCompletedMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -41,8 +41,8 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DeliveryService {
+
     private final DeliveryManagerService deliveryManagerService;
     private final DeliveryRepository deliveryRepository;
     private final CustomDeliveryRepository customDeliveryRepository;
@@ -58,7 +58,7 @@ public class DeliveryService {
                 .build());
     }
 
-
+    @Transactional
     public void createDelivery(DeliveryRequestMessage message,
                                Long userId,
                                String userRole,
@@ -80,6 +80,90 @@ public class DeliveryService {
             return;
         }
         createDeliveryResponseDtoIfLastDeliveryNotExists(slackId, neededDeliveryManagerCount, response, message);
+    }
+
+
+    @Transactional(readOnly = true)
+    public CursorPage<GetDeliveryResponseDto> getDeliveries(GetDeliverySearchConditionRequestDto request) {
+        if (request.getDeliveryStatus() != null) {
+            Delivery.DeliveryStatus deliveryStatus = Delivery.DeliveryStatus.fromValue(request.getDeliveryStatus())
+                    .orElseThrow(DeliveryException.InvalidDeliveryTypeException::new);
+            CursorPage<GetDeliveryResponseDto> responseDtos = customDeliveryRepository.getDeliveries(request.getDeliveryId(), deliveryStatus, request.getDepartureHubId(), request.getArrivalHubId(),
+                    request.getRecipient(), request.getStoreDeliveryManagerId(), request.getLimit(), request.getSortBy());
+            return responseDtos;
+        }
+        CursorPage<GetDeliveryResponseDto> deliveries = customDeliveryRepository.getDeliveries(request.getDeliveryId(), null, request.getDepartureHubId(),
+                request.getArrivalHubId(), request.getRecipient(), request.getStoreDeliveryManagerId(), request.getLimit(), request.getSortBy());
+        return deliveries;
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "deliveryCache", key = "#deliveryId")
+    public GetDeliveryResponseDto getDelivery(Long deliveryId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        GetDeliveryResponseDto response = GetDeliveryResponseDto.from(delivery);
+        return response;
+    }
+
+    @Transactional
+    @CacheEvict(cacheNames = "deliveryCache", key = "#deliveryId")
+    public DeleteDeliveryResponseDto deleteDelivery(Long deliveryId) {
+        UserContext userInfo = UserContext.getUserContext();
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            delivery.deleteDelivery(userInfo.getUserId());
+            Delivery deletedDelivery = deliveryRepository.save(delivery);
+            return DeleteDeliveryResponseDto.from(deletedDelivery);
+        }
+
+        if (userInfo.getRole().equals("HUB")) {
+            if (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId())) {
+                delivery.deleteDelivery(userInfo.getUserId());
+                Delivery deletedDelivery = deliveryRepository.save(delivery);
+                return DeleteDeliveryResponseDto.from(deletedDelivery);
+            }
+        }
+        throw new DeliveryException.UnauthorizedDeliveryDeleteException();
+    }
+
+    @Transactional
+    @Cacheable(cacheNames = "deliveryCache", key = "#deliveryId")
+    public UpdateDeliveryResponseDto updateDelivery(Long deliveryId, UpdateDeliveryRequestDto request) {
+
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
+
+        UserContext userInfo = UserContext.getUserContext();
+
+        Delivery.DeliveryStatus deliveryStatus = Delivery.DeliveryStatus.fromValue(request.getDeliveryStatus())
+                .orElseThrow(DeliveryException.InvalidDeliveryTypeException::new);
+
+        if (userInfo.getRole().equals("MASTER")) {
+            delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
+            Delivery updatedDelivery = deliveryRepository.save(delivery);
+            verifyDeliveryStatus(updatedDelivery);
+            return UpdateDeliveryResponseDto.from(delivery);
+        }
+        if (userInfo.getRole().equals("HUB") && (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId()))) {
+            delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
+            Delivery updatedDelivery = deliveryRepository.save(delivery);
+            verifyDeliveryStatus(updatedDelivery);
+            return UpdateDeliveryResponseDto.from(delivery);
+        }
+        if (userInfo.getRole().equals("DELIVERY")) {
+            GetDeliveryManagerResponseDto responseDto = deliveryManagerService.getDeliveryManager(delivery.getStoreDeliveryManagerId());
+            if (userInfo.getUserId().equals(responseDto.getUserId())) {
+                delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
+                Delivery updatedDelivery = deliveryRepository.save(delivery);
+                verifyDeliveryStatus(updatedDelivery);
+                return UpdateDeliveryResponseDto.from(delivery);
+            }
+        }
+        throw new DeliveryException.UnauthorizedDeliveryUpdateException();
     }
 
     private void createDeliveryResponseDtoIfLastDeliveryNotExists(String slackId, int neededDeliveryManagerCount, List<RouteSegmentDto> response, DeliveryRequestMessage message) {
@@ -229,87 +313,6 @@ public class DeliveryService {
         return (storeDeliveryManagerId + 1) % 10;
     }
 
-
-    @Transactional(readOnly = true)
-    public CursorPage<GetDeliveryResponseDto> getDeliveries(GetDeliverySearchConditionRequestDto request) {
-        if (request.getDeliveryStatus() != null) {
-            Delivery.DeliveryStatus deliveryStatus = Delivery.DeliveryStatus.fromValue(request.getDeliveryStatus())
-                    .orElseThrow(DeliveryException.InvalidDeliveryTypeException::new);
-            CursorPage<GetDeliveryResponseDto> responseDtos = customDeliveryRepository.getDeliveries(request.getDeliveryId(), deliveryStatus, request.getDepartureHubId(), request.getArrivalHubId(),
-                    request.getRecipient(), request.getStoreDeliveryManagerId(), request.getLimit(), request.getSortBy());
-            return responseDtos;
-        }
-        CursorPage<GetDeliveryResponseDto> deliveries = customDeliveryRepository.getDeliveries(request.getDeliveryId(), null, request.getDepartureHubId(),
-                request.getArrivalHubId(), request.getRecipient(), request.getStoreDeliveryManagerId(), request.getLimit(), request.getSortBy());
-        return deliveries;
-    }
-
-    @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "deliveryCache", key = "#deliveryId")
-    public GetDeliveryResponseDto getDelivery(Long deliveryId) {
-        Delivery delivery = deliveryRepository.findById(deliveryId)
-                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
-
-        GetDeliveryResponseDto response = GetDeliveryResponseDto.from(delivery);
-        return response;
-    }
-
-    @CacheEvict(cacheNames = "deliveryCache", key = "#deliveryId")
-    public DeleteDeliveryResponseDto deleteDelivery(Long deliveryId) {
-        UserContext userInfo = UserContext.getUserContext();
-        Delivery delivery = deliveryRepository.findById(deliveryId)
-                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
-
-        if (userInfo.getRole().equals("MASTER")) {
-            delivery.deleteDelivery(userInfo.getUserId());
-            Delivery deletedDelivery = deliveryRepository.save(delivery);
-            return DeleteDeliveryResponseDto.from(deletedDelivery);
-        }
-
-        if (userInfo.getRole().equals("HUB")) {
-            if (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId())) {
-                delivery.deleteDelivery(userInfo.getUserId());
-                Delivery deletedDelivery = deliveryRepository.save(delivery);
-                return DeleteDeliveryResponseDto.from(deletedDelivery);
-            }
-        }
-        throw new DeliveryException.UnauthorizedDeliveryDeleteException();
-    }
-
-    @Cacheable(cacheNames = "deliveryCache", key = "#deliveryId")
-    public UpdateDeliveryResponseDto updateDelivery(Long deliveryId, UpdateDeliveryRequestDto request) {
-
-        Delivery delivery = deliveryRepository.findById(deliveryId)
-                .orElseThrow(DeliveryException.DeliveryNotFoundException::new);
-
-        UserContext userInfo = UserContext.getUserContext();
-
-        Delivery.DeliveryStatus deliveryStatus = Delivery.DeliveryStatus.fromValue(request.getDeliveryStatus())
-                .orElseThrow(DeliveryException.InvalidDeliveryTypeException::new);
-
-        if (userInfo.getRole().equals("MASTER")) {
-            delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
-            Delivery updatedDelivery = deliveryRepository.save(delivery);
-            verifyDeliveryStatus(updatedDelivery);
-            return UpdateDeliveryResponseDto.from(delivery);
-        }
-        if (userInfo.getRole().equals("HUB") && (userInfo.getHubId().equals(delivery.getArrivalHubId()) || userInfo.getHubId().equals(delivery.getDepartureHubId()))) {
-            delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
-            Delivery updatedDelivery = deliveryRepository.save(delivery);
-            verifyDeliveryStatus(updatedDelivery);
-            return UpdateDeliveryResponseDto.from(delivery);
-        }
-        if (userInfo.getRole().equals("DELIVERY")) {
-            GetDeliveryManagerResponseDto responseDto = deliveryManagerService.getDeliveryManager(delivery.getStoreDeliveryManagerId());
-            if (userInfo.getUserId().equals(responseDto.getUserId())) {
-                delivery.updatedDelivery(deliveryStatus, request.getDeliveryAddress(), request.getRecipient(), request.getRecipientSlackId());
-                Delivery updatedDelivery = deliveryRepository.save(delivery);
-                verifyDeliveryStatus(updatedDelivery);
-                return UpdateDeliveryResponseDto.from(delivery);
-            }
-        }
-        throw new DeliveryException.UnauthorizedDeliveryUpdateException();
-    }
 
     private void verifyDeliveryStatus(Delivery updatedDelivery) {
         if (updatedDelivery.getDeliveryStatus().equals(Delivery.DeliveryStatus.DELIVERY_COMPLETED)) {

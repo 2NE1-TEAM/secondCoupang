@@ -1,4 +1,4 @@
-package com.toanyone.delivery.infrastructure;
+package com.toanyone.delivery.infrastructure.db;
 
 import com.toanyone.delivery.domain.Delivery;
 import com.toanyone.delivery.domain.repository.DeliveryRepository;

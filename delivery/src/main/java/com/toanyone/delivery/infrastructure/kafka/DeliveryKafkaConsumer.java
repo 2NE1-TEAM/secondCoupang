@@ -1,7 +1,7 @@
 package com.toanyone.delivery.infrastructure.kafka;
 
 import com.toanyone.delivery.application.DeliveryService;
-import com.toanyone.delivery.application.dtos.request.DeliveryRequestMessage;
+import com.toanyone.delivery.application.dto.request.DeliveryRequestMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;

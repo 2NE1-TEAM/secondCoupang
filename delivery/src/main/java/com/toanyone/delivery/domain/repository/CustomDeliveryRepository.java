@@ -1,6 +1,6 @@
 package com.toanyone.delivery.domain.repository;
 
-import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryResponseDto;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.domain.Delivery;
 

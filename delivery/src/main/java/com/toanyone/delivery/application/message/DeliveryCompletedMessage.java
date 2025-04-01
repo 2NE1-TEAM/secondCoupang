@@ -1,4 +1,4 @@
-package com.toanyone.delivery.message;
+package com.toanyone.delivery.application.message;
 
 import lombok.Builder;
 import lombok.Getter;

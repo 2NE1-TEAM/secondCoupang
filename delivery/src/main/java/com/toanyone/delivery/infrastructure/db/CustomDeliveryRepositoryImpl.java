@@ -1,9 +1,9 @@
-package com.toanyone.delivery.infrastructure;
+package com.toanyone.delivery.infrastructure.db;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.toanyone.delivery.application.dtos.response.GetDeliveryResponseDto;
+import com.toanyone.delivery.application.dto.response.GetDeliveryResponseDto;
 import com.toanyone.delivery.common.utils.MultiResponse;
 import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.domain.Delivery;
@@ -55,7 +55,7 @@ public class CustomDeliveryRepositoryImpl implements CustomDeliveryRepository {
         return new CursorPage<>(responseDtos,
                 new MultiResponse.CursorInfo(cursorId),
                 hasNext);
-        
+
     }
 
     OrderSpecifier<LocalDateTime> sortBy(String sortBy) {
