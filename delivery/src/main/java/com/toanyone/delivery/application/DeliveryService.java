@@ -64,20 +64,20 @@ public class DeliveryService {
   }
 
   @Transactional
-  public void createDelivery(DeliveryRequestMessage message,
-      Long userId,
-      String userRole,
-      String slackId) throws IOException {
+  public void createDelivery(DeliveryRequestMessage message, Long userId, String userRole, String slackId) throws IOException {
     initialUserContext(userId, userRole, slackId);
+
     List<RouteSegmentDto> response = getRouteSegmentDtos(message);
     int neededDeliveryManagerCount = getNeededDeliveryManagerCount(response);
     Delivery lastDeliveryByOrderId = getLastDeliveryByOrderId();
+
     if (validateLastDeliveryExists(lastDeliveryByOrderId)) {
       DeliveryRoad lastDeliveryRoad = getLastDeliveryRoad(lastDeliveryByOrderId);
       Long lastOrderedHubDeliveryManagerId = lastDeliveryRoad.getDeliveryManagerId();
       List<DeliveryRoad> deliveryRoads = setUPDeliveryRoadsIfLastDeliveryExists(
           neededDeliveryManagerCount, response, lastOrderedHubDeliveryManagerId);
       Delivery lastDeliveryForArrivalHub = getLastDeliveryForArrivalHub(message);
+
       if (validateLastDeliveryForArrivalHubExists(lastDeliveryForArrivalHub)) {
         createDeliveryResponseDtoIfLastDeliveryForArrivalHubExists(slackId,
             lastDeliveryForArrivalHub, message, deliveryRoads);
@@ -114,20 +114,13 @@ public class DeliveryService {
       return new CursorPage<>(dtos, result.getNextCursor(),
           result.isHasNext());
     }
-    long start = System.currentTimeMillis();
     CursorPage<Delivery> deliveriesWithCursor = customDeliveryRepository.getDeliveriesWithCursor(
         request.getDeliveryId(), null, request.getDepartureHubId(),
         request.getArrivalHubId(), request.getRecipient(), request.getStoreDeliveryManagerId(),
         request.getLimit(), request.getSortBy());
-    System.out.println("쿼리 수행 시간(ms): " + (System.currentTimeMillis() - start));
-
-//        deliveriesWithCursor.getContent()
-//            .forEach(Delivery::getDeliveryRoads);
-    long startDto = System.currentTimeMillis();
     List<GetDeliveryResponseDto> getDeliveryResponseDtos = deliveriesWithCursor.getContent()
         .stream().map(GetDeliveryResponseDto::from)
         .collect(Collectors.toList());
-    System.out.println("DTO 변환 시간(ms): " + (System.currentTimeMillis() - startDto));
     return new CursorPage<>(getDeliveryResponseDtos, deliveriesWithCursor.getNextCursor(),
         deliveriesWithCursor.isHasNext());
   }
