@@ -14,6 +14,6 @@ public class GetDeliverySearchConditionRequestDto {
     private Long arrivalHubId;
     private String recipient;
     private Long storeDeliveryManagerId;
-    private int limit;
+    private Integer limit;
     private String sortBy;
 }

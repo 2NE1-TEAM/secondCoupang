@@ -11,6 +11,8 @@ import com.toanyone.delivery.common.utils.MultiResponse.CursorPage;
 import com.toanyone.delivery.common.utils.SingleResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,10 +28,16 @@ public class DeliveryController {
         return ResponseEntity.ok(SingleResponse.success(response));
     }
 
-    @GetMapping
+    @GetMapping("/cursor")
     public ResponseEntity<?> getDeliveries(@ModelAttribute GetDeliverySearchConditionRequestDto request) {
         CursorPage<GetDeliveryResponseDto> responseDtos = deliveryService.getDeliveries(request);
         return ResponseEntity.ok(MultiResponse.success(responseDtos));
+    }
+
+    @GetMapping("/offset")
+    public ResponseEntity<?> getDeliveries(Pageable pageable, @ModelAttribute GetDeliverySearchConditionRequestDto request) {
+        Page<GetDeliveryResponseDto> response = deliveryService.getDeliveries(pageable, request);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{deliveryId}")

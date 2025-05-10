@@ -45,7 +45,7 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.toanyone.delivery.application.dtos.request.DeliveryRequestMessage");
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.toanyone.delivery.application.dto.request.DeliveryRequestMessage");
 
         return new DefaultKafkaConsumerFactory<>(configProps);
     }

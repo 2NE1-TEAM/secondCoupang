@@ -109,9 +109,9 @@ public class CustomFilter implements Filter {
 
     public static final class PathConstants {
         public static final String DELIVERY_MANAGER_PATH = "/deliveries/delivery-manager";
-        public static final String DELIVERY_PATH = "/deliveries/";
+        public static final String DELIVERY_PATH = "/deliveries";
 
-        private PathConstants() {
-        }
+        private PathConstants() {}
     }
+
 }
